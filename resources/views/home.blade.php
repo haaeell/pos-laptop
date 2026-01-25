@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Overview')
 
 @section('content')
-    <div class="p-8  min-h-screen">
+    <div class="min-h-screen">
 
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
@@ -11,62 +11,87 @@
         </div>
 
         {{-- KPI Cards --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             @php
+                // Fungsi untuk menyingkat angka jika terlalu besar
+                function formatRingkas($n)
+                {
+                    if ($n >= 1000000000) {
+                        return round($n / 1000000000, 1) . 'B';
+                    }
+                    if ($n >= 1000000) {
+                        return round($n / 1000000, 1) . 'M';
+                    }
+                    if ($n >= 1000) {
+                        return round($n / 1000, 1) . 'K';
+                    }
+                    return $n;
+                }
+
                 $cards = [
                     [
                         'label' => 'Penjualan Hari Ini',
                         'value' => $totalSales,
                         'icon' => 'fa-coins',
                         'bg' => 'bg-indigo-50',
-                        'border' => 'border-indigo-100', // Warna border khusus
-                        'text' => 'text-indigo-600'
+                        'border' => 'border-indigo-100',
+                        'text' => 'text-indigo-600',
                     ],
                     [
                         'label' => 'Total Profit',
                         'value' => $totalProfit,
                         'icon' => 'fa-arrow-up-right-dots',
                         'bg' => 'bg-emerald-50',
-                        'border' => 'border-emerald-100', // Warna border khusus
-                        'text' => 'text-emerald-600'
+                        'border' => 'border-emerald-100',
+                        'text' => 'text-emerald-600',
                     ],
                     [
                         'label' => 'Total Transaksi',
                         'value' => $totalTransactions,
                         'icon' => 'fa-receipt',
                         'bg' => 'bg-blue-50',
-                        'border' => 'border-blue-100', // Warna border khusus
-                        'text' => 'text-blue-600'
+                        'border' => 'border-blue-100',
+                        'text' => 'text-blue-600',
                     ],
                     [
                         'label' => 'Bonus (Loss)',
                         'value' => $totalBonus,
                         'icon' => 'fa-gift',
                         'bg' => 'bg-rose-50',
-                        'border' => 'border-rose-100', // Warna border khusus
-                        'text' => 'text-rose-600'
+                        'border' => 'border-rose-100',
+                        'text' => 'text-rose-600',
                     ],
                 ];
             @endphp
 
-            @foreach($cards as $c)
-                {{-- Menggunakan variabel background dan border dinamis --}}
+            @foreach ($cards as $c)
                 <div
-                    class="{{ $c['bg'] }} {{ $c['border'] }} p-6 rounded-2xl shadow-sm border-2 transition-all hover:scale-[1.02] hover:shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div class="space-y-1">
-                            {{-- Label dibuat agak transparan agar tidak nabrak warna kartu --}}
-                            <p class="text-xs font-bold uppercase tracking-wider opacity-70 {{ $c['text'] }}">
+                    class="{{ $c['bg'] }} {{ $c['border'] }} p-4 lg:p-5 rounded-2xl shadow-sm border-2 transition-all hover:scale-[1.02]">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p
+                                class="text-[10px] font-bold uppercase tracking-wider opacity-70 {{ $c['text'] }} whitespace-nowrap">
                                 {{ $c['label'] }}
                             </p>
-                            <h2 class="text-xl font-black text-slate-800">
-                                Rp {{ number_format($c['value'], 0, ',', '.') }}
+
+                            <h2 class="font-black text-slate-800 whitespace-nowrap leading-tight">
+                                {{-- Tampilan Mobile: Singkatan (misal 1.5M) | Tampilan Desktop: Angka Lengkap --}}
+                                <span class="inline sm:hidden text-lg">
+                                    @if ($c['label'] != 'Total Transaksi')
+                                        Rp
+                                    @endif{{ formatRingkas($c['value']) }}
+                                </span>
+                                <span class="hidden sm:inline text-base lg:text-md">
+                                    @if ($c['label'] != 'Total Transaksi')
+                                        Rp
+                                    @endif{{ number_format($c['value'], 0, ',', '.') }}
+                                </span>
                             </h2>
                         </div>
 
-                        {{-- Icon box dibuat lebih kontras dengan warna putih --}}
-                        <div class="bg-white {{ $c['text'] }} w-12 h-12 flex items-center justify-center rounded-xl shadow-sm">
-                            <i class="fa-solid {{ $c['icon'] }} text-xl"></i>
+                        <div
+                            class="bg-white {{ $c['text'] }} w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl shadow-sm border border-slate-50">
+                            <i class="fa-solid {{ $c['icon'] }} text-lg"></i>
                         </div>
                     </div>
                 </div>
@@ -86,7 +111,7 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4 flex-grow">
-                @foreach($inventory as $status => $total)
+                @foreach ($inventory as $status => $total)
                     @php
                         $theme = match ($status) {
                             'available' => [
@@ -170,7 +195,7 @@
                 </div>
 
                 <div class="space-y-3">
-                    @foreach($paymentMethods as $pm)
+                    @foreach ($paymentMethods as $pm)
                         @php
                             $method = strtolower($pm->payment_method);
                             $icon = 'fa-credit-card';
@@ -181,7 +206,11 @@
                                 $icon = 'fa-money-bill-wave';
                                 $color = 'text-emerald-500';
                                 $bg = 'bg-emerald-50';
-                            } elseif (str_contains($method, 'qris') || str_contains($method, 'gopay') || str_contains($method, 'ovo')) {
+                            } elseif (
+                                str_contains($method, 'qris') ||
+                                str_contains($method, 'gopay') ||
+                                str_contains($method, 'ovo')
+                            ) {
                                 $icon = 'fa-qrcode';
                                 $color = 'text-purple-500';
                                 $bg = 'bg-purple-50';
@@ -206,7 +235,8 @@
                                 </div>
                             </div>
                             <div class="text-right">
-                                <span class="block text-sm font-extrabold text-center text-slate-900">{{ $pm->total }}</span>
+                                <span
+                                    class="block text-sm font-extrabold text-center text-slate-900">{{ $pm->total }}</span>
                                 <span class="text-[10px] text-slate-400">Transaksi</span>
                             </div>
                         </div>
@@ -225,7 +255,7 @@
                     <h3 class="font-bold text-slate-800">Stok Berdasarkan Merk</h3>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    @foreach($stockByBrand as $sb)
+                    @foreach ($stockByBrand as $sb)
                         <div
                             class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-sm transition-all">
                             <span class="text-sm font-semibold text-slate-600">{{ $sb->name ?: 'Tanpa Merk' }}</span>
@@ -245,7 +275,7 @@
                     <h3 class="font-bold text-slate-800">Stok Berdasarkan Kategori</h3>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    @foreach($stockByCategory as $sc)
+                    @foreach ($stockByCategory as $sc)
                         <div
                             class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-sm transition-all">
                             <span class="text-sm font-semibold text-slate-600">{{ $sc->name ?: 'Umum' }}</span>
@@ -280,7 +310,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            @foreach($topBrands as $brand)
+                            @foreach ($topBrands as $brand)
                                 <tr class="hover:bg-slate-50/80 transition-all group">
                                     <td class="px-6 py-4">
                                         <span
@@ -316,14 +346,14 @@
                 <div class="px-6 py-4 grid grid-cols-2 gap-4 border-b bg-slate-50">
                     <select id="filterBrand" class="w-full">
                         <option value="">Semua Merk</option>
-                        @foreach($brands as $b)
+                        @foreach ($brands as $b)
                             <option value="{{ $b->id }}">{{ $b->name }}</option>
                         @endforeach
                     </select>
 
                     <select id="filterCategory" class="w-full">
                         <option value="">Semua Kategori</option>
-                        @foreach($categories as $c)
+                        @foreach ($categories as $c)
                             <option value="{{ $c->id }}">{{ $c->name }}</option>
                         @endforeach
                     </select>
@@ -391,17 +421,32 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: {
+                        display: false
+                    }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { display: true, color: '#f1f5f9' },
-                        ticks: { font: { size: 10 } }
+                        grid: {
+                            display: true,
+                            color: '#f1f5f9'
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
                     },
                     x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 10 } }
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
                     }
                 }
             }
@@ -426,7 +471,9 @@
         }
 
         function loadInventory() {
-            fetch(`{{ route('dashboard.inventory') }}?status=${currentStatus}&brand_id=${filterBrand.value}&category_id=${filterCategory.value}`)
+            fetch(
+                    `{{ route('dashboard.inventory') }}?status=${currentStatus}&brand_id=${filterBrand.value}&category_id=${filterCategory.value}`
+                    )
                 .then(res => res.json())
                 .then(res => {
                     const tbody = document.getElementById('inventoryTable');

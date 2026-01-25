@@ -82,7 +82,7 @@
 
             <!-- LOGO -->
             <div class="h-16 flex items-center px-6 text-lg font-semibold text-indigo-600 border-b">
-                <i class="fa-solid fa-store mr-2"></i> Nama Toko
+                <i class="fa-solid fa-store mr-2"></i> Barokah Computer
             </div>
 
             <!-- NAV -->

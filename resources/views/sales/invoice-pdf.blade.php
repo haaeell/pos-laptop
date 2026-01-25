@@ -165,7 +165,7 @@
         <table class="header-table">
             <tr>
                 <td>
-                    <div class="brand-name">NAMA STORE</div>
+                    <div class="brand-name">BAROKAH COMPUTER</div>
                     <div class="brand-details">
                         Jl. Contoh Alamat No. 123, Kota<br>
                         Telp: 0812-3456-7890

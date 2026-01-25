@@ -3,7 +3,7 @@
 @section('title', 'Penjualan')
 
 @section('content')
-    <div class="mx-auto p-6 bg-white rounded-xl">
+    <div class="mx-auto bg-white rounded-xl">
 
         <!-- HEADER -->
         <div class="flex justify-between items-start mb-4">
@@ -27,121 +27,121 @@
             </a>
         </div>
 
-        <!-- TABLE -->
-        <div class="bg-white rounded-xl shadow border overflow-x-auto px-4 py-5">
-            <table id="datatable" class="w-full text-sm">
-                <thead class="bg-slate-100 text-slate-700">
-                    <tr>
-                        <th>#</th>
-                        <th>Invoice</th>
-                        <th>Tanggal</th>
-                        <th>Kasir</th>
-                        <th class="text-right">Grand Total</th>
-                        <th class="text-right">Profit</th>
-                        <th>Pembayaran</th>
-                        <th class="text-center">Aksi</th>
-                    </tr>
-                </thead>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table id="datatable" class="w-full text-sm text-left border-collapse">
+                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-4 font-semibold whitespace-nowrap">#</th>
+                            <th class="px-4 py-4 font-semibold whitespace-nowrap">Invoice</th>
+                            <th class="px-4 py-4 font-semibold whitespace-nowrap">Tanggal</th>
+                            <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Grand Total</th>
+                            <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Profit</th>
+                            <th class="px-4 py-4 font-semibold text-center whitespace-nowrap">Pembayaran</th>
+                            <th class="px-4 py-4 font-semibold text-center whitespace-nowrap">Aksi</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    @foreach($sales as $i => $sale)
-                                <tr>
-                                    <td>{{ $i + 1 }}</td>
+                    <tbody class="divide-y divide-slate-100 uppercase">
+                        @foreach ($sales as $i => $sale)
+                            <tr class="hover:bg-blue-50/50 transition-colors duration-200">
+                                <td class="px-4 py-4 text-slate-500 whitespace-nowrap">{{ $i + 1 }}</td>
 
-                                    <td class="font-medium text-indigo-600">
-                                        {{ $sale->invoice_number }}
-                                    </td>
+                                <td class="px-4 py-4 font-bold text-indigo-600 whitespace-nowrap">
+                                    <span class="bg-indigo-50 px-2 py-1 rounded text-xs">#{{ $sale->invoice_number }}</span>
+                                </td>
 
-                                    <td class="text-slate-500">
-                                        {{ $sale->created_at->format('d M Y H:i') }}
-                                    </td>
+                                <td class="px-4 py-4 text-slate-600 whitespace-nowrap">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium">{{ $sale->created_at->format('d M Y') }}</span>
+                                        <span class="text-[10px] text-slate-400">{{ $sale->created_at->format('H:i') }}
+                                            WIB</span>
+                                    </div>
+                                </td>
 
-                                    <td>{{ $sale->user->name }}</td>
+                                <td class="px-4 py-4 text-right font-bold text-slate-800 whitespace-nowrap">
+                                    Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
+                                </td>
 
-                                    <td class="text-right font-semibold">
-                                        Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
-                                    </td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {{ $sale->benefit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                        {{ $sale->benefit >= 0 ? '+' : '' }} Rp
+                                        {{ number_format($sale->benefit, 0, ',', '.') }}
+                                    </span>
+                                </td>
 
-                                    <td class="text-right">
-                                        <span class="px-2 py-1 rounded text-xs
-                                                                                                                                                                                                                                            {{ $sale->benefit >= 0
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700' }}">
-                                            Rp {{ number_format($sale->benefit, 0, ',', '.') }}
-                                        </span>
-                                    </td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <span
+                                        class="px-3 py-1 rounded-lg text-[10px] font-bold tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                                        {{ strtoupper($sale->payment_method) }}
+                                    </span>
+                                </td>
 
-                                    <td>
-                                        <span class="px-2 py-1 rounded text-xs bg-slate-100 text-slate-700">
-                                            {{ strtoupper($sale->payment_method) }}
-                                        </span>
-                                    </td>
-
-                                    <td class="text-center space-x-1">
+                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center gap-2">
                                         <button onclick="openSaleDetail({{ $sale->id }})"
-                                            class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                            <i class="fa-solid fa-eye"></i> Detail
+                                            class="inline-flex items-center justify-center w-9 h-9 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm shadow-blue-100"
+                                            title="Lihat Detail">
+                                            <i class="fa-solid fa-eye text-sm"></i>
                                         </button>
 
-
                                         <a href="{{ url("/sales/{$sale->id}/invoice-pdf") }}" target="_blank"
-                                            class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-800">
-                                            <i class="fa-solid fa-print"></i> Cetak Invoice
+                                            class="inline-flex items-center justify-center w-9 h-9 text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-800 hover:text-white transition-all duration-200 shadow-sm shadow-slate-200"
+                                            title="Cetak PDF">
+                                            <i class="fa-solid fa-file-pdf text-sm"></i>
                                         </a>
-                                    </td>
-                                </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-            <div id="saleModal"
-                class="fixed inset-0 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div id="saleModal"
+        class="fixed inset-0 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden transform transition-all">
+            <div class="flex items-center justify-between px-8 py-6 bg-slate-50 border-b border-slate-100">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 tracking-tight">Detail Transaksi</h2>
+                    <p id="modalInvoice" class="text-sm text-indigo-600 font-medium mt-1"></p>
+                </div>
+                <button onclick="closeSaleDetail()"
+                    class="w-10 h-10 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
 
-                <div class="bg-white w-full max-w-3xl rounded-2xl shadow-xl">
+            <div class="p-8">
+                <div class="rounded-2xl border border-slate-100 overflow-hidden shadow-sm bg-slate-50/30">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-100">
+                                <th class="px-4 py-3 text-left font-semibold">Item Produk</th>
+                                <th class="px-4 py-3 text-right font-semibold">Harga Jual</th>
+                                <th class="px-4 py-3 text-right font-semibold text-emerald-600">Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalItems" class="divide-y divide-slate-100 bg-white text-slate-700">
+                        </tbody>
+                    </table>
+                </div>
 
-                    <!-- HEADER -->
-                    <div class="flex items-center justify-between px-6 py-4 border-b">
-                        <div>
-                            <h2 class="text-base font-bold text-slate-800">Detail Penjualan</h2>
-                            <p id="modalInvoice" class="text-xs text-slate-500"></p>
-                        </div>
-                        <button onclick="closeSaleDetail()"
-                            class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
+                <div class="mt-8 grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Penjualan</p>
+                        <p id="modalTotal" class="text-xl font-extrabold text-slate-800 mt-1"></p>
                     </div>
-
-                    <!-- BODY -->
-                    <div class="p-6 space-y-4">
-
-                        <div class="border rounded-xl overflow-hidden">
-                            <table class="w-full text-sm">
-                                <thead class="bg-slate-100 text-slate-600 text-xs uppercase">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left">Produk</th>
-                                        <th class="px-4 py-3 text-right">Harga</th>
-                                        <th class="px-4 py-3 text-right">Profit</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="modalItems" class="divide-y"></tbody>
-                            </table>
-                        </div>
-
-                        <div class="flex justify-end gap-8 text-sm">
-                            <div>
-                                <p class="text-slate-500">Grand Total</p>
-                                <p id="modalTotal" class="font-bold text-right text-slate-800"></p>
-                            </div>
-                            <div>
-                                <p class="text-slate-500">Profit</p>
-                                <p id="modalProfit" class="font-bold text-right text-emerald-600"></p>
-                            </div>
-                        </div>
+                    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                        <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Total Keuntungan</p>
+                        <p id="modalProfit" class="text-xl font-extrabold text-emerald-700 mt-1"></p>
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 @endsection
@@ -194,9 +194,11 @@
             document.getElementById('saleModal').classList.add('hidden')
         }
 
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('#datatable').DataTable({
-                order: [[2, 'desc']]
+                order: [
+                    [2, 'desc']
+                ]
             })
         })
     </script>

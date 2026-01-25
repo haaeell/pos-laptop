@@ -39,7 +39,7 @@
                 <!-- STORE INFO -->
                 <div>
                     <h1 class="text-lg font-bold leading-tight">
-                        Elektronik Jaya Store
+                       Barokah Computer
                     </h1>
                     <p class="text-sm text-gray-500 flex items-center gap-2">
                         <i class="fa-solid fa-location-dot text-indigo-600"></i>

@@ -3,7 +3,7 @@
 @section('title', 'Kategori')
 
 @section('content')
-    <div class="mx-auto p-6 bg-white rounded-xl">
+    <div class="mx-auto bg-white rounded-xl">
 
         <!-- HEADER -->
         <div class="flex justify-between items-start mb-4">
