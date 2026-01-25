@@ -15,12 +15,23 @@ use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Sale::with('user')->latest();
+
+        if ($request->filled('from')) {
+            $query->whereDate('created_at', '>=', $request->from);
+        }
+
+        if ($request->filled('to')) {
+            $query->whereDate('created_at', '<=', $request->to);
+        }
+
         return view('sales.index', [
-            'sales' => Sale::with('user')->latest()->get()
+            'sales' => $query->get()
         ]);
     }
+
 
     public function create()
     {
@@ -123,9 +134,6 @@ class SaleController extends Controller
         $sale = Sale::with(['items.product', 'bonuses.product', 'user'])
             ->findOrFail($id);
 
-        $pdf = Pdf::loadView('sales.invoice-pdf', compact('sale'))
-            ->setPaper('a4');
-
-        return $pdf->stream('Invoice-' . $sale->invoice_number . '.pdf');
+        return view('sales.invoice-pdf', compact('sale'));
     }
 }

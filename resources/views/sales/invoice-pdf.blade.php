@@ -244,9 +244,19 @@
         </div>
 
         <div class="footer">
-            <p>Terima kasih telah berbelanja di <strong>NAMA STORE</strong>.</p>
+            <p>Terima kasih telah berbelanja di <strong>BAROKAH STORE</strong>.</p>
         </div>
     </div>
 </body>
+
+<script>
+    window.onload = function () {
+        window.print();
+        window.onafterprint = function () {
+            window.close();
+        }
+    }
+</script>
+
 
 </html>

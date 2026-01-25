@@ -43,4 +43,39 @@ class ReportController extends Controller
             'bonusLoss'
         ));
     }
+    public function pdf(Request $request)
+    {
+        $from = Carbon::parse($request->from)->startOfDay();
+        $to   = Carbon::parse($request->to)->endOfDay();
+
+        $sales = Sale::whereBetween('created_at', [$from, $to])
+            ->orderBy('created_at')
+            ->get();
+
+        $totalSales  = $sales->sum('grand_total');
+        $totalProfit = $sales->sum('benefit');
+        $bonusLoss   = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
+
+        $pdf = Pdf::loadView('reports.pdf', compact(
+            'sales',
+            'from',
+            'to',
+            'totalSales',
+            'totalProfit',
+            'bonusLoss'
+        ))->setPaper('a4', 'portrait');
+
+        return $pdf->stream('laporan-penjualan.pdf');
+    }
+
+    public function excel(Request $request)
+    {
+        $from = Carbon::parse($request->from)->startOfDay();
+        $to   = Carbon::parse($request->to)->endOfDay();
+
+        return Excel::download(
+            new SalesExport($from, $to),
+            'laporan-penjualan.xlsx'
+        );
+    }
 }

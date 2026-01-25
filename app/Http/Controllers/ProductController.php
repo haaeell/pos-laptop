@@ -33,6 +33,11 @@ class ProductController extends Controller
             $query->where('selling_price', '<=', $request->max_price);
         }
 
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+
         return view('master.products.index', [
             'products' => $query->get(),
             'categories' => Category::all(),
@@ -124,7 +129,7 @@ class ProductController extends Controller
 
         try {
             Excel::import(new ProductsImport(), $request->file('file'));
-            return redirect()->back()->with('success', 'Data produk berhasil di-import massal!');
+            return redirect()->back()->with('success', 'Data produk berhasil di-import!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ada masalah saat import: ' . $e->getMessage());
         }

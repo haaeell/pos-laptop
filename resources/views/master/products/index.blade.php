@@ -74,9 +74,10 @@
 
                                     <div
                                         class="group relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-2xl hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer">
-                                        <input type="file" name="file"
+                                        <input type="file" name="file" id="importFile"
                                             class="absolute inset-0 opacity-0 cursor-pointer" onchange="showPreview(this)"
                                             required>
+
                                         <i
                                             class="fa-solid fa-cloud-arrow-up text-3xl text-slate-300 group-hover:text-indigo-400 mb-2"></i>
                                         <span id="fileName" class="text-xs text-slate-400 font-medium">Seret file atau klik
@@ -88,9 +89,19 @@
                             <div class="mt-8 flex gap-3">
                                 <button type="button" onclick="closeImportModal()"
                                     class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">Batal</button>
-                                <button type="submit"
-                                    class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 transition">Proses
-                                    Import</button>
+                                <button type="submit" id="importBtn" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
+                                                                       rounded-xl flex items-center justify-center gap-2
+                                                                       disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <span class="btn-text">Proses Import</span>
+                                    <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                    </svg>
+                                </button>
+
                             </div>
                         </form>
                     </div>
@@ -105,7 +116,7 @@
             </div>
 
             <form action="{{ route('products.index') }}" method="GET"
-                class="grid grid-cols-1 md:grid-cols-5 gap-5 items-end">
+                class="grid grid-cols-1 md:grid-cols-6 gap-5 items-end">
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Kategori</label>
                     <select name="category" class="select2-filter w-full">
@@ -131,32 +142,62 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">Harga Minimal</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span
-                                class="text-[10px] font-bold text-slate-400 group-focus-within:text-indigo-600 transition-colors">Rp</span>
-                        </div>
-                        <input type="number" name="min_price" value="{{ request('min_price') }}"
-                            class="block w-full pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm placeholder-slate-400
-                      focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">
+                        Harga Minimal
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
+
+                        <!-- DISPLAY -->
+                        <input type="text" id="minPriceDisplay"
+                            value="{{ request('min_price') ? number_format(request('min_price'), 0, ',', '.') : '' }}"
+                            oninput="formatRupiahInput(this)"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
+                                                                                          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
+
+
+                        <input type="hidden" name="min_price" id="minPrice" value="{{ request('min_price') }}">
+                    </div>
+                </div>
+
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">
+                        Harga Maksimal
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
+
+                        <!-- DISPLAY -->
+                        <input type="text" id="maxPriceDisplay"
+                            value="{{ request('max_price') ? number_format(request('max_price'), 0, ',', '.') : '' }}"
+                            oninput="formatRupiahInput(this)"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
+                                                                                      focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                            placeholder="0">
+
+
+                        <input type="hidden" name="max_price" id="maxPrice" value="{{ request('max_price') }}">
                     </div>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">Harga Maksimal</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span
-                                class="text-[10px] font-bold text-slate-400 group-focus-within:text-indigo-600 transition-colors">Rp</span>
-                        </div>
-                        <input type="number" name="max_price" value="{{ request('max_price') }}"
-                            class="block w-full pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm placeholder-slate-400
-                      focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                            placeholder="0">
-                    </div>
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">
+                        Status Produk
+                    </label>
+                    <select name="status" class="select2-filter w-full">
+                        <option value="">Semua Status</option>
+                        <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>
+                            Tersedia
+                        </option>
+                        <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>
+                            Terjual
+                        </option>
+                    </select>
                 </div>
+
+
 
                 <div class="flex gap-2">
                     <button type="submit"
@@ -196,8 +237,7 @@
                                 <div
                                     class="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center">
                                     @if ($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}"
-                                            class="w-full h-full object-cover">
+                                        <img src="{{ asset('storage/' . $product->image) }}" class="w-full h-full object-cover">
                                     @else
                                         <i class="fa-solid fa-image text-slate-300"></i>
                                     @endif
@@ -207,11 +247,11 @@
                             <td class="text-nowrap" class="font-medium">{{ $product->name }}</td>
                             <td class="text-nowrap">{{ $product->category?->name }}</td>
                             <td class="text-nowrap">{{ $product->brand?->name }}</td>
-                            <td class="text-nowrap">Rp {{ number_format($product->selling_price) }}</td>
+                            <td class="text-nowrap">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</td>
                             <td class="text-nowrap">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full
-                                                                                                {{ $product->status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                                                                                                                                                                                                                                                                                {{ $product->status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                     {{ ucfirst($product->status == 'sold' ? 'Terjual' : 'Tersedia') }}
                                 </span>
                             </td>
@@ -234,8 +274,7 @@
     </div>
 
     <!-- MODAL -->
-    <div id="productModal"
-        class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div id="productModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
 
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200">
 
@@ -269,7 +308,7 @@
                                 class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input type="text" name="product_code" id="productCode"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                    focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                                                                                                                            focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="PRD-001" required>
                         </div>
                     </div>
@@ -300,7 +339,7 @@
                                 class="fa-solid fa-laptop absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input type="text" name="name" id="productName"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                    focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                                                                                                                            focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="Macbook Pro M1" required>
                         </div>
                     </div>
@@ -315,7 +354,7 @@
                                 class="fa-solid fa-layer-group absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="category_id" id="categoryId"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                    bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                                                                                                                                            bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
@@ -329,11 +368,10 @@
                             Brand
                         </label>
                         <div class="relative">
-                            <i
-                                class="fa-solid fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <i class="fa-solid fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="brand_id" id="brandId"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                    bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                                                                                                                                            bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 @foreach ($brands as $brand)
                                     <option value="{{ $brand->id }}">{{ $brand->name }}</option>
                                 @endforeach
@@ -348,11 +386,15 @@
                         </label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
-                            <input type="number" name="purchase_price" id="purchasePrice"
+
+                            <input type="text" id="purchasePriceDisplay" oninput="formatRupiahInput(this)"
                                 class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm
-                                    focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
-                                placeholder="10000000">
+                                                                                                              focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                placeholder="0">
+
+                            <input type="hidden" name="purchase_price" id="purchasePrice">
                         </div>
+
                     </div>
 
                     <!-- HARGA JUAL -->
@@ -379,7 +421,7 @@
                                 class="fa-solid fa-circle-info absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="status" id="status"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                    bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                                                                                                                                            bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 <option value="available">Available</option>
                                 <option value="sold">Sold</option>
                             </select>
@@ -395,10 +437,18 @@
                         Batal
                     </button>
 
-                    <button type="submit"
-                        class="px-5 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
-                        Simpan Produk
+                    <button type="submit" id="saveProductBtn" class="px-5 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white
+                                           hover:bg-indigo-700 transition flex items-center justify-center gap-2
+                                           disabled:opacity-60 disabled:cursor-not-allowed">
+                        <span class="btn-text">Simpan Produk</span>
+                        <svg class="btn-loading hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
                     </button>
+
                 </div>
 
             </form>
@@ -408,7 +458,37 @@
 
     @push('scripts')
         <script>
-            $(function() {
+            function handleLoadingButton(formSelector, buttonSelector) {
+                $(formSelector).on('submit', function () {
+                    const btn = $(buttonSelector);
+
+                    btn.prop('disabled', true);
+                    btn.find('.btn-text').text('Memproses...');
+                    btn.find('.btn-loading').removeClass('hidden');
+
+                    btn.addClass('pointer-events-none');
+                });
+            }
+
+            $(function () {
+                handleLoadingButton('#productForm', '#saveProductBtn');
+                handleLoadingButton('#importModal form', '#importBtn');
+                window.showPreview = function (input) {
+                    const fileNameEl = document.getElementById('fileName');
+
+                    if (input.files && input.files.length > 0) {
+                        const file = input.files[0];
+
+                        fileNameEl.textContent = file.name;
+                        fileNameEl.classList.remove('text-slate-400');
+                        fileNameEl.classList.add('text-indigo-600', 'font-semibold');
+                    } else {
+                        fileNameEl.textContent = 'Seret file atau klik disini';
+                        fileNameEl.classList.remove('text-indigo-600', 'font-semibold');
+                        fileNameEl.classList.add('text-slate-400');
+                    }
+                };
+
                 $('.select2-filter').select2({
                     placeholder: "Pilih...",
                     allowClear: true,
@@ -418,14 +498,19 @@
                 const modal = $('#productModal')
                 const form = $('#productForm')
 
-                window.openCreateModal = function() {
+                window.openCreateModal = function () {
                     modal.removeClass('hidden')
                     form.attr('action', '/products')
                     $('#methodField').val('')
                     form.trigger('reset')
+
+                    $('#imagePreview').attr('src', '').addClass('hidden');
+                    $('#imageIcon').removeClass('hidden');
+                    $('#productImage').val('');
                 }
 
-                window.openEditModal = function(data) {
+
+                window.openEditModal = function (data) {
                     modal.removeClass('hidden')
                     form.attr('action', `/products/${data.id}`)
                     $('#methodField').val('PUT')
@@ -449,11 +534,11 @@
                     $('#purchasePriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.purchase_price));
                 }
 
-                window.closeModal = function() {
+                window.closeModal = function () {
                     modal.addClass('hidden')
                 }
 
-                window.deleteProduct = function(id) {
+                window.deleteProduct = function (id) {
                     Swal.fire({
                         title: 'Yakin?',
                         text: 'Produk akan dihapus!',
@@ -467,9 +552,9 @@
                             form.method = 'POST'
                             form.action = `/products/${id}`
                             form.innerHTML = `
-                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                `
+                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                                                                                                                                                `
                             document.body.appendChild(form)
                             form.submit()
                         }
@@ -478,33 +563,39 @@
 
                 const importModal = $('#importModal');
 
-                window.openImportModal = function() {
+                window.openImportModal = function () {
                     importModal.removeClass('hidden');
                 }
 
-                window.closeImportModal = function() {
+                window.closeImportModal = function () {
                     importModal.addClass('hidden');
-                    // Reset input file saat ditutup
+
                     $('#importFile').val('');
-                    $('#fileName').text('Seret file atau klik disini').removeClass('text-indigo-600');
+                    $('#fileName')
+                        .text('Seret file atau klik disini')
+                        .removeClass('text-indigo-600 font-semibold')
+                        .addClass('text-slate-400');
                 }
 
-                function previewProductImage(input) {
+
+                window.previewProductImage = function (input) {
                     const preview = document.getElementById('imagePreview');
                     const icon = document.getElementById('imageIcon');
+
                     if (input.files && input.files[0]) {
                         const reader = new FileReader();
-                        reader.onload = function(e) {
+
+                        reader.onload = function (e) {
                             preview.src = e.target.result;
                             preview.classList.remove('hidden');
                             icon.classList.add('hidden');
-                        }
+                        };
+
                         reader.readAsDataURL(input.files[0]);
                     }
-                }
+                };
 
-                // Format Rupiah OnInput
-                function formatRupiahInput(el) {
+                window.formatRupiahInput = function (el) {
                     let value = el.value.replace(/[^0-9]/g, '');
                     let hiddenInputId = el.id.replace('Display', '');
                     document.getElementById(hiddenInputId).value = value;
@@ -514,7 +605,8 @@
                     } else {
                         el.value = '';
                     }
-                }
+                };
+
             })
         </script>
     @endpush

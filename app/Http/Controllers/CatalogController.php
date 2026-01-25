@@ -37,8 +37,10 @@ class CatalogController extends Controller
             $query->where('brand_id', $request->brand);
         }
 
-        return response()->json(
-            $query->latest()->get()->map(fn($p) => [
+        $products = $query->latest()->paginate(10); // ⬅️ jumlah per halaman
+
+        return response()->json([
+            'data' => $products->map(fn($p) => [
                 'id'        => $p->id,
                 'name'      => $p->name,
                 'code'      => $p->product_code,
@@ -46,7 +48,13 @@ class CatalogController extends Controller
                 'condition' => $p->condition,
                 'category'  => $p->category->name,
                 'brand'     => $p->brand?->name,
-            ])
-        );
+                'image'     => $p->image,
+                'description' => $p->description,
+            ]),
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page'    => $products->lastPage(),
+            ]
+        ]);
     }
 }

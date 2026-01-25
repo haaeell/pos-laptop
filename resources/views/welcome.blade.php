@@ -14,10 +14,33 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 42px;
+            border-radius: 0.75rem;
+            border: 1px solid #d1d5db;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .select2-selection__rendered {
+            padding-left: 0 !important;
+        }
+
+        .select2-selection__arrow {
+            height: 100%;
+        }
+
+        .select2-container--default .select2-selection--single:focus {
+            border-color: #2563eb;
+            outline: none;
         }
     </style>
 </head>
@@ -39,7 +62,7 @@
                 <!-- STORE INFO -->
                 <div>
                     <h1 class="text-lg font-bold leading-tight">
-                       Barokah Computer
+                        Barokah Computer
                     </h1>
                     <p class="text-sm text-gray-500 flex items-center gap-2">
                         <i class="fa-solid fa-location-dot text-indigo-600"></i>
@@ -70,7 +93,7 @@
         <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600"></div>
         <div class="relative max-w-7xl mx-auto px-6 pb-24 py-12 text-white">
             <p class=" text-indigo-100 max-w-xl text-lg">
-                Laptop, aksesoris & elektronik lainnya. Barang unik, siap pakai, harga transparan.
+                Laptop, aksesoris & elektronik lainnya. Dapatkan produk berkualitas dengan harga terbaik.
             </p>
         </div>
     </section>
@@ -113,7 +136,9 @@
         <div id="empty" class="hidden text-center py-32 text-gray-400">
             Produk tidak ditemukan.
         </div>
+        <div id="pagination" class="flex justify-center gap-2 mt-12"></div>
     </section>
+
 
     <!-- ================= MODAL ================= -->
     <div id="modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
@@ -124,9 +149,10 @@
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
 
-            <div class="h-48 bg-gray-100 rounded-2xl flex items-center justify-center text-6xl mb-6">
-                💻
+            <div id="m-image"
+                class="h-48 bg-gray-100 rounded-2xl flex items-center justify-center mb-6 overflow-hidden">
             </div>
+
 
             <h3 id="m-name" class="text-xl font-semibold"></h3>
             <p id="m-code" class="text-sm text-gray-500 mt-1"></p>
@@ -149,18 +175,44 @@
         </div>
     </div>
 
-    <!-- ================= SCRIPT ================= -->
+
+
+
+    <!-- Select2 JS -->
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        $(document).ready(function () {
+            $('#category').select2({
+                placeholder: "Semua Kategori",
+                allowClear: true,
+            });
+
+            $('#brand').select2({
+                placeholder: "Semua Merek",
+                allowClear: true,
+            });
+
+            $('#category, #brand').on('change', function () {
+                currentPage = 1;
+                loadProducts();
+            });
+
+            $('#search').on('input', function () {
+                currentPage = 1;
+                debounceLoad();
+            });
+
+            loadProducts();
+        });
         let timeout = null;
+        let currentPage = 1;
         const searchEl = document.getElementById('search');
         const categoryEl = document.getElementById('category');
         const brandEl = document.getElementById('brand');
         const container = document.getElementById('products');
         const emptyEl = document.getElementById('empty');
-
-        searchEl.addEventListener('input', debounceLoad);
-        categoryEl.addEventListener('change', loadProducts);
-        brandEl.addEventListener('change', loadProducts);
 
         function debounceLoad() {
             clearTimeout(timeout);
@@ -175,25 +227,77 @@
                 search: searchEl.value,
                 category: categoryEl.value,
                 brand: brandEl.value,
+                page: currentPage
             });
 
             const res = await fetch(`/data/catalog?${params}`);
-            const data = await res.json();
+            const resData = await res.json();
 
             container.innerHTML = '';
 
-            if (!data.length) {
+            if (!resData.data.length) {
                 emptyEl.classList.remove('hidden');
+                document.getElementById('pagination').innerHTML = '';
                 return;
             }
 
-            data.forEach(p => container.innerHTML += card(p));
+            resData.data.forEach(p => container.innerHTML += card(p));
+            renderPagination(resData.meta);
+        }
+        function renderPagination(meta) {
+            const pag = document.getElementById('pagination');
+            pag.innerHTML = '';
+
+            if (meta.last_page <= 1) return;
+
+            // Prev
+            pag.innerHTML += `
+        <button ${meta.current_page === 1 ? 'disabled' : ''}
+            onclick="goPage(${meta.current_page - 1})"
+            class="px-4 py-2 rounded-lg border text-sm
+            ${meta.current_page === 1 ? 'text-gray-400' : 'hover:bg-indigo-50'}">
+            ‹
+        </button>
+    `;
+
+            // Numbers
+            for (let i = 1; i <= meta.last_page; i++) {
+                pag.innerHTML += `
+            <button onclick="goPage(${i})"
+                class="px-4 py-2 rounded-lg text-sm
+                ${i === meta.current_page
+                        ? 'bg-indigo-600 text-white'
+                        : 'border hover:bg-indigo-50'}">
+                ${i}
+            </button>
+        `;
+            }
+
+            // Next
+            pag.innerHTML += `
+        <button ${meta.current_page === meta.last_page ? 'disabled' : ''}
+            onclick="goPage(${meta.current_page + 1})"
+            class="px-4 py-2 rounded-lg border text-sm
+            ${meta.current_page === meta.last_page ? 'text-gray-400' : 'hover:bg-indigo-50'}">
+            ›
+        </button>
+    `;
+        }
+        function goPage(page) {
+            currentPage = page;
+            loadProducts();
         }
 
+
         function card(p) {
+            const imageHtml = p.image
+                ? `<img src="/storage/${p.image}" class="w-full h-full object-cover">`
+                : `<i class="fa-solid fa-image text-slate-300 text-4xl"></i>`;
             return `
             <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-                <div class="h-32 bg-gray-100 flex items-center justify-center text-4xl">💻</div>
+                 <div class="h-32 bg-gray-100 flex items-center justify-center">
+            ${imageHtml}
+        </div>
 
                 <div class="p-3">
                     <h3 class="text-sm font-semibold line-clamp-2">${p.name}</h3>
@@ -218,6 +322,10 @@
             document.getElementById('m-condition').innerText = p.condition === 'used' ? 'Bekas' : 'Baru';
             document.getElementById('m-desc').innerText = p.description || 'Tidak ada deskripsi.';
             document.getElementById('m-price').innerText = formatPrice(p.price);
+            const imageContainer = document.getElementById('m-image');
+            imageContainer.innerHTML = p.image
+                ? `<img src="/storage/${p.image}" class="w-full h-full object-contain">`
+                : `<i class="fa-solid fa-image text-slate-300 text-9xl"></i>`;
 
             document.getElementById('modal').classList.remove('hidden');
             document.getElementById('modal').classList.add('flex');

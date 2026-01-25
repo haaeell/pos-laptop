@@ -27,6 +27,38 @@
             </a>
         </div>
 
+        <form class="flex flex-wrap items-end gap-3 mb-3">
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Dari
+                    Tanggal</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-calendar-day text-xs"></i>
+                    </div>
+                    <input type="date" name="from" value="{{ request('from') }}"
+                        class="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-slate-700">
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Sampai
+                    Tanggal</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-calendar-check text-xs"></i>
+                    </div>
+                    <input type="date" name="to" value="{{ request('to') }}"
+                        class="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-slate-700">
+                </div>
+            </div>
+
+            <button type="submit"
+                class="h-[40px] px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm shadow-indigo-100 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Terapkan
+            </button>
+        </form>
+
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table id="datatable" class="w-full text-sm text-left border-collapse">
@@ -59,28 +91,28 @@
                                     </div>
                                 </td>
 
-                                <td class="px-4 py-4 text-right font-bold text-slate-800 whitespace-nowrap">
+                                <td class="px-4 py-4 font-bold text-slate-800 whitespace-nowrap">
                                     Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
                                 </td>
 
-                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                <td class="px-4 py-4  whitespace-nowrap">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                {{ $sale->benefit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                                                                                                                                                                {{ $sale->benefit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
                                         {{ $sale->benefit >= 0 ? '+' : '' }} Rp
                                         {{ number_format($sale->benefit, 0, ',', '.') }}
                                     </span>
                                 </td>
 
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                <td class="px-4 py-4  whitespace-nowrap">
                                     <span
                                         class="px-3 py-1 rounded-lg text-[10px] font-bold tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
                                         {{ strtoupper($sale->payment_method) }}
                                     </span>
                                 </td>
 
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
-                                    <div class="flex items-center justify-center gap-2">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex  gap-2">
                                         <button onclick="openSaleDetail({{ $sale->id }})"
                                             class="inline-flex items-center justify-center w-9 h-9 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm shadow-blue-100"
                                             title="Lihat Detail">
@@ -89,8 +121,8 @@
 
                                         <a href="{{ url("/sales/{$sale->id}/invoice-pdf") }}" target="_blank"
                                             class="inline-flex items-center justify-center w-9 h-9 text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-800 hover:text-white transition-all duration-200 shadow-sm shadow-slate-200"
-                                            title="Cetak PDF">
-                                            <i class="fa-solid fa-file-pdf text-sm"></i>
+                                            title="Cetak Invoice">
+                                            <i class="fa-solid fa-print text-sm"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -168,22 +200,22 @@
 
                     data.items.forEach(item => {
                         rows += `
-                                    <tr class="border-t">
-                                        <td class="px-3 py-2">${item.name}</td>
-                                        <td class="px-3 py-2 text-right">Rp ${item.price}</td>
-                                        <td class="px-3 py-2 text-right">${item.benefit}</td>
-                                    </tr>
-                                `
+                                                                                                            <tr class="border-t">
+                                                                                                                <td class="px-3 py-2">${item.name}</td>
+                                                                                                                <td class="px-3 py-2 text-right">Rp ${item.price}</td>
+                                                                                                                <td class="px-3 py-2 text-right">${item.benefit}</td>
+                                                                                                            </tr>
+                                                                                                        `
                     })
 
                     data.bonuses.forEach(item => {
                         rows += `
-                                    <tr class="border-t text-green-600">
-                                        <td class="px-3 py-2">🎁 ${item.name}</td>
-                                        <td class="px-3 py-2 text-right">Rp 0</td>
-                                        <td class="px-3 py-2 text-right">${item.benefit}</td>
-                                    </tr>
-                                `
+                                                                                                            <tr class="border-t text-green-600">
+                                                                                                                <td class="px-3 py-2">🎁 ${item.name}</td>
+                                                                                                                <td class="px-3 py-2 text-right">Rp 0</td>
+                                                                                                                <td class="px-3 py-2 text-right">${item.benefit}</td>
+                                                                                                            </tr>
+                                                                                                        `
                     })
 
                     document.getElementById('modalItems').innerHTML = rows
@@ -194,7 +226,7 @@
             document.getElementById('saleModal').classList.add('hidden')
         }
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#datatable').DataTable({
                 order: [
                     [2, 'desc']

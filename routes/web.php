@@ -85,6 +85,8 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('reports')->group(function () {
-        Route::get('/', [ReportController::class, 'index']);
+        Route::get('/', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/pdf', [ReportController::class, 'pdf'])->name('reports.pdf');
+        Route::get('/excel', [ReportController::class, 'excel'])->name('reports.excel');
     });
 });
