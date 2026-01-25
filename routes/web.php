@@ -15,7 +15,8 @@ Route::get('/', [CatalogController::class, 'index']);
 Route::get('/data/catalog', [CatalogController::class, 'data'])->name('catalog.data');
 
 Auth::routes();
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/dashboard/inventory', [HomeController::class, 'inventoryList'])->name('dashboard.inventory');
 
 Route::middleware(['auth'])->group(function () {
 
@@ -69,11 +70,11 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('sales')
         ->controller(SaleController::class)
         ->group(function () {
-            Route::get('/', 'index');
-            Route::get('/create', 'create');
-            Route::post('/', 'store');
-            Route::get('/{id}', 'show');       // invoice / detail
-            Route::get('/{id}/print', 'print'); // cetak invoice
+            Route::get('/', 'index')->name('sales.index');
+            Route::get('/create', 'create')->name('sales.create');
+            Route::post('/', 'store')->name('sales.store');    // invoice / detail
+            Route::get('/{id}/detail', 'detail'); // cetak invoice
+            Route::get('/{id}/invoice-pdf', 'invoicePdf')->name('sales.invoice.pdf');
         });
 
     /*
@@ -81,11 +82,7 @@ Route::middleware(['auth'])->group(function () {
     | Reports
     |--------------------------------------------------------------------------
     */
-    Route::prefix('reports')
-        ->controller(ReportController::class)
-        ->group(function () {
-            Route::get('/', 'index');
-            Route::get('/pdf', 'exportPdf');
-            Route::get('/excel', 'exportExcel');
-        });
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [ReportController::class, 'index']);
+    });
 });

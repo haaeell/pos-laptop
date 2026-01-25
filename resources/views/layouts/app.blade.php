@@ -17,13 +17,11 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- Datatable -->
+    <!-- Plugin CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
 
     <style>
         body {
@@ -34,18 +32,10 @@
             background-color: #f8fafc;
         }
 
-        /* Desktop collapse */
-        .sidebar-collapsed {
-            width: 0;
-            overflow: hidden;
-        }
-
         .select2-container .select2-selection--single {
             height: 42px;
-            border-radius: 0.5rem;
-            /* rounded-lg */
+            border-radius: 0.75rem;
             border: 1px solid #d1d5db;
-            /* border-gray-300 */
             padding: 6px 12px;
             display: flex;
             align-items: center;
@@ -53,7 +43,6 @@
 
         .select2-selection__rendered {
             padding-left: 0 !important;
-            line-height: normal !important;
         }
 
         .select2-selection__arrow {
@@ -67,94 +56,99 @@
     </style>
 </head>
 
-<body class="bg-slate-100">
+<body class="bg-slate-50 text-slate-700">
 
     <div class="flex min-h-screen">
 
-        <!-- Overlay (Mobile) -->
-        <div id="overlay" class="fixed inset-0 bg-black/40 z-30 opacity-0 pointer-events-none
-                transition-opacity duration-300 md:hidden">
+        <!-- Overlay -->
+        <div id="overlay" class="fixed inset-0 bg-black/40 z-30 opacity-0 pointer-events-none transition md:hidden">
         </div>
 
         @php
             function isActive($pattern)
             {
                 return request()->is($pattern)
-                    ? 'bg-blue-50 text-blue-600 font-medium'
+                    ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md'
                     : 'text-slate-600 hover:bg-slate-100';
             }
         @endphp
-        <!-- Sidebar -->
-        <aside
-            class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100 border-r border-slate-700 transform -translate-x-full md:translate-x-0 transition-all duration-300 ease-in-out flex flex-col">
 
-            <div class="h-16 flex items-center px-6 text-xl font-semibold tracking-wide text-emerald-400">
-                Nama Toko
+
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64
+        bg-white border-r border-slate-200
+        shadow-sm transform -translate-x-full md:translate-x-0
+        transition-all duration-300 flex flex-col">
+
+            <!-- LOGO -->
+            <div class="h-16 flex items-center px-6 text-lg font-semibold text-indigo-600 border-b">
+                <i class="fa-solid fa-store mr-2"></i> Nama Toko
             </div>
 
+            <!-- NAV -->
             <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
 
-                <a href="/home" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('home') }}
-                      hover:bg-slate-700/60">
-                    <i class="fa-solid fa-gauge-high w-5 text-center"></i>
-                    <span>Dashboard</span>
+                <a href="/home"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('home') }}">
+                    <i class="fa-solid fa-gauge-high w-5"></i>
+                    Dashboard
                 </a>
 
-                <div class="mt-6 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Master Data
                 </div>
 
-                <a href="/categories" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('categories*') }}
-                      hover:bg-slate-700/60">
-                    <i class="fa-solid fa-layer-group w-5 text-center"></i>
-                    <span>Kategori</span>
+                <a href="/categories"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('categories*') }}">
+                    <i class="fa-solid fa-layer-group w-5"></i>
+                    Kategori
                 </a>
 
-                <a href="/brands" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('brands*') }}
-                      hover:bg-slate-700/60">
-                    <i class="fa-solid fa-tags w-5 text-center"></i>
-                    <span>Brand</span>
+                <a href="/brands"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('brands*') }}">
+                    <i class="fa-solid fa-tags w-5"></i>
+                    Brand
                 </a>
 
-                <a href="/products" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('products*') }}
-                      hover:bg-slate-700/60">
-                    <i class="fa-solid fa-box-open w-5 text-center"></i>
-                    <span>Produk</span>
+                <a href="/products"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('products*') }}">
+                    <i class="fa-solid fa-box-open w-5"></i>
+                    Produk
                 </a>
 
-                <div class="mt-6 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Transaksi
                 </div>
 
-                <a href="/sales" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales') }}
-                      hover:bg-slate-700/60">
-                    <i class="fa-solid fa-cash-register w-5 text-center"></i>
-                    <span>Penjualan</span>
+                <a href="/sales"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales') }}">
+                    <i class="fa-solid fa-cash-register w-5"></i>
+                    Penjualan
                 </a>
 
-                <a href="/sales/create" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales/create') }}
-                      hover:bg-slate-700/60">
-                    <i class="fa-solid fa-receipt w-5 text-center"></i>
-                    <span>Transaksi Baru</span>
+                <a href="/sales/create"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales/create') }}">
+                    <i class="fa-solid fa-receipt w-5"></i>
+                    Transaksi Baru
                 </a>
 
-                <div class="mt-6 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Laporan
                 </div>
 
-                <a href="/reports" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('reports*') }}
-                      hover:bg-slate-700/60">
-                    <i class="fa-solid fa-chart-simple w-5 text-center"></i>
-                    <span>Laporan Penjualan</span>
+                <a href="/reports"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('reports*') }}">
+                    <i class="fa-solid fa-chart-line w-5"></i>
+                    Laporan Penjualan
                 </a>
-
             </nav>
 
-            <div class="p-4 border-t border-slate-700">
+            <!-- LOGOUT -->
+            <div class="p-4 border-t">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl
-                           bg-red-500/10 text-red-400 hover:bg-red-500/20 transition">
+                    <button class="w-full bg-red-500 flex items-center justify-center gap-2 px-4 py-2 rounded-xl
+                    text-white hover:bg-red-400 transition">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         Logout
                     </button>
@@ -163,55 +157,31 @@
         </aside>
 
 
-
-
-        <!-- Content -->
+        <!-- CONTENT -->
         <div class="flex-1 flex flex-col">
-            <!-- Header -->
-            <header class="h-16 bg-white border-b flex items-center justify-between px-4 md:px-6">
 
-                <div class="flex items-center gap-3">
-                    <button id="menuBtn" class="p-2 rounded-lg hover:bg-slate-100">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                </div>
+            <!-- HEADER -->
+            <header class="h-16 bg-white border-b shadow-sm flex items-center justify-between px-4 md:px-6">
 
-                <div class="relative">
-                    <button id="userMenuBtn" class="flex items-center gap-3 focus:outline-none">
-                        <div class="text-right hidden sm:block">
-                            <div class="text-sm font-medium">{{ Auth::user()->name ?? 'User' }}</div>
-                            <div class="text-xs text-slate-500">Administrator</div>
-                        </div>
-                        <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name ?? 'User' }}"
-                            class="w-9 h-9 rounded-full border">
-                    </button>
+                <button id="menuBtn" class="p-2 rounded-lg hover:bg-indigo-50 text-indigo-600 md:hidden">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
 
-                    <div id="userMenu" class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-slate-200
-                               opacity-0 scale-95 pointer-events-none
-                               transition-all duration-200 origin-top-right z-50">
-
-                        <a href="#"
-                            class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-t-lg">
-                            <i class="fa-solid fa-user"></i>
-                            Profile
-                        </a>
-
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg">
-                                <i class="fa-solid fa-right-from-bracket"></i>
-                                Logout
-                            </button>
-                        </form>
+                <div class="flex items-center gap-3 ml-auto">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-sm font-semibold">{{ Auth::user()->name ?? 'User' }}</div>
+                        <div class="text-xs text-slate-400">Administrator</div>
                     </div>
+                    <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name ?? 'User' }}"
+                        class="w-9 h-9 rounded-full border">
                 </div>
-
             </header>
 
-            <!-- Main -->
+            <!-- MAIN -->
             <main class="p-4 md:p-6">
-                @yield('content')
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    @yield('content')
+                </div>
             </main>
 
         </div>
@@ -225,68 +195,29 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-
-    @stack('scripts')
     <script>
         $(function () {
-
-            const userMenuBtn = $('#userMenuBtn')
-            const userMenu = $('#userMenu')
-
-            userMenuBtn.on('click', function (e) {
-                e.stopPropagation()
-                userMenu.toggleClass('opacity-0 scale-95 pointer-events-none')
-            })
-
-            $(document).on('click', function () {
-                if (!userMenu.hasClass('opacity-0')) {
-                    userMenu.addClass('opacity-0 scale-95 pointer-events-none')
-                }
-            })
-
-
             const sidebar = $('#sidebar')
             const overlay = $('#overlay')
-            let isOpen = true
-
-            function openSidebar() {
-                sidebar.removeClass('sidebar-collapsed -translate-x-full').addClass('w-64')
-                overlay.removeClass('pointer-events-none').addClass('opacity-100')
-                isOpen = true
-            }
-
-            function closeSidebar() {
-                if (window.innerWidth < 768) {
-                    sidebar.addClass('-translate-x-full')
-                    overlay.addClass('pointer-events-none').removeClass('opacity-100')
-                } else {
-                    sidebar.addClass('sidebar-collapsed').removeClass('w-64')
-                }
-                isOpen = false
-            }
 
             $('#menuBtn').on('click', function () {
-                isOpen ? closeSidebar() : openSidebar()
+                sidebar.toggleClass('-translate-x-full')
+                overlay.toggleClass('opacity-0 pointer-events-none')
             })
 
-            $('#overlay').on('click', closeSidebar)
-
-            $('#sidebar a').on('click', function () {
-                if (window.innerWidth < 768) closeSidebar()
+            overlay.on('click', function () {
+                sidebar.addClass('-translate-x-full')
+                overlay.addClass('opacity-0 pointer-events-none')
             })
 
-            $('.datatable').DataTable({
-                responsive: true,
-                pageLength: 10
-            })
-
+            $('.datatable').DataTable({ responsive: true, pageLength: 10 })
         })
     </script>
 
-
+    @stack('scripts')
 
     @if ($errors->any())
-        <script script>
+        <script>
             let errorMessages = '';
             @foreach ($errors->all() as $error)
                 errorMessages += "{{ $error }}\n";

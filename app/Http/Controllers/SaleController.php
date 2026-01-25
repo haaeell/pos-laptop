@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Sale;
 use App\Models\Product;
+use App\Models\SaleBonus;
 use App\Models\SaleItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -26,51 +29,103 @@ class SaleController extends Controller
         ]);
     }
 
+    public function detail($id)
+    {
+        $sale = Sale::with(['items', 'bonuses'])->findOrFail($id);
+        return response()->json([
+            'invoice'      => $sale->invoice_number,
+            'date'         => Carbon::parse($sale->created_at)
+                ->translatedFormat('d M Y H:i'),
+
+            'grand_total'  => $this->rupiah($sale->grand_total),
+            'benefit'      => $this->rupiah($sale->benefit),
+
+            'items'        => $sale->items->map(function ($item) {
+                return [
+                    'name'     => $item->product->name,
+                    'price'    => $this->rupiah($item->final_price),
+                    'benefit'  => $this->rupiah($item->benefit),
+                ];
+            }),
+
+            'bonuses'      => $sale->bonuses->map(function ($bonus) {
+                return [
+                    'name'     => $bonus->product->name,
+                    'benefit'  => $this->rupiah($bonus->benefit),
+                ];
+            }),
+        ]);
+    }
+
+    protected function rupiah($value): string
+    {
+        return number_format($value, 0, ',', '.');
+    }
+
+
     public function store(Request $request)
     {
-        DB::transaction(function () use ($request) {
+        $sale = DB::transaction(function () use ($request) {
 
             $sale = Sale::create([
-                'invoice_number' => 'INV-' . time(),
-                'user_id' => Auth::id(),
-                'total_amount' => $request->total_amount,
-                'discount' => $request->discount ?? 0,
-                'grand_total' => $request->grand_total,
-                'benefit' => $request->benefit,
+                'invoice_number' => 'INV-' . date('Ymd') . '-' . str_pad(Sale::count() + 1, 4, '0', STR_PAD_LEFT),
+                'user_id'        => Auth::id(),
+                'grand_total'    => $request->grand_total,
+                'benefit'        => $request->benefit,
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'paid'
+                'payment_status' => 'paid',
             ]);
 
+            // ================= SOLD ITEMS =================
             foreach ($request->items as $item) {
+
                 SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
+                    'sale_id'         => $sale->id,
+                    'product_id'      => $item['product_id'],
                     'purchase_price' => $item['purchase_price'],
-                    'selling_price' => $item['selling_price'],
-                    'final_price' => $item['final_price'],
-                    'benefit' => $item['benefit']
+                    'selling_price'  => $item['selling_price'],
+                    'final_price'    => $item['final_price'],
+                    'benefit'        => $item['final_price'] - $item['purchase_price'],
                 ]);
 
-                Product::where('id', $item['product_id'])->update([
-                    'status' => 'sold'
-                ]);
+                Product::where('id', $item['product_id'])
+                    ->update(['status' => 'sold']);
             }
+
+            // ================= BONUS ITEMS =================
+            if ($request->filled('bonus_products')) {
+                foreach ($request->bonus_products as $productId) {
+
+                    $product = Product::findOrFail($productId);
+
+                    SaleBonus::create([
+                        'sale_id'        => $sale->id,
+                        'product_id'     => $product->id,
+                        'purchase_price' => $product->purchase_price,
+                        'benefit'        => -$product->purchase_price,
+                    ]);
+
+                    Product::where('id', $product->id)
+                        ->update(['status' => 'bonus']);
+                }
+            }
+
+            return $sale;
         });
 
-        return redirect()->route('sales.index')->with('success', 'Transaksi berhasil');
+        return redirect()
+            ->route('sales.create')
+            ->with('success_sale_id', $sale->id);
     }
 
-    public function show($id)
+    public function invoicePdf($id)
     {
-        return view('sales.show', [
-            'sale' => Sale::with('items.product', 'user')->findOrFail($id)
-        ]);
-    }
+        $sale = Sale::with(['items.product', 'bonuses.product', 'user'])
+            ->findOrFail($id);
 
-    public function print($id)
-    {
-        return view('sales.print', [
-            'sale' => Sale::with('items.product', 'user')->findOrFail($id)
-        ]);
+        $pdf = Pdf::loadView('sales.invoice-pdf', compact('sale'))
+            ->setPaper('a4');
+
+        return $pdf->stream('Invoice-' . $sale->invoice_number . '.pdf');
     }
 }

@@ -12,7 +12,6 @@ class Sale extends Model
     protected $fillable = [
         'invoice_number',
         'user_id',
-        'total_amount',
         'discount',
         'grand_total',
         'benefit',
@@ -21,7 +20,6 @@ class Sale extends Model
     ];
 
     protected $casts = [
-        'total_amount' => 'decimal:2',
         'discount'     => 'decimal:2',
         'grand_total'  => 'decimal:2',
         'benefit'      => 'decimal:2',

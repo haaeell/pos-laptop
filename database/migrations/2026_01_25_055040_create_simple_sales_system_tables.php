@@ -52,7 +52,7 @@ return new class extends Migration
             $table->decimal('purchase_price', 15, 2);
             $table->decimal('selling_price', 15, 2);
 
-            $table->enum('status', ['available', 'sold'])->default('available');
+            $table->enum('status', ['available', 'sold', 'bonus'])->default('available');
             $table->text('notes')->nullable();
 
             $table->timestamps();
@@ -68,9 +68,6 @@ return new class extends Migration
 
             $table->string('invoice_number')->unique();
             $table->foreignId('user_id')->constrained();
-
-            $table->decimal('total_amount', 15, 2);
-            $table->decimal('discount', 15, 2)->default(0);
             $table->decimal('grand_total', 15, 2);
 
             // total profit

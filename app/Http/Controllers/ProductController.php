@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return view('products.index', [
+        return view('master.products.index', [
             'products' => Product::with(['category', 'brand'])->latest()->get(),
             'categories' => Category::all(),
             'brands' => Brand::all()
@@ -28,6 +28,17 @@ class ProductController extends Controller
             'brand_id' => 'nullable|exists:brands,id',
             'purchase_price' => 'required|numeric',
             'selling_price' => 'required|numeric'
+        ], [
+            'product_code.required' => 'Kode produk harus diisi',
+            'product_code.unique' => 'Kode produk sudah digunakan',
+            'name.required' => 'Nama produk harus diisi',
+            'category_id.required' => 'Kategori harus diisi',
+            'category_id.exists' => 'Kategori tidak ditemukan',
+            'brand_id.exists' => 'Brand tidak ditemukan',
+            'purchase_price.required' => 'Harga beli harus diisi',
+            'purchase_price.numeric' => 'Harga beli harus berupa angka',
+            'selling_price.required' => 'Harga jual harus diisi',
+            'selling_price.numeric' => 'Harga jual harus berupa angka'
         ]);
 
         Product::create($request->all());
