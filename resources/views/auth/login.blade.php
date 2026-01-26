@@ -35,7 +35,10 @@
             </h1>
 
             <p class="text-indigo-100 text-sm max-w-[280px] leading-relaxed">
-                Destinasi utama penjualan laptop berkualitas dan aksesoris komputer terlengkap.
+                @php
+                    $description = App\Models\Setting::where('key', 'deskripsi')->first();
+                   @endphp
+                {{ $description->value }}
             </p>
 
             <div class="mt-12 flex gap-3 text-[10px] uppercase font-bold tracking-widest">
@@ -88,8 +91,8 @@
                     <span id="btnText">Masuk ke Dashboard</span>
                     <svg id="btnLoader" class="hidden w-5 h-5 animate-spin text-white"
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                            stroke-width="4"></circle>
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
                 </button>
@@ -117,7 +120,7 @@
             toggleIcon.classList.toggle("fa-eye-slash");
         });
 
-        form.addEventListener("submit", function() {
+        form.addEventListener("submit", function () {
             btn.disabled = true;
             btn.classList.add("opacity-80");
             btnText.textContent = "Mengautentikasi...";

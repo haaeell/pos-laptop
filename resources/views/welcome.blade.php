@@ -84,7 +84,7 @@
                     <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
                         target="_blank"
                         class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
-                                                                                                                                                                        text-white text-sm font-semibold transition">
+                                                                                                                                                                                            text-white text-sm font-semibold transition">
                         <i class="fa-brands fa-whatsapp"></i>
                         {{ $contact->label }}
                     </a>
@@ -104,7 +104,7 @@
         <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600"></div>
         <div class="relative max-w-7xl mx-auto px-6 pb-24 py-12 text-white">
             <p class=" text-indigo-100 max-w-xl text-lg">
-                Laptop, aksesoris & elektronik lainnya. Dapatkan produk berkualitas dengan harga terbaik.
+                {{ $settings['deskripsi'] ?? 'Deskripsi toko belum diatur' }}
             </p>
         </div>
     </section>
