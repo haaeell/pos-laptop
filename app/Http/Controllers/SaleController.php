@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contact;
 use App\Models\Sale;
 use App\Models\Product;
 use App\Models\SaleBonus;
 use App\Models\SaleItem;
+use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -136,6 +138,9 @@ class SaleController extends Controller
         $sale = Sale::with(['items.product', 'bonuses.product', 'user'])
             ->findOrFail($id);
 
-        return view('sales.invoice-pdf', compact('sale'));
+        $contacts = Contact::where('is_active', 1)->get();
+        $settings = Setting::pluck('value', 'key');
+
+        return view('sales.invoice-pdf', compact('sale', 'contacts', 'settings'));
     }
 }

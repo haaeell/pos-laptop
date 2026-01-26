@@ -84,7 +84,7 @@
                     <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
                         target="_blank"
                         class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
-                                                                                                                                                        text-white text-sm font-semibold transition">
+                                                                                                                                                                        text-white text-sm font-semibold transition">
                         <i class="fa-brands fa-whatsapp"></i>
                         {{ $contact->label }}
                     </a>
@@ -216,15 +216,13 @@
                     <h4 class="text-white font-semibold mb-4">Lokasi Toko</h4>
 
                     <div class="rounded-2xl overflow-hidden border border-slate-700">
-                        @php
-                            $lat = $settings['latitude'] ?? '-6.4122927';
-                            $lng = $settings['longitude'] ?? '107.6991343';
-                        @endphp
 
                         <div class="rounded-2xl overflow-hidden border shadow-sm">
-                            <iframe src="https://www.google.com/maps?q={{ $lat }},{{ $lng }}&z=16&output=embed"
-                                class="w-full h-64 border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-                            </iframe>
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d247.82443395730712!2d107.79983202293691!3d-6.369330654093672!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69470029254c6d%3A0x8b2d8f31b3c65028!2sBarokah%20Computer!5e0!3m2!1sid!2sid!4v1769418867952!5m2!1sid!2sid"
+                                width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"></iframe>
+
                         </div>
                     </div>
                 </div>

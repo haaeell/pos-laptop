@@ -157,20 +157,96 @@
             color: #9ca3af;
             font-size: 9px;
         }
+
+        .logo {
+            height: 50px;
+            max-width: 140px;
+            object-fit: contain;
+            margin-bottom: 6px;
+        }
+
+        .signature-section {
+            margin-top: 60px;
+        }
+
+        .signature-table {
+            width: 100%;
+            text-align: center;
+        }
+
+        .signature-box {
+            height: 70px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #1f2937;
+            margin: 0 40px 6px;
+        }
+
+        .signature-name {
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .signature-label {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .warranty-box {
+            margin-top: 25px;
+            padding: 12px 14px;
+            border: 1px dashed #9ca3af;
+            border-radius: 6px;
+            font-size: 10px;
+            color: #374151;
+            background-color: #f9fafb;
+        }
+
+        .warranty-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 
 <body>
+    @php
+        $logo = $settings['logo'] ?? 'logo.jpeg';
+        $namaToko = $settings['nama_toko'] ?? 'Barokah Computer';
+        $alamat = $settings['alamat'] ?? 'Alamat toko belum diatur';
+
+        use Carbon\Carbon;
+
+        Carbon::setLocale('id');
+
+        $garansiHari = 14;
+        $tanggalTransaksi = $sale->created_at;
+        $tanggalGaransi = $tanggalTransaksi->copy()->addDays($garansiHari);
+    @endphp
     <div class="container">
         <table class="header-table">
             <tr>
                 <td>
-                    <div class="brand-name">BAROKAH COMPUTER</div>
+                    @if($logo)
+                        <img src="{{ asset('storage/' . $logo) }}" class="logo" alt="Logo">
+                    @endif
+
+                    <div class="brand-name">{{ $namaToko }}</div>
+
                     <div class="brand-details">
-                        Jl. Contoh Alamat No. 123, Kota<br>
-                        Telp: 0812-3456-7890
+                        {{ $alamat }}<br>
+
+                        @if($contacts->count())
+                                            {{ $contacts->pluck('label')->zip($contacts->pluck('phone'))
+                            ->map(fn($c) => $c[0] . ': ' . $c[1])
+                            ->implode(' | ')
+                                                                                                                                                                                                                                                                            }}
+                        @endif
                     </div>
                 </td>
+
                 <td class="invoice-label">
                     <h2>INVOICE</h2>
                     <span class="badge">NO: {{ $sale->invoice_number }}</span>
@@ -252,8 +328,48 @@
             </table>
         </div>
 
+        <div class="warranty-box">
+            <div class="warranty-title">Keterangan Garansi</div>
+
+            <ul style="margin: 6px 0 0 16px; padding: 0;">
+                <li>
+                    Masa garansi <strong>{{ $garansiHari }} hari</strong> terhitung sejak
+                    <strong>{{ $tanggalTransaksi->translatedFormat('d F Y') }}</strong>
+                    sampai dengan
+                    <strong>{{ $tanggalGaransi->translatedFormat('d F Y') }}</strong>.
+
+                </li>
+                <li>Garansi sesuai ketentuan pabrik / distributor.</li>
+                <li>Garansi tidak berlaku untuk kerusakan fisik, cairan, atau kesalahan penggunaan.</li>
+                <li>Wajib menyertakan invoice ini saat klaim garansi.</li>
+            </ul>
+        </div>
+
+        <div class="signature-section">
+            <table class="signature-table">
+                <tr>
+                    <td width="50%">
+                        <div class="signature-box"></div>
+                        <div class="signature-line"></div>
+                        <div class="signature-name">{{ $namaToko }}</div>
+                        <div class="signature-label">Penjual</div>
+                    </td>
+
+                    <td width="50%">
+                        <div class="signature-box"></div>
+                        <div class="signature-line"></div>
+                        <div class="signature-name">
+                            {{ $sale->customer_name ?? 'Pelanggan' }}
+                        </div>
+                        <div class="signature-label">Pembeli</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+
         <div class="footer">
-            <p>Terima kasih telah berbelanja di <strong>BAROKAH STORE</strong>.</p>
+            <p>Terima kasih telah berbelanja di <strong>{{ $namaToko }}</strong>.</p>
         </div>
     </div>
 </body>

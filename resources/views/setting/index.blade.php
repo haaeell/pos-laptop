@@ -32,10 +32,10 @@
 
                     <div>
                         <input type="file" name="logo" class="block text-sm text-slate-600
-                                      file:mr-4 file:py-2 file:px-4
-                                      file:rounded-xl file:border-0
-                                      file:bg-indigo-50 file:text-indigo-700
-                                      hover:file:bg-indigo-100">
+                                                  file:mr-4 file:py-2 file:px-4
+                                                  file:rounded-xl file:border-0
+                                                  file:bg-indigo-50 file:text-indigo-700
+                                                  hover:file:bg-indigo-100">
                         <p class="text-xs text-slate-500 mt-1">
                             PNG / JPG, disarankan ukuran persegi
                         </p>
@@ -54,7 +54,7 @@
                         <i class="fa-solid fa-store absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" name="nama_toko" value="{{ $settings['nama_toko'] ?? '' }}"
                             placeholder="Nama toko anda" class="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm
-                                      focus:ring-2 focus:ring-indigo-500/30">
+                                                  focus:ring-2 focus:ring-indigo-500/30">
                     </div>
                 </div>
 
@@ -66,7 +66,7 @@
                         <i class="fa-solid fa-clock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" name="jam_buka" value="{{ $settings['jam_buka'] ?? '' }}"
                             placeholder="09.00 - 21.00" class="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm
-                                      focus:ring-2 focus:ring-indigo-500/30">
+                                                  focus:ring-2 focus:ring-indigo-500/30">
                     </div>
                 </div>
 
@@ -77,8 +77,9 @@
                 <label class="text-xs font-semibold uppercase text-slate-600">
                     Alamat Toko
                 </label>
-                <textarea name="alamat" rows="3" placeholder="Alamat lengkap toko" class="w-full mt-1 rounded-xl border px-4 py-3 text-sm
-                                 focus:ring-2 focus:ring-indigo-500/30">{{ $settings['alamat'] ?? '' }}</textarea>
+                <textarea name="alamat" rows="3" placeholder="Alamat lengkap toko"
+                    class="w-full mt-1 rounded-xl border px-4 py-3 text-sm
+                                             focus:ring-2 focus:ring-indigo-500/30">{{ $settings['alamat'] ?? '' }}</textarea>
             </div>
 
             <!-- ================= DESKRIPSI ================= -->
@@ -86,59 +87,16 @@
                 <label class="text-xs font-semibold uppercase text-slate-600">
                     Deskripsi Singkat
                 </label>
-                <textarea name="deskripsi" rows="3" placeholder="Deskripsi singkat tentang toko" class="w-full mt-1 rounded-xl border px-4 py-3 text-sm
-                                 focus:ring-2 focus:ring-indigo-500/30">{{ $settings['deskripsi'] ?? '' }}</textarea>
-            </div>
-
-            <!-- ================= MAP LOCATION ================= -->
-            <div>
-                <h3 class="text-sm font-semibold text-slate-700 mb-3">
-                    Lokasi Google Maps
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                    <!-- LATITUDE -->
-                    <div>
-                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">
-                            Latitude
-                        </label>
-                        <div class="relative mt-1">
-                            <i class="fa-solid fa-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" name="latitude" value="{{ old('latitude', $settings['latitude'] ?? '') }}"
-                                placeholder="-6.200000" class="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm
-                                          focus:ring-2 focus:ring-indigo-500/30">
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Format desimal (contoh: -6.200000)
-                        </p>
-                    </div>
-
-                    <!-- LONGITUDE -->
-                    <div>
-                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">
-                            Longitude
-                        </label>
-                        <div class="relative mt-1">
-                            <i
-                                class="fa-solid fa-location-arrow absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" name="longitude" value="{{ old('longitude', $settings['longitude'] ?? '') }}"
-                                placeholder="106.816666" class="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm
-                                          focus:ring-2 focus:ring-indigo-500/30">
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Ambil dari Google Maps → klik kanan → “What’s here?”
-                        </p>
-                    </div>
-
-                </div>
+                <textarea name="deskripsi" rows="3" placeholder="Deskripsi singkat tentang toko"
+                    class="w-full mt-1 rounded-xl border px-4 py-3 text-sm
+                                             focus:ring-2 focus:ring-indigo-500/30">{{ $settings['deskripsi'] ?? '' }}</textarea>
             </div>
 
             <!-- ================= ACTION ================= -->
             <div class="pt-4 flex justify-end">
                 <button class="px-6 py-2.5 bg-gradient-to-br from-indigo-600 to-blue-600
-                           text-white rounded-xl text-sm font-semibold
-                           hover:opacity-90 transition">
+                                       text-white rounded-xl text-sm font-semibold
+                                       hover:opacity-90 transition">
                     <i class="fa-solid fa-save mr-2"></i>
                     Simpan Perubahan
                 </button>
