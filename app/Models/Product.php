@@ -20,6 +20,7 @@ class Product extends Model
         'status',
         'notes',
         'image',
+        'description'
     ];
 
     protected $casts = [

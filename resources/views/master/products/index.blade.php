@@ -89,9 +89,10 @@
                             <div class="mt-8 flex gap-3">
                                 <button type="button" onclick="closeImportModal()"
                                     class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">Batal</button>
-                                <button type="submit" id="importBtn" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
-                                                                       rounded-xl flex items-center justify-center gap-2
-                                                                       disabled:opacity-60 disabled:cursor-not-allowed">
+                                <button type="submit" id="importBtn"
+                                    class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
+                                                                                                               rounded-xl flex items-center justify-center gap-2
+                                                                                                               disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span class="btn-text">Proses Import</span>
                                     <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -153,7 +154,7 @@
                             value="{{ request('min_price') ? number_format(request('min_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -174,7 +175,7 @@
                             value="{{ request('max_price') ? number_format(request('max_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                      focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                              focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -219,8 +220,8 @@
                 <thead class="bg-slate-100 text-slate-700">
                     <tr>
                         <th>#</th>
-                        <th>Kode</th>
                         <th>Foto</th>
+                        <th>Kode</th>
                         <th>Nama</th>
                         <th>Kategori</th>
                         <th>Brand</th>
@@ -251,7 +252,7 @@
                             <td class="text-nowrap">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full
-                                                                                                                                                                                                                                                                                                                {{ $product->status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                                                                                                                                                                                                                                                                                                                                                                {{ $product->status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                     {{ ucfirst($product->status == 'sold' ? 'Terjual' : 'Tersedia') }}
                                 </span>
                             </td>
@@ -274,9 +275,10 @@
     </div>
 
     <!-- MODAL -->
-    <div id="productModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div id="productModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
 
-        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200 overflow-y-auto max-h-[90vh]">
 
             <!-- HEADER -->
             <div class="flex items-center justify-between px-6 py-4 border-b">
@@ -292,36 +294,34 @@
             </div>
 
             <!-- BODY -->
-            <form id="productForm" method="POST" class="px-6 py-5 space-y-5" enctype="multipart/form-data">
+            <form id="productForm" method="POST" class="px-4 sm:px-6 py-5 space-y-5" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="_method" id="methodField">
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                     <!-- KODE -->
                     <div>
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
-                            Kode Produk
-                        </label>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Kode Produk</label>
                         <div class="relative">
                             <i
                                 class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input type="text" name="product_code" id="productCode"
-                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                                                                                                                            focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="PRD-001" required>
                         </div>
                     </div>
 
-                    <div class="col-span-2">
+                    <!-- FOTO PRODUK -->
+                    <div class="col-span-1 sm:col-span-2">
                         <label class="text-xs font-semibold text-slate-600 mb-1 block">Foto Produk</label>
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
                             <div id="imagePreviewContainer"
-                                class="w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 overflow-hidden flex items-center justify-center bg-slate-50">
+                                class="w-28 h-28 sm:w-20 sm:h-20 rounded-xl border-2 border-dashed border-slate-300 overflow-hidden flex items-center justify-center bg-slate-50">
                                 <img id="imagePreview" src="" class="hidden w-full h-full object-cover">
-                                <i id="imageIcon" class="fa-solid fa-image text-slate-300 text-xl"></i>
+                                <i id="imageIcon" class="fa-solid fa-image text-slate-300 text-2xl sm:text-xl"></i>
                             </div>
-                            <div class="flex-1">
+                            <div class="flex-1 w-full">
                                 <input type="file" name="image" id="productImage" accept="image/*"
                                     onchange="previewProductImage(this)"
                                     class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
@@ -329,32 +329,26 @@
                         </div>
                     </div>
 
-                    <!-- NAMA -->
+                    <!-- NAMA PRODUK -->
                     <div>
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
-                            Nama Produk
-                        </label>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Nama Produk</label>
                         <div class="relative">
                             <i
                                 class="fa-solid fa-laptop absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input type="text" name="name" id="productName"
-                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                                                                                                                            focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="Macbook Pro M1" required>
                         </div>
                     </div>
 
                     <!-- KATEGORI -->
                     <div>
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
-                            Kategori
-                        </label>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Kategori</label>
                         <div class="relative">
                             <i
                                 class="fa-solid fa-layer-group absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="category_id" id="categoryId"
-                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                                                                                                                            bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
@@ -364,14 +358,11 @@
 
                     <!-- BRAND -->
                     <div>
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
-                            Brand
-                        </label>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Brand</label>
                         <div class="relative">
                             <i class="fa-solid fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="brand_id" id="brandId"
-                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                                                                                                                            bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 @foreach ($brands as $brand)
                                     <option value="{{ $brand->id }}">{{ $brand->name }}</option>
                                 @endforeach
@@ -381,47 +372,44 @@
 
                     <!-- HARGA BELI -->
                     <div>
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
-                            Harga Beli
-                        </label>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Harga Beli</label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
-
                             <input type="text" id="purchasePriceDisplay" oninput="formatRupiahInput(this)"
-                                class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm
-                                                                                                              focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="0">
-
                             <input type="hidden" name="purchase_price" id="purchasePrice">
                         </div>
-
                     </div>
 
                     <!-- HARGA JUAL -->
                     <div>
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
-                            Harga Jual
-                        </label>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Harga Jual</label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
                             <input type="text" id="sellingPriceDisplay" oninput="formatRupiahInput(this)"
-                                class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm focus:border-indigo-500 transition"
+                                class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="0">
                             <input type="hidden" name="selling_price" id="sellingPrice">
                         </div>
                     </div>
 
+                    <!-- DESKRIPSI -->
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Deskripsi Produk</label>
+                        <textarea name="description" id="productDescription"
+                            class="w-full rounded-xl border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                            rows="4"></textarea>
+                    </div>
+
                     <!-- STATUS -->
-                    <div class="col-span-2">
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
-                            Status Produk
-                        </label>
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Status Produk</label>
                         <div class="relative">
                             <i
                                 class="fa-solid fa-circle-info absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="status" id="status"
-                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                                                                                                                                            bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 <option value="available">Available</option>
                                 <option value="sold">Sold</option>
                             </select>
@@ -431,15 +419,14 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="flex justify-end gap-2 pt-4 border-t">
+                <div class="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
                     <button type="button" onclick="closeModal()"
                         class="px-4 py-2 text-sm font-semibold rounded-xl border border-slate-300 hover:bg-slate-100 transition">
                         Batal
                     </button>
 
-                    <button type="submit" id="saveProductBtn" class="px-5 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white
-                                           hover:bg-indigo-700 transition flex items-center justify-center gap-2
-                                           disabled:opacity-60 disabled:cursor-not-allowed">
+                    <button type="submit" id="saveProductBtn"
+                        class="px-5 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-2 sm:mt-0">
                         <span class="btn-text">Simpan Produk</span>
                         <svg class="btn-loading hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
@@ -448,7 +435,6 @@
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                         </svg>
                     </button>
-
                 </div>
 
             </form>
@@ -456,8 +442,20 @@
     </div>
 
 
+
     @push('scripts')
+        <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
         <script>
+            let descriptionEditor;
+            ClassicEditor
+                .create(document.querySelector('#productDescription'))
+                .then(editor => {
+                    descriptionEditor = editor;
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
             function handleLoadingButton(formSelector, buttonSelector) {
                 $(formSelector).on('submit', function () {
                     const btn = $(buttonSelector);
@@ -498,6 +496,10 @@
                 const modal = $('#productModal')
                 const form = $('#productForm')
 
+                $('#productForm').on('submit', function () {
+                    $('#productDescription').val(descriptionEditor.getData());
+                });
+
                 window.openCreateModal = function () {
                     modal.removeClass('hidden')
                     form.attr('action', '/products')
@@ -532,6 +534,8 @@
 
                     $('#sellingPriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.selling_price));
                     $('#purchasePriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.purchase_price));
+
+                    descriptionEditor.setData(data.description ?? '');
                 }
 
                 window.closeModal = function () {
@@ -552,9 +556,9 @@
                             form.method = 'POST'
                             form.action = `/products/${id}`
                             form.innerHTML = `
-                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
-                                                                                                                                                                                                                                                                `
+                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                                                                                                                                                                                                                                `
                             document.body.appendChild(form)
                             form.submit()
                         }

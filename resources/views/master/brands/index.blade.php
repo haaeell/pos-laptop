@@ -34,26 +34,34 @@
                     <tr>
                         <th width="5%">#</th>
                         <th>Nama Brand</th>
+                        <th>Produk Tersedia</th>
                         <th width="15%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($brands as $i => $brand)
-                        <tr>
-                            <td>{{ $i + 1 }}</td>
-                            <td class="font-medium">{{ $brand->name }}</td>
-                            <td class="text-center space-x-2">
-                                <button onclick='openEditModal(@json($brand))'
-                                    class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500 transition">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                <tr>
+                                    <td>{{ $i + 1 }}</td>
+                                    <td class="font-medium">{{ $brand->name }}</td>
+                                    <td class="px-4 py-3 ">
+                                        <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $brand->available_products_count > 0
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-200 text-slate-500' }}">
+                                            {{ $brand->available_products_count }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center space-x-2">
+                                        <button onclick='openEditModal(@json($brand))'
+                                            class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500 transition">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
 
-                                <button onclick="deleteBrand({{ $brand->id }})"
-                                    class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
+                                        <button onclick="deleteBrand({{ $brand->id }})"
+                                            class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -85,7 +93,7 @@
                     <div class="relative mt-1">
                         <i class="fa-solid fa-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input type="text" name="name" id="brandName" required class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm
-                                focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500">
+                                                    focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500">
                     </div>
                 </div>
 
@@ -165,9 +173,9 @@
                             form.method = 'POST'
                             form.action = `/brands/${id}`
                             form.innerHTML = `
-                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                            <input type="hidden" name="_method" value="DELETE">
-                                        `
+                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                                `
                             document.body.appendChild(form)
                             form.submit()
                         }

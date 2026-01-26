@@ -3,11 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Katalog Elektronik</title>
+    <title>Barokah Computer | Daftar Produk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/jpeg" href="{{ asset('logo.jpeg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo.jpeg') }}">
 
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -51,33 +53,42 @@
     <header class="bg-white border-b">
         <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-            <!-- LEFT : LOGO + STORE INFO -->
+            @php
+                $logo = $settings['logo'] ?? 'logo.jpeg';
+                $namaToko = $settings['nama_toko'] ?? 'Barokah Computer';
+                $alamat = $settings['alamat'] ?? 'Alamat toko belum diatur';
+                $jamBuka = $settings['jam_buka'] ?? '09.00 – 21.00';
+            @endphp
             <div class="flex items-center gap-4">
                 <!-- LOGO -->
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600
-                       flex items-center justify-center text-white text-2xl font-bold">
-                    E
+                <div class="w-14">
+                    <img src="{{ asset('storage/' . $logo) }}" alt=" {{ asset($logo) }}"
+                        class="w-full h-full object-cover">
                 </div>
 
                 <!-- STORE INFO -->
                 <div>
                     <h1 class="text-lg font-bold leading-tight">
-                        Barokah Computer
+                        {{ $namaToko }}
                     </h1>
                     <p class="text-sm text-gray-500 flex items-center gap-2">
                         <i class="fa-solid fa-location-dot text-indigo-600"></i>
-                        Jl. Sudirman No. 88, Jakarta
+                        {{ $alamat }}
                     </p>
                 </div>
             </div>
 
             <!-- RIGHT : CONTACT -->
             <div class="flex items-center gap-3">
-                <a href="https://wa.me/6281234567890" target="_blank" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
-                       text-white text-sm font-semibold transition">
-                    <i class="fa-brands fa-whatsapp"></i>
-                    WhatsApp
-                </a>
+                @foreach($contacts as $contact)
+                    <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
+                        target="_blank"
+                        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
+                                                                                                                                                    text-white text-sm font-semibold transition">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        {{ $contact->label }}
+                    </a>
+                @endforeach
 
                 <span class="hidden md:flex items-center gap-2 text-sm text-gray-500">
                     <i class="fa-solid fa-clock text-indigo-600"></i>
@@ -139,43 +150,164 @@
         <div id="pagination" class="flex justify-center gap-2 mt-12"></div>
     </section>
 
+    <!-- ================= FOOTER ================= -->
+    <footer class="bg-slate-900 text-slate-300">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+                <!-- ===== STORE INFO ===== -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <img src="/logo.jpeg" class="w-12 h-12 rounded-xl bg-white p-1" alt="Barokah Computer">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">
+                                {{ $namaToko }}
+                            </h3>
+
+                            <p class="text-sm leading-relaxed text-slate-400">
+                                {{ $settings['deskripsi'] ?? 'Laptop & elektronik berkualitas dengan harga terbaik.' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="text-sm leading-relaxed text-slate-400">
+                        Menyediakan laptop, aksesoris, dan perangkat elektronik berkualitas
+                        dengan harga terbaik dan pelayanan terpercaya.
+                    </p>
+
+                    <div class="mt-5 space-y-2 text-sm">
+                        <p class="flex items-start gap-2 text-sm mt-3">
+                            <i class="fa-solid fa-location-dot text-indigo-400 mt-1"></i>
+                            <span>{{ $alamat }}</span>
+                        </p>
+
+                        <p class="flex items-center gap-2 text-sm mt-2">
+                            <i class="fa-solid fa-clock text-indigo-400"></i>
+                            {{ $jamBuka }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ===== CONTACT ===== -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Hubungi Kami</h4>
+                    <div class="space-y-3 text-sm">
+
+
+                        @foreach($contacts as $contact)
+                            <a hhref="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
+                                target="_blank" class="flex items-center gap-3 cursor-pointer hover:text-white transition">
+                                <i class="fa-brands fa-whatsapp text-green-400 text-lg"></i>
+                                {{ $contact->label }}
+                            </a>
+                        @endforeach
+
+                        <a href="https://maps.app.goo.gl/VtWx59cyPptgUwtp6" target="_blank"
+                            class="flex items-center gap-3 hover:text-white transition">
+                            <i class="fa-solid fa-map-location-dot text-indigo-400 text-lg"></i>
+                            Buka di Google Maps
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ===== GOOGLE MAPS ===== -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Lokasi Toko</h4>
+
+                    <div class="rounded-2xl overflow-hidden border border-slate-700">
+                        @php
+                            $lat = $settings['latitude'] ?? '-6.4122927';
+                            $lng = $settings['longitude'] ?? '107.6991343';
+                        @endphp
+
+                        <div class="rounded-2xl overflow-hidden border shadow-sm">
+                            <iframe src="https://www.google.com/maps?q={{ $lat }},{{ $lng }}&z=16&output=embed"
+                                class="w-full h-64 border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===== COPYRIGHT ===== -->
+            <div class="border-t border-slate-800 mt-12 pt-6 text-center text-sm text-slate-500">
+                © {{ date('Y') }} <span class="text-white font-medium">Barokah Computer</span>. All rights reserved.
+            </div>
+
+        </div>
+    </footer>
+
+
+
 
     <!-- ================= MODAL ================= -->
-    <div id="modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div id="modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm
+       md:items-center md:justify-center
+       overflow-y-auto">
 
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 relative">
+        <!-- Modal Container -->
+        <div class="relative bg-white rounded-3xl w-full md:max-w-lg
+           mx-auto my-6 md:my-0
+           max-h-[90vh] flex flex-col shadow-xl">
 
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <!-- CLOSE -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
 
-            <div id="m-image"
-                class="h-48 bg-gray-100 rounded-2xl flex items-center justify-center mb-6 overflow-hidden">
+            <!-- IMAGE -->
+            <div id="m-image" class="h-48 md:h-56 bg-gray-100 rounded-t-3xl
+               flex items-center justify-center overflow-hidden">
             </div>
 
+            <!-- CONTENT (SCROLLABLE) -->
+            <div class="p-6 overflow-y-auto">
 
-            <h3 id="m-name" class="text-xl font-semibold"></h3>
-            <p id="m-code" class="text-sm text-gray-500 mt-1"></p>
+                <div class="p-6 space-y-4">
 
-            <div class="flex gap-2 mt-4">
-                <span id="m-category" class="text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-700"></span>
-                <span id="m-condition" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700"></span>
-            </div>
+                    <!-- INFO PRODUK -->
+                    <div class="space-y-2">
+                        <h2 id="m-name" class="text-xl font-bold text-slate-800"></h2>
 
-            <p id="m-desc" class="text-sm text-gray-600 mt-5 leading-relaxed"></p>
+                        <p id="m-code" class="text-sm text-slate-500"></p>
 
-            <div class="mt-6 flex justify-between items-center">
-                <span id="m-price" class="text-2xl font-bold text-indigo-600"></span>
+                        <div class="flex gap-2">
+                            <span id="m-category"
+                                class="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-600 font-semibold">
+                            </span>
+                            <span id="m-condition"
+                                class="px-3 py-1 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">
+                            </span>
+                        </div>
+                    </div>
 
-                <a href="https://wa.me/6281234567890" target="_blank"
-                    class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-semibold">
-                    <i class="fa-brands fa-whatsapp mr-2"></i>Chat Penjual
-                </a>
+                    <!-- DESKRIPSI -->
+                    <div id="m-desc" class="text-sm text-slate-600 leading-relaxed border-t pt-3">
+                    </div>
+
+                </div>
+                <div class="border-t bg-white px-6 py-4 sticky bottom-0 rounded-b-xl">
+
+                    <div class="flex items-center justify-between gap-4">
+                        <!-- HARGA -->
+                        <div>
+                            <p class="text-xs text-slate-400">Harga</p>
+                            <p id="m-price" class="text-2xl font-bold text-indigo-600"></p>
+                        </div>
+
+                        <!-- WHATSAPP BUTTONS -->
+                        <div id="wa-buttons" class="flex flex-col gap-2 min-w-[160px]">
+                        </div>
+                    </div>
+
+                </div>
+
+
             </div>
         </div>
     </div>
-
-
 
 
     <!-- Select2 JS -->
@@ -254,8 +386,10 @@
             pag.innerHTML += `
         <button ${meta.current_page === 1 ? 'disabled' : ''}
             onclick="goPage(${meta.current_page - 1})"
-            class="px-4 py-2 rounded-lg border text-sm
-            ${meta.current_page === 1 ? 'text-gray-400' : 'hover:bg-indigo-50'}">
+            class="px-4 py-2 rounded-lg text-sm font-medium
+            ${meta.current_page === 1
+                    ? 'text-gray-400'
+                    : 'bg-white border hover:bg-indigo-50'}">
             ‹
         </button>
     `;
@@ -264,10 +398,10 @@
             for (let i = 1; i <= meta.last_page; i++) {
                 pag.innerHTML += `
             <button onclick="goPage(${i})"
-                class="px-4 py-2 rounded-lg text-sm
+                class="px-4 py-2 rounded-lg text-sm font-semibold transition
                 ${i === meta.current_page
-                        ? 'bg-indigo-600 text-white'
-                        : 'border hover:bg-indigo-50'}">
+                        ? 'bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600 text-white shadow'
+                        : 'bg-white border hover:bg-indigo-50'}">
                 ${i}
             </button>
         `;
@@ -277,12 +411,15 @@
             pag.innerHTML += `
         <button ${meta.current_page === meta.last_page ? 'disabled' : ''}
             onclick="goPage(${meta.current_page + 1})"
-            class="px-4 py-2 rounded-lg border text-sm
-            ${meta.current_page === meta.last_page ? 'text-gray-400' : 'hover:bg-indigo-50'}">
+            class="px-4 py-2 rounded-lg text-sm font-medium
+            ${meta.current_page === meta.last_page
+                    ? 'text-gray-400'
+                    : 'bg-white border hover:bg-indigo-50'}">
             ›
         </button>
     `;
         }
+
         function goPage(page) {
             currentPage = page;
             loadProducts();
@@ -308,7 +445,7 @@
                     </div>
 
                     <button onclick='openModal(${JSON.stringify(p)})'
-                        class="mt-3 w-full text-xs py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                        class="mt-3 w-full text-xs py-2 rounded-lg bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600 text-white hover:bg-indigo-700">
                         <i class="fa-solid fa-eye mr-1"></i>Lihat Detail
                     </button>
                 </div>
@@ -320,12 +457,44 @@
             document.getElementById('m-code').innerText = `Kode Produk: ${p.code}`;
             document.getElementById('m-category').innerText = p.category;
             document.getElementById('m-condition').innerText = p.condition === 'used' ? 'Bekas' : 'Baru';
-            document.getElementById('m-desc').innerText = p.description || 'Tidak ada deskripsi.';
+            document.getElementById('m-desc').innerHTML =
+                p.description
+                    ? p.description
+                    : `<span class="italic text-slate-400">
+              Deskripsi produk belum tersedia.
+          </span>`;
+
+
             document.getElementById('m-price').innerText = formatPrice(p.price);
             const imageContainer = document.getElementById('m-image');
             imageContainer.innerHTML = p.image
                 ? `<img src="/storage/${p.image}" class="w-full h-full object-contain">`
                 : `<i class="fa-solid fa-image text-slate-300 text-9xl"></i>`;
+
+            const contacts = @json($contacts);
+            const waContainer = document.getElementById('wa-buttons');
+            waContainer.innerHTML = '';
+
+            contacts.forEach(c => {
+                const text = encodeURIComponent(
+                    `${c.whatsapp_text}\n\nProduk: ${p.name}\nHarga: ${formatPrice(p.price)}`
+                );
+
+                waContainer.innerHTML += `
+    <a href="https://wa.me/${c.phone}?text=${text}"
+       target="_blank"
+       class="flex items-center justify-center gap-2
+              bg-green-500 hover:bg-green-600
+              text-white px-4 py-2
+              rounded-lg
+              text-sm font-semibold
+              shadow-sm transition">
+        <i class="fa-brands fa-whatsapp"></i>
+        ${c.label}
+    </a>
+`;
+
+            });
 
             document.getElementById('modal').classList.remove('hidden');
             document.getElementById('modal').classList.add('flex');
@@ -339,9 +508,12 @@
         function formatPrice(v) {
             return new Intl.NumberFormat('id-ID', {
                 style: 'currency',
-                currency: 'IDR'
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
             }).format(v);
         }
+
 
         function skeleton() {
             return Array(10).fill(`

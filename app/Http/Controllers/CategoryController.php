@@ -10,9 +10,13 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        return view('master.categories.index', [
-            'categories' => Category::latest()->get()
-        ]);
+        $categories = Category::withCount([
+            'products as available_products_count' => function ($query) {
+                $query->where('status', 'available');
+            }
+        ])->latest()->get();
+
+        return view('master.categories.index', compact('categories'));
     }
 
     public function store(Request $request)

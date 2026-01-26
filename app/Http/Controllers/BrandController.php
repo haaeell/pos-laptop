@@ -10,9 +10,13 @@ class BrandController extends Controller
 {
     public function index()
     {
-        return view('master.brands.index', [
-            'brands' => Brand::latest()->get()
-        ]);
+        $brands = Brand::withCount([
+            'products as available_products_count' => function ($query) {
+                $query->where('status', 'available');
+            }
+        ])->latest()->get();
+
+        return view('master.brands.index', compact('brands'));
     }
 
     public function store(Request $request)

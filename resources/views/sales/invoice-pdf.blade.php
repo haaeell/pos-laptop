@@ -182,8 +182,17 @@
             <tr>
                 <td width="50%">
                     <span class="info-title">Ditagihkan Kepada:</span>
-                    <strong>Pelanggan </strong>
+                    <strong>
+                        {{ $sale->customer_name ?? 'Pelanggan Umum' }}
+                    </strong><br>
+
+                    @if($sale->customer_phone)
+                        <span style="font-size:10px; color:#6b7280;">
+                            HP: {{ $sale->customer_phone }}
+                        </span>
+                    @endif
                 </td>
+
                 <td width="50%" class="text-right">
                     <span class="info-title">Tanggal Transaksi:</span>
                     <strong>{{ $sale->created_at->format('d F Y') }}</strong>

@@ -81,6 +81,8 @@ class SaleController extends Controller
             $sale = Sale::create([
                 'invoice_number' => 'INV-' . date('Ymd') . '-' . str_pad(Sale::count() + 1, 4, '0', STR_PAD_LEFT),
                 'user_id'        => Auth::id(),
+                'customer_name'  => $request->customer_name,
+                'customer_phone' => $request->customer_phone,
                 'grand_total'    => $request->grand_total,
                 'benefit'        => $request->benefit,
                 'payment_method' => $request->payment_method,

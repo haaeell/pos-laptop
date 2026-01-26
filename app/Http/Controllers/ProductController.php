@@ -8,9 +8,9 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
-use Storage;
 
 class ProductController extends Controller
 {
@@ -55,6 +55,7 @@ class ProductController extends Controller
             'purchase_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'description' => 'nullable'
         ], [
             'product_code.required' => 'Kode produk harus diisi',
             'product_code.unique' => 'Kode produk sudah digunakan',
@@ -65,7 +66,10 @@ class ProductController extends Controller
             'purchase_price.required' => 'Harga beli harus diisi',
             'purchase_price.numeric' => 'Harga beli harus berupa angka',
             'selling_price.required' => 'Harga jual harus diisi',
-            'selling_price.numeric' => 'Harga jual harus berupa angka'
+            'selling_price.numeric' => 'Harga jual harus berupa angka',
+            'image.image' => 'File harus berupa gambar',
+            'image.mimes' => 'Format file harus .jpg, .jpeg, atau .png',
+            'image.max' => 'Ukuran file maksimal 2MB'
         ]);
 
         if ($request->hasFile('image')) {
@@ -87,6 +91,7 @@ class ProductController extends Controller
             'purchase_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'description' => 'nullable'
         ]);
 
         $data = $request->all();

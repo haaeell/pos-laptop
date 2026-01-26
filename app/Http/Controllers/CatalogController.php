@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Contact;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
@@ -14,6 +16,8 @@ class CatalogController extends Controller
         return view('welcome', [
             'categories' => Category::orderBy('name')->get(),
             'brands'     => Brand::orderBy('name')->get(),
+            'contacts'   => Contact::where('is_active', true)->get(),
+            'settings'   => Setting::pluck('value', 'key'),
         ]);
     }
 
@@ -37,7 +41,7 @@ class CatalogController extends Controller
             $query->where('brand_id', $request->brand);
         }
 
-        $products = $query->latest()->paginate(10); // ⬅️ jumlah per halaman
+        $products = $query->latest()->paginate(10);
 
         return response()->json([
             'data' => $products->map(fn($p) => [

@@ -17,6 +17,8 @@ class Sale extends Model
         'benefit',
         'payment_method',
         'payment_status',
+        'customer_name',
+        'customer_phone',
     ];
 
     protected $casts = [

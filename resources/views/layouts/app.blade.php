@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Admin') }}</title>
+    <title>@yield('title', 'Barokah Computer')</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('logo.jpeg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo.jpeg') }}">
 
     <!-- Font -->
     <link href="https://fonts.bunny.net/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
@@ -81,8 +83,8 @@
         transition-all duration-300 flex flex-col">
 
             <!-- LOGO -->
-            <div class="h-16 flex items-center px-6 text-lg font-semibold text-indigo-600 border-b">
-                <i class="fa-solid fa-store mr-2"></i> Barokah Computer
+            <div class="h-16 flex items-center px-10 text-sm font-semibold border-b">
+                <img src="/logo.jpeg" class="w-8 h-8" alt=""> Barokah Computer
             </div>
 
             <!-- NAV -->
@@ -141,19 +143,24 @@
                     <i class="fa-solid fa-chart-line w-5"></i>
                     Laporan Penjualan
                 </a>
-            </nav>
 
-            <!-- LOGOUT -->
-            <div class="p-4 border-t">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="w-full bg-red-500 flex items-center justify-center gap-2 px-4 py-2 rounded-xl
-                    text-white hover:bg-red-400 transition">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        Logout
-                    </button>
-                </form>
-            </div>
+                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Pengaturan
+                </div>
+
+                <a href="/contacts"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('contacts*') }}">
+                    <i class="fa-brands fa-whatsapp w-5"></i>
+                    Nomor WhatsApp
+                </a>
+
+                <a href="/settings"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('settings*') }}">
+                    <i class="fa-solid fa-gear w-5"></i>
+                    Setting Toko
+                </a>
+
+            </nav>
         </aside>
 
 
@@ -167,14 +174,39 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
-                <div class="flex items-center gap-3 ml-auto">
-                    <div class="text-right hidden sm:block">
-                        <div class="text-sm font-semibold">{{ Auth::user()->name ?? 'User' }}</div>
-                        <div class="text-xs text-slate-400">Administrator</div>
+                <div class="relative ml-auto" id="profileDropdown">
+                    <button type="button" class="flex items-center gap-3 focus:outline-none" id="profileBtn">
+
+                        <div class="text-right hidden sm:block">
+                            <div class="text-sm font-semibold">{{ Auth::user()->name }}</div>
+                            <div class="text-xs text-slate-400">Administrator</div>
+                        </div>
+
+                        <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}"
+                            class="w-9 h-9 rounded-full border">
+                    </button>
+
+                    <!-- DROPDOWN -->
+                    <div id="profileMenu" class="absolute right-0 mt-3 w-48 bg-white border rounded-xl shadow-lg
+                               opacity-0 invisible transition z-50">
+
+                        <a href="{{ route('profile.edit') }}"
+                            class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-slate-100 rounded-t-xl">
+                            <i class="fa-solid fa-user"></i>
+                            Profile
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-3 text-sm
+                                       text-red-600 hover:bg-red-50 rounded-b-xl">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                Logout
+                            </button>
+                        </form>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name ?? 'User' }}"
-                        class="w-9 h-9 rounded-full border">
                 </div>
+
             </header>
 
             <!-- MAIN -->
@@ -211,6 +243,15 @@
             })
 
             $('.datatable').DataTable({ responsive: true, pageLength: 10 })
+
+            $('#profileBtn').on('click', function (e) {
+                e.stopPropagation()
+                $('#profileMenu').toggleClass('opacity-0 invisible')
+            })
+
+            $(document).on('click', function () {
+                $('#profileMenu').addClass('opacity-0 invisible')
+            })
         })
     </script>
 
