@@ -49,7 +49,17 @@ class BrandController extends Controller
 
     public function destroy($id)
     {
-        Brand::findOrFail($id)->delete();
+        $brand = Brand::withCount('products')->findOrFail($id);
+
+        if ($brand->products_count > 0) {
+            return redirect()->back()->with(
+                'error',
+                'Brand tidak bisa dihapus karena masih digunakan oleh produk'
+            );
+        }
+
+        $brand->delete();
+
         return redirect()->back()->with('success', 'Brand berhasil dihapus');
     }
 }

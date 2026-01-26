@@ -109,13 +109,24 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
-        if ($product->image) {
+        $product = Product::withCount(['saleItem', 'saleBonus'])->findOrFail($id);
+
+        if ($product->sale_item_count > 0 || $product->sale_bonus_count > 0) {
+            return redirect()->back()->with(
+                'error',
+                'Produk tidak bisa dihapus karena masih digunakan di transaksi atau bonus'
+            );
+        }
+
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
             Storage::disk('public')->delete($product->image);
         }
+
         $product->delete();
-        return redirect()->back()->with('success', 'Produk dihapus');
+
+        return redirect()->back()->with('success', 'Produk berhasil dihapus');
     }
+
 
     public function template()
     {
