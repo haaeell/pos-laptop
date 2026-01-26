@@ -26,18 +26,17 @@ class TemplateProductExport implements FromArray, WithHeadings, WithStyles
             'Kategori',
             'Brand',
             'Harga Beli',
-            'Harga Jual'
+            'Harga Jual',
+            'Deskripsi'
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Bold header dan center
-        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:F1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:G1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-        // Lebar kolom otomatis agar mudah dibaca
-        foreach (range('A', 'F') as $col) {
+        foreach (range('A', 'G') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

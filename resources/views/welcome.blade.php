@@ -84,7 +84,7 @@
                     <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
                         target="_blank"
                         class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
-                                                                                                                                                                                            text-white text-sm font-semibold transition">
+                                                                                                                                                                                                text-white text-sm font-semibold transition">
                         <i class="fa-brands fa-whatsapp"></i>
                         {{ $contact->label }}
                     </a>
@@ -196,7 +196,7 @@
 
 
                         @foreach($contacts as $contact)
-                            <a hhref="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
+                            <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
                                 target="_blank" class="flex items-center gap-3 cursor-pointer hover:text-white transition">
                                 <i class="fa-brands fa-whatsapp text-green-400 text-lg"></i>
                                 {{ $contact->label }}

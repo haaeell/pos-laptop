@@ -91,8 +91,8 @@
                                     class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">Batal</button>
                                 <button type="submit" id="importBtn"
                                     class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
-                                                                                                               rounded-xl flex items-center justify-center gap-2
-                                                                                                               disabled:opacity-60 disabled:cursor-not-allowed">
+                                                                                                                               rounded-xl flex items-center justify-center gap-2
+                                                                                                                               disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span class="btn-text">Proses Import</span>
                                     <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -154,7 +154,7 @@
                             value="{{ request('min_price') ? number_format(request('min_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                                                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -175,7 +175,7 @@
                             value="{{ request('max_price') ? number_format(request('max_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                              focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                                              focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -252,10 +252,11 @@
                             <td class="text-nowrap">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                {{ $product->status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                    {{ ucfirst($product->status == 'sold' ? 'Terjual' : 'Tersedia') }}
+                                                                        {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
+                                    {{ $product->status === 'sold' ? 'Terjual' : ($product->status === 'bonus' ? 'Bonus' : 'Tersedia') }}
                                 </span>
                             </td>
+
                             <td class="text-center text-nowrap space-x-2">
                                 <button onclick='openEditModal(@json($product))'
                                     class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500">
@@ -556,9 +557,9 @@
                             form.method = 'POST'
                             form.action = `/products/${id}`
                             form.innerHTML = `
-                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
-                                                                                                                                                                                                                                                                                                                                                `
+                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                                                                                                                                                                                                                                                                `
                             document.body.appendChild(form)
                             form.submit()
                         }

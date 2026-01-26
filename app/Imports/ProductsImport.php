@@ -35,6 +35,7 @@ class ProductsImport implements ToModel, WithHeadingRow
             'brand_id' => $brand?->id,
             'purchase_price' => $row['harga_beli'],
             'selling_price' => $row['harga_jual'],
+            'description' => $row['deskripsi'],
         ]);
     }
 }
