@@ -53,6 +53,45 @@
                 <p class="text-gray-500 text-sm mt-1">Gunakan akun terdaftar Anda untuk akses panel.</p>
             </div>
 
+            {{-- Alert Error Container --}}
+            @if ($errors->any() || session('error'))
+                <div class="mb-6 overflow-hidden rounded-xl border border-red-200 bg-white shadow-sm flex" role="alert">
+                    {{-- Accent Bar --}}
+                    <div class="w-1.5 bg-red-500"></div>
+
+                    <div class="p-4 flex flex-grow items-start">
+                        {{-- Icon Section --}}
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                        </div>
+
+                        {{-- Content Section --}}
+                        <div class="ml-4 flex-grow">
+                            <h3 class="text-sm font-semibold text-red-800 uppercase tracking-wide">
+                                Terjadi Kesalahan
+                            </h3>
+
+                            <div class="mt-1 text-sm text-red-700 leading-relaxed">
+                                @if ($errors->any())
+                                    <ul class="list-disc list-inside space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <p>{{ session('error') }}</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="this.parentElement.parentElement.remove()"
+                            class="ml-auto text-red-400 hover:text-red-600 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}" class="space-y-5">
                 @csrf
 
