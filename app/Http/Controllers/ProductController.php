@@ -97,7 +97,6 @@ class ProductController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('image')) {
-            // Hapus foto lama jika ada
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }

@@ -43,13 +43,23 @@
                                 <tr>
                                     <td>{{ $i + 1 }}</td>
                                     <td class="font-medium">{{ $category->name }}</td>
-                                    <td class="px-4 py-3 ">
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full
-                                                                                                                    {{ $category->available_products_count > 0
+                                    <td class="px-4 py-3">
+                                        <div class="inline-flex items-center gap-2">
+                                            <span class="px-3 py-1 text-xs font-semibold rounded-full
+                                                                                                                {{ $category->available_products_count > 0
                         ? 'bg-emerald-100 text-emerald-700'
                         : 'bg-slate-200 text-slate-500' }}">
-                                            {{ $category->available_products_count }}
-                                        </span>
+                                                {{ $category->available_products_count }}
+                                            </span>
+
+                                            <a href="/products?category={{ $category->id }}"
+                                                class="text-xs font-medium text-indigo-600 hover:text-indigo-800
+                                                                                                                      transition inline-flex items-center gap-1"
+                                                title="Lihat produk">
+                                                <i class="fa-solid fa-eye text-[11px]"></i>
+                                                <span class="hidden sm:inline">Lihat</span>
+                                            </a>
+                                        </div>
                                     </td>
                                     <td class=" space-x-2">
                                         <button onclick='openEditModal(@json($category))'
@@ -93,8 +103,9 @@
                     </label>
                     <div class="relative mt-1">
                         <i class="fa-solid fa-font absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                        <input type="text" name="name" id="categoryName" required class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm
-                                                            focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500">
+                        <input type="text" name="name" id="categoryName" required
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm
+                                                                focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500">
                     </div>
                 </div>
 
@@ -175,9 +186,9 @@
                             form.method = 'POST'
                             form.action = `/categories/${id}`
                             form.innerHTML = `
-                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
-                                                                                                                                `
+                                                                                                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                            <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                        `
                             document.body.appendChild(form)
                             form.submit()
                         }

@@ -84,7 +84,7 @@
                     <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
                         target="_blank"
                         class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
-                                                                                                                                                    text-white text-sm font-semibold transition">
+                                                                                                                                                        text-white text-sm font-semibold transition">
                         <i class="fa-brands fa-whatsapp"></i>
                         {{ $contact->label }}
                     </a>
@@ -92,7 +92,7 @@
 
                 <span class="hidden md:flex items-center gap-2 text-sm text-gray-500">
                     <i class="fa-solid fa-clock text-indigo-600"></i>
-                    Buka 09.00 – 21.00
+                    Buka {{ $jamBuka }}
                 </span>
             </div>
 
