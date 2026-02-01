@@ -17,6 +17,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     <style>
         body {
@@ -43,6 +44,24 @@
         .select2-container--default .select2-selection--single:focus {
             border-color: #2563eb;
             outline: none;
+        }
+
+        .modalThumbSwiper .swiper-slide {
+            width: 72px;
+            height: 72px;
+            opacity: 0.4;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .modalThumbSwiper .swiper-slide-thumb-active {
+            opacity: 1;
+            border: 2px solid #f97316;
+        }
+
+        .modalThumbSwiper {
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -84,7 +103,7 @@
                     <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
                         target="_blank"
                         class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
-                                                                                                                                                                                                text-white text-sm font-semibold transition">
+                                                                                                                                                                                                                                                                                        text-white text-sm font-semibold transition">
                         <i class="fa-brands fa-whatsapp"></i>
                         {{ $contact->label }}
                     </a>
@@ -247,21 +266,28 @@
 
         <!-- Modal Container -->
         <div class="relative bg-white rounded-3xl w-full md:max-w-lg
-           mx-auto my-6 md:my-0
-           max-h-[90vh] flex flex-col shadow-xl">
+        mx-auto my-6 md:my-0
+        h-[90vh] flex flex-col shadow-xl overflow-hidden">
 
             <!-- CLOSE -->
             <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
+            <div class="bg-white rounded-t-3xl overflow-hidden shrink-0">
 
-            <!-- IMAGE -->
-            <div id="m-image" class="h-48 md:h-56 bg-gray-100 rounded-t-3xl
-               flex items-center justify-center overflow-hidden">
+
+                <div class="swiper modalMainSwiper h-64 md:h-72 bg-white">
+                    <div id="m-main-swiper" class="swiper-wrapper"></div>
+                </div>
+
+                <div class="swiper modalThumbSwiper h-24 px-3 py-3 bg-white shrink-0">
+
+                    <div id="m-thumb-swiper" class="swiper-wrapper"></div>
+                </div>
+
             </div>
 
-            <!-- CONTENT (SCROLLABLE) -->
-            <div class="p-6 overflow-y-auto">
+            <div class="flex-1 overflow-y-auto">
 
                 <div class="p-6 space-y-4">
 
@@ -312,6 +338,7 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         $(document).ready(function () {
             $('#category').select2({
@@ -455,20 +482,74 @@
             document.getElementById('m-code').innerText = `Kode Produk: ${p.code}`;
             document.getElementById('m-category').innerText = p.category;
             document.getElementById('m-condition').innerText = p.condition === 'used' ? 'Bekas' : 'Baru';
+
             document.getElementById('m-desc').innerHTML =
                 p.description
                     ? p.description
-                    : `<span class="italic text-slate-400">
-              Deskripsi produk belum tersedia.
-          </span>`;
-
+                    : `<span class="italic text-slate-400">Deskripsi produk belum tersedia.</span>`;
 
             document.getElementById('m-price').innerText = formatPrice(p.price);
-            const imageContainer = document.getElementById('m-image');
-            imageContainer.innerHTML = p.image
-                ? `<img src="/storage/${p.image}" class="w-full h-full object-contain">`
-                : `<i class="fa-solid fa-image text-slate-300 text-9xl"></i>`;
 
+            /* ================= SWIPER IMAGE (MAIN + THUMB) ================= */
+            const mainWrapper = document.getElementById('m-main-swiper');
+            const thumbWrapper = document.getElementById('m-thumb-swiper');
+
+            mainWrapper.innerHTML = '';
+            thumbWrapper.innerHTML = '';
+
+            // FOTO UTAMA (product.image)
+            if (p.image) {
+                mainWrapper.innerHTML += `
+        <div class="swiper-slide flex items-center justify-center bg-white">
+            <img src="/storage/${p.image}" class="max-h-full w-auto object-contain">
+        </div>
+    `;
+
+                thumbWrapper.innerHTML += `
+        <div class="swiper-slide">
+            <img src="/storage/${p.image}" class="w-full h-full object-cover">
+        </div>
+    `;
+            }
+
+            // FOTO TAMBAHAN (product.images)
+            if (p.images && p.images.length) {
+                p.images.forEach(img => {
+                    mainWrapper.innerHTML += `
+            <div class="swiper-slide flex items-center justify-center bg-white">
+                <img src="/storage/${img.image}" class="max-h-full w-auto object-contain">
+            </div>
+        `;
+
+                    thumbWrapper.innerHTML += `
+            <div class="swiper-slide">
+                <img src="/storage/${img.image}" class="w-full h-full object-cover">
+            </div>
+        `;
+                });
+            }
+
+            // DESTROY SWIPER LAMA
+            if (window.thumbSwiper) window.thumbSwiper.destroy(true, true);
+            if (window.mainSwiper) window.mainSwiper.destroy(true, true);
+
+            // INIT THUMB
+            window.thumbSwiper = new Swiper('.modalThumbSwiper', {
+                spaceBetween: 8,
+                slidesPerView: 'auto',
+                freeMode: true,
+                watchSlidesProgress: true,
+            });
+
+            // INIT MAIN
+            window.mainSwiper = new Swiper('.modalMainSwiper', {
+                spaceBetween: 10,
+                thumbs: {
+                    swiper: window.thumbSwiper,
+                },
+            });
+
+            /* ================= WHATSAPP ================= */
             const contacts = @json($contacts);
             const waContainer = document.getElementById('wa-buttons');
             waContainer.innerHTML = '';
@@ -479,19 +560,16 @@
                 );
 
                 waContainer.innerHTML += `
-    <a href="https://wa.me/${c.phone}?text=${text}"
-       target="_blank"
-       class="flex items-center justify-center gap-2
-              bg-green-500 hover:bg-green-600
-              text-white px-4 py-2
-              rounded-lg
-              text-sm font-semibold
-              shadow-sm transition">
-        <i class="fa-brands fa-whatsapp"></i>
-        ${c.label}
-    </a>
-`;
-
+            <a href="https://wa.me/${c.phone}?text=${text}"
+               target="_blank"
+               class="flex items-center justify-center gap-2
+                      bg-green-500 hover:bg-green-600
+                      text-white px-4 py-2 rounded-lg
+                      text-sm font-semibold shadow transition">
+                <i class="fa-brands fa-whatsapp"></i>
+                ${c.label}
+            </a>
+        `;
             });
 
             document.getElementById('modal').classList.remove('hidden');

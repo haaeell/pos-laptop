@@ -19,12 +19,15 @@ class Sale extends Model
         'payment_status',
         'customer_name',
         'customer_phone',
+        'sales_person_id',
+        'fee_sales'
     ];
 
     protected $casts = [
         'discount'     => 'decimal:2',
         'grand_total'  => 'decimal:2',
         'benefit'      => 'decimal:2',
+        'fee_sales'   => 'decimal:2',
     ];
 
     /* ================= RELATIONS ================= */
@@ -33,6 +36,12 @@ class Sale extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function salesPerson()
+    {
+        return $this->belongsTo(SalesPerson::class);
+    }
+
 
     public function items()
     {

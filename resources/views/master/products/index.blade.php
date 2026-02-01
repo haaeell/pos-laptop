@@ -91,8 +91,8 @@
                                     class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">Batal</button>
                                 <button type="submit" id="importBtn"
                                     class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
-                                                                                                                               rounded-xl flex items-center justify-center gap-2
-                                                                                                                               disabled:opacity-60 disabled:cursor-not-allowed">
+                                                                                                                                                                                       rounded-xl flex items-center justify-center gap-2
+                                                                                                                                                                                       disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span class="btn-text">Proses Import</span>
                                     <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -154,7 +154,7 @@
                             value="{{ request('min_price') ? number_format(request('min_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                                                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                                                                                                          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -175,7 +175,7 @@
                             value="{{ request('max_price') ? number_format(request('max_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                                              focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                                                                                                      focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -252,13 +252,13 @@
                             <td class="text-nowrap">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full
-                                                                        {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
+                                                                                                                                                                                        {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
                                     {{ $product->status === 'sold' ? 'Terjual' : ($product->status === 'bonus' ? 'Bonus' : 'Tersedia') }}
                                 </span>
                             </td>
 
                             <td class="text-center text-nowrap space-x-2">
-                                <button onclick='openEditModal(@json($product))'
+                                <button onclick='openEditModal(@json($product->load("images")))'
                                     class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -328,6 +328,34 @@
                                     class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- FOTO TAMBAHAN -->
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">
+                            Foto Tambahan (Opsional)
+                        </label>
+
+                        <!-- DROPZONE -->
+                        <div id="galleryDropzone"
+                            class="relative border-2 border-dashed border-slate-300 rounded-2xl p-6
+                                                                   text-center cursor-pointer
+                                                                   hover:border-emerald-400 hover:bg-emerald-50/40 transition">
+
+                            <input type="file" id="galleryInput" name="images[]" multiple accept="image/*"
+                                class="absolute inset-0 opacity-0 cursor-pointer">
+
+                            <i class="fa-solid fa-images text-3xl text-slate-300 mb-2"></i>
+                            <p class="text-sm font-medium text-slate-500">
+                                Klik atau seret foto ke sini
+                            </p>
+                            <p class="text-[11px] text-slate-400 mt-1">
+                                Bisa upload banyak foto (JPG, PNG)
+                            </p>
+                        </div>
+
+                        <!-- PREVIEW -->
+                        <div id="galleryPreview" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4"></div>
                     </div>
 
                     <!-- NAMA PRODUK -->
@@ -457,6 +485,88 @@
                     console.error(error);
                 });
 
+            function renderExistingGallery(images) {
+                galleryPreview.innerHTML = '';
+
+                images.forEach(img => {
+                    const div = document.createElement('div');
+                    div.className = 'relative group';
+
+                    div.innerHTML = `
+                                        <img src="/storage/${img.image}"
+                                             class="w-full h-24 object-cover rounded-xl border">
+
+                                        <button type="button"
+                                            class="absolute top-1 right-1 bg-red-600 text-white text-xs
+                                                   w-6 h-6 rounded-full flex items-center justify-center
+                                                   opacity-0 group-hover:opacity-100 transition">
+                                            ✕
+                                        </button>
+                                    `;
+
+                    galleryPreview.appendChild(div);
+                });
+            }
+
+            let galleryFiles = [];
+
+            const galleryInput = document.getElementById('galleryInput');
+            const galleryPreview = document.getElementById('galleryPreview');
+
+            galleryInput.addEventListener('change', function () {
+                handleGalleryFiles(this.files);
+            });
+
+            function handleGalleryFiles(files) {
+                [...files].forEach(file => {
+                    if (!file.type.startsWith('image/')) return;
+
+                    galleryFiles.push(file);
+
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const div = document.createElement('div');
+                        div.className = 'relative group';
+
+                        div.innerHTML = `
+                                                                                                                <img src="${e.target.result}"
+                                                                                                                    class="w-full h-24 object-cover rounded-xl border">
+
+                                                                                                                <button type="button"
+                                                                                                                    class="absolute top-1 right-1 bg-red-500 text-white text-xs
+                                                                                                                           w-6 h-6 rounded-full flex items-center justify-center
+                                                                                                                           opacity-0 group-hover:opacity-100 transition"
+                                                                                                                    onclick="removeGalleryImage(${galleryFiles.length - 1}, this)">
+                                                                                                                    ✕
+                                                                                                                </button>
+                                                                                                            `;
+
+                        galleryPreview.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                syncGalleryInput();
+            }
+
+            function removeGalleryImage(index, btn) {
+                galleryFiles.splice(index, 1);
+                btn.parentElement.remove();
+                syncGalleryInput();
+            }
+
+            function syncGalleryInput() {
+                const dataTransfer = new DataTransfer();
+                galleryFiles.forEach(file => dataTransfer.items.add(file));
+                galleryInput.files = dataTransfer.files;
+            }
+
+            function resetGallery() {
+                galleryFiles = [];
+                galleryPreview.innerHTML = '';
+                galleryInput.value = '';
+            }
+
             function handleLoadingButton(formSelector, buttonSelector) {
                 $(formSelector).on('submit', function () {
                     const btn = $(buttonSelector);
@@ -507,6 +617,8 @@
                     $('#methodField').val('')
                     form.trigger('reset')
 
+                    resetGallery();
+
                     $('#imagePreview').attr('src', '').addClass('hidden');
                     $('#imageIcon').removeClass('hidden');
                     $('#productImage').val('');
@@ -517,6 +629,8 @@
                     modal.removeClass('hidden')
                     form.attr('action', `/products/${data.id}`)
                     $('#methodField').val('PUT')
+
+                    resetGallery();
 
                     $('#productCode').val(data.product_code)
                     $('#productName').val(data.name)
@@ -537,6 +651,12 @@
                     $('#purchasePriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.purchase_price));
 
                     descriptionEditor.setData(data.description ?? '');
+
+                    if (data.images && data.images.length) {
+                        renderExistingGallery(data.images);
+                    } else {
+                        galleryPreview.innerHTML = '';
+                    }
                 }
 
                 window.closeModal = function () {
@@ -557,9 +677,9 @@
                             form.method = 'POST'
                             form.action = `/products/${id}`
                             form.innerHTML = `
-                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
-                                                                                                                                                                                                                                                                                                                                                                                `
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                `
                             document.body.appendChild(form)
                             form.submit()
                         }

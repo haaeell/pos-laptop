@@ -70,6 +70,8 @@
                             <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Grand Total</th>
                             <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Profit</th>
                             <th class="px-4 py-4 font-semibold text-center whitespace-nowrap">Pembayaran</th>
+                            <th class="px-4 py-4 font-semibold whitespace-nowrap">Sales</th>
+                            <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Fee Sales</th>
                             <th class="px-4 py-4 font-semibold text-center whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
@@ -98,7 +100,7 @@
                                 <td class="px-4 py-4  whitespace-nowrap">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                                                                                                                                                        {{ $sale->benefit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                                                                                                                                                                                                                {{ $sale->benefit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
                                         {{ $sale->benefit >= 0 ? '+' : '' }} Rp
                                         {{ number_format($sale->benefit, 0, ',', '.') }}
                                     </span>
@@ -110,6 +112,28 @@
                                         {{ strtoupper($sale->payment_method) }}
                                     </span>
                                 </td>
+
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    @if ($sale->salesPerson)
+                                        <div class="flex flex-col">
+                                            <span class="font-semibold text-slate-700">
+                                                {{ $sale->salesPerson->name }}
+                                            </span>
+                                            <span class="text-[10px] text-slate-400">
+                                                {{ $sale->salesPerson->phone }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <span class="text-xs italic text-slate-400">Tanpa Sales</span>
+                                    @endif
+                                </td>
+
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <span class="text-rose-600 font-bold">
+                                        Rp {{ number_format($sale->fee_sales ?? 0, 0, ',', '.') }}
+                                    </span>
+                                </td>
+
 
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     <div class="flex  gap-2">
@@ -149,6 +173,21 @@
             </div>
 
             <div class="p-8">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="p-4 rounded-2xl bg-slate-50 border">
+                        <p class="text-xs font-semibold text-slate-400 uppercase">Sales</p>
+                        <p id="modalSales" class="font-bold text-slate-700 mt-1">-</p>
+                        <p id="modalSalesPhone" class="text-xs text-slate-400"></p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-rose-50 border border-rose-100">
+                        <p class="text-xs font-semibold text-rose-600 uppercase">Fee Sales</p>
+                        <p id="modalFeeSales" class="text-xl font-extrabold text-rose-600 mt-1">
+                            Rp 0
+                        </p>
+                    </div>
+                </div>
+
                 <div class="rounded-2xl border border-slate-100 overflow-hidden shadow-sm bg-slate-50/30">
                     <table class="w-full text-sm">
                         <thead>
@@ -196,26 +235,36 @@
                     document.getElementById('modalProfit').innerText =
                         'Rp ' + data.benefit
 
+                    document.getElementById('modalSales').innerText =
+                        data.sales_name ?? 'Tanpa Sales'
+
+                    document.getElementById('modalSalesPhone').innerText =
+                        data.sales_phone ?? ''
+
+                    document.getElementById('modalFeeSales').innerText =
+                        'Rp ' + data.fee_sales
+
+
                     let rows = ''
 
                     data.items.forEach(item => {
                         rows += `
-                                                                                                                <tr class="border-t">
-                                                                                                                    <td class="px-3 py-2">${item.name}</td>
-                                                                                                                    <td class="px-3 py-2 text-right">Rp ${item.price}</td>
-                                                                                                                    <td class="px-3 py-2 text-right">${item.benefit}</td>
-                                                                                                                </tr>
-                                                                                                            `
+                                                                                                                                    <tr class="border-t">
+                                                                                                                                        <td class="px-3 py-2">${item.name}</td>
+                                                                                                                                        <td class="px-3 py-2 text-right">Rp ${item.price}</td>
+                                                                                                                                        <td class="px-3 py-2 text-right">${item.benefit}</td>
+                                                                                                                                    </tr>
+                                                                                                                                `
                     })
 
                     data.bonuses.forEach(item => {
                         rows += `
-                                                                                                                <tr class="border-t text-green-600">
-                                                                                                                    <td class="px-3 py-2">🎁 ${item.name}</td>
-                                                                                                                    <td class="px-3 py-2 text-right">Rp 0</td>
-                                                                                                                    <td class="px-3 py-2 text-right">${item.benefit}</td>
-                                                                                                                </tr>
-                                                                                                            `
+                                                                                                                                    <tr class="border-t text-green-600">
+                                                                                                                                        <td class="px-3 py-2">🎁 ${item.name}</td>
+                                                                                                                                        <td class="px-3 py-2 text-right">Rp 0</td>
+                                                                                                                                        <td class="px-3 py-2 text-right">${item.benefit}</td>
+                                                                                                                                    </tr>
+                                                                                                                                `
                     })
 
                     document.getElementById('modalItems').innerHTML = rows

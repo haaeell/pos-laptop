@@ -23,7 +23,7 @@ class CatalogController extends Controller
 
     public function data(Request $request)
     {
-        $query = Product::with(['category', 'brand'])
+        $query = Product::with(['category', 'brand', 'images'])
             ->where('status', 'available');
 
         if ($request->search) {
@@ -53,6 +53,7 @@ class CatalogController extends Controller
                 'category'  => $p->category->name,
                 'brand'     => $p->brand?->name,
                 'image'     => $p->image,
+                'images'    => $p->images,
                 'description' => $p->description,
             ]),
             'meta' => [

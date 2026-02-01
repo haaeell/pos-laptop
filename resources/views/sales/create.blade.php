@@ -51,11 +51,12 @@
                         </table>
                     </div>
 
-                    <button type="button" id="addItemBtn" class="mt-4 inline-flex items-center gap-2 px-4 py-2
-                                               bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl
-                                               text-white 
-                                               hover:from-indigo-700 hover:to-blue-700
-                                               transition-all duration-200 shadow-sm shadow-indigo-200">
+                    <button type="button" id="addItemBtn"
+                        class="mt-4 inline-flex items-center gap-2 px-4 py-2
+                                                                       bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl
+                                                                       text-white 
+                                                                       hover:from-indigo-700 hover:to-blue-700
+                                                                       transition-all duration-200 shadow-sm shadow-indigo-200">
                         <i class="fa-solid fa-plus text-sm"></i>
                         <span class="font-semibold">Tambah Produk</span>
                     </button>
@@ -94,6 +95,26 @@
                             <input type="text" name="customer_phone" placeholder="08xxxxxxxxxx"
                                 class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-200">
                         </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-medium text-slate-600">
+                                Sales
+                            </label>
+                            <select name="sales_person_id" id="salesPerson" class="w-full select2 text-sm">
+                                <option value="">-- Tanpa Sales --</option>
+                                @foreach($salesPeople as $sp)
+                                    <option value="{{ $sp->id }}">
+                                        {{ $sp->name }} ({{ $sp->phone }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-medium text-slate-600">
+                                Fee Sales
+                            </label>
+                            <input type="text" id="feeSalesText" class="w-full px-3 py-2 rounded-xl border text-sm">
+                            <input type="hidden" name="fee_sales" id="feeSales">
+                        </div>
 
 
                         <div class="space-y-2">
@@ -106,8 +127,8 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <button type="button" data-value="cash"
                                     class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
-                                                                                                                           bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200
-                                                                                                                           text-indigo-700 font-semibold shadow-sm transition">
+                                                                                                                                                   bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200
+                                                                                                                                                   text-indigo-700 font-semibold shadow-sm transition">
                                     <div
                                         class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 text-green-600">
                                         <i class="fa-solid fa-money-bill-wave text-sm"></i>
@@ -118,7 +139,7 @@
 
                                 <button type="button" data-value="transfer"
                                     class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
-                                                                                                                           bg-white text-slate-600 transition hover:shadow-sm">
+                                                                                                                                                   bg-white text-slate-600 transition hover:shadow-sm">
                                     <div
                                         class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
                                         <i class="fa-solid fa-building-columns text-sm"></i>
@@ -178,10 +199,10 @@
 
                         <button type="button" id="submitBtn"
                             class="w-full py-2.5 rounded-xl text-sm text-white font-semibold
-                                                                                   bg-gradient-to-r from-indigo-500 to-indigo-600
-                                                                                   hover:from-indigo-600 hover:to-indigo-700
-                                                                                   shadow-md shadow-indigo-200
-                                                                                   active:scale-[0.98] transition flex items-center justify-center gap-2">
+                                                                                                           bg-gradient-to-r from-indigo-500 to-indigo-600
+                                                                                                           hover:from-indigo-600 hover:to-indigo-700
+                                                                                                           shadow-md shadow-indigo-200
+                                                                                                           active:scale-[0.98] transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-floppy-disk text-sm"></i>
                             Simpan Transaksi
                         </button>
@@ -321,58 +342,58 @@
                 $('#emptyRow').remove()
 
                 const row = `
-                                                                                                                                                                                                                                                                        <tr class="border-ttext-sm">
-                                <td class="p-1">
-                                    <select name="items[${index}][product_id]"
-                                        class="w-full px-1 py-0.5 h-8 border rounded product-select select2 text-sm">
-                                        <option value="">-- Pilih Produk --</option>
-                                        ${products.map(p => `
-                                            <option value="${p.id}"
-                                                data-purchase="${p.purchase_price}"
-                                                data-selling="${p.selling_price}">
-                                                ${p.product_code} - ${p.name}
-                                            </option>
-                                        `).join('')}
-                                    </select>
-                                </td>
+                                                                                                                                                                                                                                                                                                <tr class="border-ttext-sm">
+                                                        <td class="p-1">
+                                                            <select name="items[${index}][product_id]"
+                                                                class="w-full px-1 py-0.5 h-8 border rounded product-select select2 text-sm">
+                                                                <option value="">-- Pilih Produk --</option>
+                                                                ${products.map(p => `
+                                                                    <option value="${p.id}"
+                                                                        data-purchase="${p.purchase_price}"
+                                                                        data-selling="${p.selling_price}">
+                                                                        ${p.product_code} - ${p.name}
+                                                                    </option>
+                                                                `).join('')}
+                                                            </select>
+                                                        </td>
 
-                                <td class="p-1">
-                                    <div class="relative">
-                                        <i class="fa-solid fa-cart-shopping absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text"
-                                            class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded purchase-text text-sm"
-                                            readonly>
-                                        <input type="hidden" name="items[${index}][purchase_price]" class="purchase-val">
-                                    </div>
-                                </td>
+                                                        <td class="p-1">
+                                                            <div class="relative">
+                                                                <i class="fa-solid fa-cart-shopping absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                                                <input type="text"
+                                                                    class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded purchase-text text-sm"
+                                                                    readonly>
+                                                                <input type="hidden" name="items[${index}][purchase_price]" class="purchase-val">
+                                                            </div>
+                                                        </td>
 
-                                <td class="p-1">
-                                    <div class="relative">
-                                        <i class="fa-solid fa-tag absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                        <input type="text"
-                                            class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded selling-text text-sm"
-                                            readonly>
-                                        <input type="hidden" name="items[${index}][selling_price]" class="selling-val">
-                                    </div>
-                                </td>
+                                                        <td class="p-1">
+                                                            <div class="relative">
+                                                                <i class="fa-solid fa-tag absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                                                <input type="text"
+                                                                    class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded selling-text text-sm"
+                                                                    readonly>
+                                                                <input type="hidden" name="items[${index}][selling_price]" class="selling-val">
+                                                            </div>
+                                                        </td>
 
-                                <td class="p-1">
-                                    <div class="relative">
-                                        <i class="fa-solid fa-pen absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                                        <input type="text"
-                                            class="w-full h-8 pl-7 px-1 border rounded final-text text-sm">
-                                        <input type="hidden" name="items[${index}][final_price]" class="final-val">
-                                    </div>
-                                </td>
+                                                        <td class="p-1">
+                                                            <div class="relative">
+                                                                <i class="fa-solid fa-pen absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                                                                <input type="text"
+                                                                    class="w-full h-8 pl-7 px-1 border rounded final-text text-sm">
+                                                                <input type="hidden" name="items[${index}][final_price]" class="final-val">
+                                                            </div>
+                                                        </td>
 
-                                <td class="p-1 text-center">
-                                    <button type="button"
-                                        class="remove-btn px-2 py-1 bg-red-500 text-white rounded text-xs">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            `
+                                                        <td class="p-1 text-center">
+                                                            <button type="button"
+                                                                class="remove-btn px-2 py-1 bg-red-500 text-white rounded text-xs">
+                                                                <i class="fa-solid fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    `
 
                 $table.append(row)
 
@@ -431,14 +452,14 @@
 
                 if (!$table.children().length) {
                     $table.html(`
-                                                                                                                                                                                                                                                                                <tr id="emptyRow">
-                                                                                                                                                                                                                                                                                    <td colspan="6" class="p-6 text-center text-slate-400">
-                                                                                                                                                                                                                                                                                        <i class="fa-solid fa-box-open text-2xl mb-2"></i>
-                                                                                                                                                                                                                                                                                        <div>Belum ada produk</div>
-                                                                                                                                                                                                                                                                                        <div class="text-xs">Klik “Tambah Produk” untuk mulai</div>
-                                                                                                                                                                                                                                                                                    </td>
-                                                                                                                                                                                                                                                                                </tr>
-                                                                                                                                                                                                                                                                            `)
+                                                                                                                                                                                                                                                                                                        <tr id="emptyRow">
+                                                                                                                                                                                                                                                                                                            <td colspan="6" class="p-6 text-center text-slate-400">
+                                                                                                                                                                                                                                                                                                                <i class="fa-solid fa-box-open text-2xl mb-2"></i>
+                                                                                                                                                                                                                                                                                                                <div>Belum ada produk</div>
+                                                                                                                                                                                                                                                                                                                <div class="text-xs">Klik “Tambah Produk” untuk mulai</div>
+                                                                                                                                                                                                                                                                                                            </td>
+                                                                                                                                                                                                                                                                                                        </tr>
+                                                                                                                                                                                                                                                                                                    `)
                 }
             })
 
@@ -475,11 +496,11 @@
                     bonusCost += purchase
 
                     $bonusInfo.append(`
-                                                                                                                        <div class="flex justify-between">
-                                                                                                                            <span>🎁 ${name}</span>
-                                                                                                                            <span class="text-red-600">-Rp ${formatRupiah(purchase)}</span>
-                                                                                                                        </div>
-                                                                                                                    `)
+                                                                                                                                                <div class="flex justify-between">
+                                                                                                                                                    <span>🎁 ${name}</span>
+                                                                                                                                                    <span class="text-red-600">-Rp ${formatRupiah(purchase)}</span>
+                                                                                                                                                </div>
+                                                                                                                                            `)
                 })
 
                 if (bonusCost > 0) {
@@ -491,16 +512,18 @@
 
                 // ================= OUTPUT =================
                 $('#grandTotal').val(total)
-                $('#benefit').val(profit)
-
                 $('#grandText').text(formatRupiah(total))
+                const feeSales = cleanNumber($('#feeSales').val())
+                profit -= feeSales
+
+                $('#benefit').val(profit)
 
                 $('#benefitText')
                     .text(formatRupiah(profit))
                     .removeClass('text-red-600 text-green-600')
                     .addClass(profit < 0 ? 'text-red-600' : 'text-green-600')
-            }
 
+            }
 
             $(document).on('click', '.payment-card', function () {
                 const $btn = $(this)
@@ -517,6 +540,14 @@
 
                 $('#paymentMethod').val($btn.data('value'))
             })
+
+            $('#feeSalesText').on('input', function () {
+                const val = cleanNumber($(this).val())
+                $(this).val(formatRupiah(val))
+                $('#feeSales').val(val)
+                calculate()
+            })
+
 
         })
     </script>

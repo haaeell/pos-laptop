@@ -50,6 +50,12 @@ class Product extends Model
         return $this->hasOne(SaleBonus::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+
     /* ================= HELPERS ================= */
 
     public function isAvailable(): bool

@@ -16,7 +16,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'brand'])->latest();
+        $query = Product::with(['category', 'brand', 'images'])->latest();
 
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
@@ -76,7 +76,17 @@ class ProductController extends Controller
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
-        Product::create($data);
+        $product = Product::create($data);
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $path = $img->store('products', 'public');
+
+                $product->images()->create([
+                    'image' => $path
+                ]);
+            }
+        }
 
         return redirect()->back()->with('success', 'Produk berhasil ditambahkan');
     }
@@ -100,8 +110,22 @@ class ProductController extends Controller
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-            $data['image'] = $request->file('image')->store('products', 'public');
+
+            $product->image = $request->file('image')
+                ->store('products', 'public');
         }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $path = $img->store('products', 'public');
+
+                $product->images()->create([
+                    'image' => $path
+                ]);
+            }
+        }
+
+        $product->update($data);
 
         $product->update($data);
         return redirect()->back()->with('success', 'Produk berhasil diperbarui');

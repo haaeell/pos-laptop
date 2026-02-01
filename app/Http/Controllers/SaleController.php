@@ -7,6 +7,7 @@ use App\Models\Sale;
 use App\Models\Product;
 use App\Models\SaleBonus;
 use App\Models\SaleItem;
+use App\Models\SalesPerson;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -38,13 +39,14 @@ class SaleController extends Controller
     public function create()
     {
         return view('sales.create', [
-            'products' => Product::where('status', 'available')->get()
+            'products' => Product::where('status', 'available')->get(),
+            'salesPeople' => SalesPerson::all()
         ]);
     }
 
     public function detail($id)
     {
-        $sale = Sale::with(['items', 'bonuses'])->findOrFail($id);
+        $sale = Sale::with(['items', 'bonuses', 'salesPerson'])->findOrFail($id);
         return response()->json([
             'invoice'      => $sale->invoice_number,
             'date'         => Carbon::parse($sale->created_at)
@@ -52,6 +54,10 @@ class SaleController extends Controller
 
             'grand_total'  => $this->rupiah($sale->grand_total),
             'benefit'      => $this->rupiah($sale->benefit),
+            'fee_sales'    => number_format($sale->fee_sales ?? 0, 0, ',', '.'),
+
+            'sales_name'   => $sale->salesPerson?->name,
+            'sales_phone' => $sale->salesPerson?->phone,
 
             'items'        => $sale->items->map(function ($item) {
                 return [
@@ -85,6 +91,8 @@ class SaleController extends Controller
                 'user_id'        => Auth::id(),
                 'customer_name'  => $request->customer_name,
                 'customer_phone' => $request->customer_phone,
+                'sales_person_id' => $request->sales_person_id,
+                'fee_sales'       => $request->fee_sales ?? 0,
                 'grand_total'    => $request->grand_total,
                 'benefit'        => $request->benefit,
                 'payment_method' => $request->payment_method,
