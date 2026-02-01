@@ -117,6 +117,11 @@
                     <i class="fa-solid fa-box-open w-5"></i>
                     Produk
                 </a>
+                <a href="/penjuals"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('penjuals*') }}">
+                    <i class="fa-solid fa-user w-5"></i>
+                    Sales
+                </a>
 
                 <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Transaksi
@@ -132,6 +137,12 @@
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales/create') }}">
                     <i class="fa-solid fa-receipt w-5"></i>
                     Transaksi Baru
+                </a>
+
+                <a href="/expenses"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('expenses') }}">
+                    <i class="fa-solid fa-money-bill-wave w-5"></i>
+                    Pengeluaran
                 </a>
 
                 <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">

@@ -79,7 +79,7 @@
                     <tbody class="divide-y divide-slate-100 uppercase">
                         @foreach ($sales as $i => $sale)
                             <tr class="hover:bg-blue-50/50 transition-colors duration-200">
-                                <td class="px-4 py-4 text-slate-500 whitespace-nowrap">{{ $i + 1 }}</td>
+                                <td class="px-4 py-4 text-slate-500 whitespace-nowrap">{{ $loop->iteration }}</td>
 
                                 <td class="px-4 py-4 font-bold text-indigo-600 whitespace-nowrap">
                                     <span class="bg-indigo-50 px-2 py-1 rounded text-xs">#{{ $sale->invoice_number }}</span>
@@ -276,11 +276,7 @@
         }
 
         $(document).ready(function () {
-            $('#datatable').DataTable({
-                order: [
-                    [2, 'desc']
-                ]
-            })
+            $('#datatable').DataTable()
         })
     </script>
 @endpush

@@ -1,82 +1,87 @@
 <table>
-    {{-- TITLE --}}
+    {{-- HEADER --}}
     <tr>
-        <td colspan="6" style="font-size:16px;font-weight:bold;text-align:center;padding:8px;">
+        <td colspan="6" style="font-size:18px;font-weight:bold;text-align:center;">
             LAPORAN PENJUALAN
         </td>
     </tr>
-
     <tr>
-        <td colspan="6" style="text-align:center;font-size:11px;color:#555;padding-bottom:12px;">
-            Periode {{ \Carbon\Carbon::parse(request()->from)->format('d M Y') }} s/d
-            {{ \Carbon\Carbon::parse(request()->to)->format('d M Y')  }}
+        <td colspan="6" style="text-align:center;color:#6b7280;">
+            Periode {{ $from->format('d M Y') }} – {{ $to->format('d M Y') }}
         </td>
     </tr>
-
-    {{-- SPACER --}}
-    <tr>
-        <td colspan="6"></td>
-    </tr>
+    <tr><td colspan="6"></td></tr>
 
     {{-- TABLE HEADER --}}
     <tr>
-        <th style="border:1px solid #000;background:#f3f4f6;font-weight:bold;width:40px;text-align:center;">
-            No
-        </th>
-        <th style="border:1px solid #000;background:#f3f4f6;font-weight:bold;width:160px;">
-            Invoice
-        </th>
-        <th style="border:1px solid #000;background:#f3f4f6;font-weight:bold;width:120px;">
-            Tanggal
-        </th>
-        <th style="border:1px solid #000;background:#f3f4f6;font-weight:bold;width:140px;text-align:right;">
-            Grand Total
-        </th>
-        <th style="border:1px solid #000;background:#f3f4f6;font-weight:bold;width:120px;text-align:right;">
-            Profit
-        </th>
-        <th style="border:1px solid #000;background:#f3f4f6;font-weight:bold;width:120px;text-align:center;">
-            Pembayaran
-        </th>
+        <th style="background:#f3f4f6;border:1px solid #d1d5db;">#</th>
+        <th style="background:#f3f4f6;border:1px solid #d1d5db;">Invoice</th>
+        <th style="background:#f3f4f6;border:1px solid #d1d5db;">Tanggal</th>
+        <th style="background:#f3f4f6;border:1px solid #d1d5db;text-align:right;">Grand Total</th>
+        <th style="background:#f3f4f6;border:1px solid #d1d5db;text-align:right;">Profit</th>
+        <th style="background:#f3f4f6;border:1px solid #d1d5db;">Pembayaran</th>
     </tr>
 
     {{-- DATA --}}
-    @php
-        $totalGrand = 0;
-        $totalProfit = 0;
-    @endphp
     @foreach ($sales as $i => $sale)
         <tr>
-            <td style="border:1px solid #000;text-align:center;">
-                {{ $i + 1 }}
+            <td style="border:1px solid #e5e7eb;text-align:center;">{{ $i + 1 }}</td>
+            <td style="border:1px solid #e5e7eb;">{{ $sale->invoice_number }}</td>
+            <td style="border:1px solid #e5e7eb;">{{ $sale->created_at->format('d M Y H:i') }}</td>
+            <td style="border:1px solid #e5e7eb;text-align:right;">
+                Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
             </td>
-            <td style="border:1px solid #000;">
-                {{ $sale->invoice_number }}
+            <td style="border:1px solid #e5e7eb;text-align:right;">
+                Rp {{ number_format($sale->benefit, 0, ',', '.') }}
             </td>
-            <td style="border:1px solid #000;">
-                {{ $sale->created_at->format('Y-m-d') }}
-            </td>
-            <td style="border:1px solid #000;text-align:right;">
-                {{ $sale->grand_total }}
-            </td>
-            <td style="border:1px solid #000;text-align:right;">
-                {{ $sale->benefit }}
-            </td>
-            <td style="border:1px solid #000;text-align:center;">
+            <td style="border:1px solid #e5e7eb;">
                 {{ strtoupper($sale->payment_method) }}
             </td>
         </tr>
-
-        @php
-            $totalGrand += $sale->grand_total;
-            $totalProfit += $sale->benefit;
-        @endphp
     @endforeach
 
+    {{-- SUMMARY --}}
+    <tr><td colspan="6"></td></tr>
+
     <tr>
-        <td colspan="3" style="text-align:center;font-weight:bold;">TOTAL</td>
-        <td style="text-align:right;font-weight:bold;">{{ number_format($totalGrand, 0, ',', '.') }}</td>
-        <td style="text-align:right;font-weight:bold;">{{ number_format($totalProfit, 0, ',', '.') }}</td>
-        <td></td>
+        <td colspan="3" style="text-align:right;color:#6b7280;">Total Penjualan</td>
+        <td style="text-align:right;font-weight:bold;">
+            Rp {{ number_format($totalSales, 0, ',', '.') }}
+        </td>
+        <td colspan="2"></td>
+    </tr>
+
+    <tr>
+        <td colspan="3" style="text-align:right;color:#6b7280;">Total Profit</td>
+        <td style="text-align:right;font-weight:bold;">
+            Rp {{ number_format($totalProfit, 0, ',', '.') }}
+        </td>
+        <td colspan="2"></td>
+    </tr>
+
+    <tr>
+        <td colspan="3" style="text-align:right;color:#e11d48;">Bonus / Loss</td>
+        <td style="text-align:right;font-weight:bold;color:#e11d48;">
+            Rp {{ number_format($bonusLoss, 0, ',', '.') }}
+        </td>
+        <td colspan="2"></td>
+    </tr>
+
+    <tr>
+        <td colspan="3" style="text-align:right;color:#ea580c;">Total Pengeluaran</td>
+        <td style="text-align:right;font-weight:bold;color:#ea580c;">
+            - Rp {{ number_format($totalExpenses, 0, ',', '.') }}
+        </td>
+        <td colspan="2"></td>
+    </tr>
+
+    <tr style="background:#eef2ff;">
+        <td colspan="3" style="text-align:right;font-weight:bold;">
+            PROFIT BERSIH
+        </td>
+        <td style="text-align:right;font-weight:bold;">
+            Rp {{ number_format($totalProfit + $bonusLoss - $totalExpenses, 0, ',', '.') }}
+        </td>
+        <td colspan="2"></td>
     </tr>
 </table>

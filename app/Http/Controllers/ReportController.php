@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SaleBonus;
@@ -33,6 +34,7 @@ class ReportController extends Controller
         $totalSales = $sales->sum('grand_total');
         $totalProfit = $sales->sum('benefit');
         $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
+        $totalExpenses = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
 
         return view('reports.index', compact(
             'sales',
@@ -40,21 +42,22 @@ class ReportController extends Controller
             'to',
             'totalSales',
             'totalProfit',
-            'bonusLoss'
+            'bonusLoss',
+            'totalExpenses'
         ));
     }
     public function pdf(Request $request)
     {
         $from = Carbon::parse($request->from)->startOfDay();
-        $to   = Carbon::parse($request->to)->endOfDay();
+        $to = Carbon::parse($request->to)->endOfDay();
 
-        $sales = Sale::whereBetween('created_at', [$from, $to])
-            ->orderBy('created_at')
-            ->get();
+        $sales = Sale::whereBetween('created_at', [$from, $to])->orderBy('created_at')->get();
 
-        $totalSales  = $sales->sum('grand_total');
+        $totalSales = $sales->sum('grand_total');
         $totalProfit = $sales->sum('benefit');
-        $bonusLoss   = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
+        $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
+
+        $totalExpenses = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
 
         $pdf = Pdf::loadView('reports.pdf', compact(
             'sales',
@@ -62,7 +65,8 @@ class ReportController extends Controller
             'to',
             'totalSales',
             'totalProfit',
-            'bonusLoss'
+            'bonusLoss',
+            'totalExpenses'
         ))->setPaper('a4', 'portrait');
 
         return $pdf->stream('laporan-penjualan.pdf');
@@ -71,7 +75,7 @@ class ReportController extends Controller
     public function excel(Request $request)
     {
         $from = Carbon::parse($request->from)->startOfDay();
-        $to   = Carbon::parse($request->to)->endOfDay();
+        $to = Carbon::parse($request->to)->endOfDay();
 
         return Excel::download(
             new SalesExport($from, $to),

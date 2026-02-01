@@ -54,7 +54,7 @@
                     <button type="button" id="addItemBtn"
                         class="mt-4 inline-flex items-center gap-2 px-4 py-2
                                                                        bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl
-                                                                       text-white 
+                                                                       text-white
                                                                        hover:from-indigo-700 hover:to-blue-700
                                                                        transition-all duration-200 shadow-sm shadow-indigo-200">
                         <i class="fa-solid fa-plus text-sm"></i>
@@ -187,7 +187,7 @@
                             </p>
 
                             <select name="bonus_products[]" id="bonusSelect" class="w-full select2 text-xs" multiple>
-                                @foreach($products as $product)
+                                @foreach($productBonus  as $product)
                                     <option value="{{ $product->id }}" data-purchase="{{ $product->purchase_price }}">
                                         {{ $product->product_code }} - {{ $product->name }}
                                     </option>

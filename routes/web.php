@@ -4,7 +4,9 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PenjualController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -56,6 +58,22 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::prefix('contacts')
         ->controller(ContactController::class)
+        ->group(function () {
+            Route::get('/', 'index');
+            Route::post('/', 'store');
+            Route::put('/{id}', 'update');
+            Route::delete('/{id}', 'destroy');
+        });
+    Route::prefix('penjuals')
+        ->controller(PenjualController::class)
+        ->group(function () {
+            Route::get('/', 'index');
+            Route::post('/', 'store');
+            Route::put('/{id}', 'update');
+            Route::delete('/{id}', 'destroy');
+        });
+    Route::prefix('expenses')
+        ->controller(ExpenseController::class)
         ->group(function () {
             Route::get('/', 'index');
             Route::post('/', 'store');

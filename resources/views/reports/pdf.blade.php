@@ -115,21 +115,28 @@
         </tbody>
     </table>
 
-    {{-- SUMMARY --}}
-    <table class="summary">
-        <tr>
-            <td class="label">Total Penjualan</td>
-            <td class="value">Rp {{ number_format($totalSales, 0, ',', '.') }}</td>
-        </tr>
-        <tr>
-            <td class="label">Total Profit</td>
-            <td class="value">Rp {{ number_format($totalProfit, 0, ',', '.') }}</td>
-        </tr>
-        <tr>
-            <td class="label">Bonus / Loss</td>
-            <td class="value">Rp {{ number_format($bonusLoss, 0, ',', '.') }}</td>
-        </tr>
-    </table>
+    <div style="margin-top: 20px; float: right; width: 300px;">
+        <table style="width: 100%;">
+            <tr>
+                <td>Profit Penjualan</td>
+                <td style="text-align: right;">Rp {{ number_format($totalProfit, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td>Bonus/Loss</td>
+                <td style="text-align: right;">Rp {{ number_format($bonusLoss, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td style="color: #ea580c;">Total Pengeluaran</td>
+                <td style="text-align: right; color: #ea580c;">- Rp {{ number_format($totalExpenses, 0, ',', '.') }}
+                </td>
+            </tr>
+            <tr style="font-weight: bold; border-top: 1px solid #000;">
+                <td>Profit Bersih</td>
+                <td style="text-align: right;">Rp
+                    {{ number_format($totalProfit + $bonusLoss - $totalExpenses, 0, ',', '.') }}</td>
+            </tr>
+        </table>
+    </div>
 
     <div class="footer">
         Dicetak pada {{ now()->format('d M Y H:i') }}

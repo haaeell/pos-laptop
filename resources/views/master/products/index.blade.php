@@ -96,8 +96,8 @@
                                     <span class="btn-text">Proses Import</span>
                                     <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4"></circle>
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor"
                                             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                                     </svg>
@@ -189,12 +189,10 @@
                     </label>
                     <select name="status" class="select2-filter w-full">
                         <option value="">Semua Status</option>
-                        <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>
-                            Tersedia
+                        <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia
                         </option>
-                        <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>
-                            Terjual
-                        </option>
+                        <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Terjual</option>
+                        <option value="bonus" {{ request('status') == 'bonus' ? 'selected' : '' }}>Bonus</option>
                     </select>
                 </div>
 
@@ -238,14 +236,19 @@
                                 <div
                                     class="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center">
                                     @if ($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset('storage/' . $product->image) }}"
+                                            class="w-full h-full object-cover">
                                     @else
                                         <i class="fa-solid fa-image text-slate-300"></i>
                                     @endif
                                 </div>
                             </td>
                             <td class="text-nowrap">{{ $product->product_code }}</td>
-                            <td class="text-nowrap" class="font-medium">{{ $product->name }}</td>
+                            <td class="text-nowrap" class="font-medium">{{ $product->name }}
+                                @if($product->status == 'bonus')
+                                    <span class="text-xs text-slate-500"> (Stok: {{ $product->stock }})</span>
+                                @endif
+                            </td>
                             <td class="text-nowrap">{{ $product->category?->name }}</td>
                             <td class="text-nowrap">{{ $product->brand?->name }}</td>
                             <td class="text-nowrap">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</td>
@@ -258,7 +261,7 @@
                             </td>
 
                             <td class="text-center text-nowrap space-x-2">
-                                <button onclick='openEditModal(@json($product->load("images")))'
+                                <button onclick='openEditModal(@json($product->load('images')))'
                                     class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -389,7 +392,8 @@
                     <div>
                         <label class="text-xs font-semibold text-slate-600 mb-1 block">Brand</label>
                         <div class="relative">
-                            <i class="fa-solid fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <i
+                                class="fa-solid fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="brand_id" id="brandId"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 @foreach ($brands as $brand)
@@ -437,11 +441,24 @@
                         <div class="relative">
                             <i
                                 class="fa-solid fa-circle-info absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                            <select name="status" id="status"
+                            <select name="status" id="status" onchange="toggleStockInput()"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
-                                <option value="available">Available</option>
-                                <option value="sold">Sold</option>
+
+                                <option value="available">Tersedia</option>
+                                <option value="sold">Terjual</option>
+                                <option value="bonus">Bonus</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div id="stockContainer" class="col-span-1 sm:col-span-1 hidden">
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Stok Bonus</label>
+                        <div class="relative">
+                            <i
+                                class="fa-solid fa-cubes absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="number" name="stock" id="productStock"
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                placeholder="0">
                         </div>
                     </div>
 
@@ -459,7 +476,8 @@
                         <span class="btn-text">Simpan Produk</span>
                         <svg class="btn-loading hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4">
                             </circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                         </svg>
@@ -513,7 +531,7 @@
             const galleryInput = document.getElementById('galleryInput');
             const galleryPreview = document.getElementById('galleryPreview');
 
-            galleryInput.addEventListener('change', function () {
+            galleryInput.addEventListener('change', function() {
                 handleGalleryFiles(this.files);
             });
 
@@ -568,7 +586,7 @@
             }
 
             function handleLoadingButton(formSelector, buttonSelector) {
-                $(formSelector).on('submit', function () {
+                $(formSelector).on('submit', function() {
                     const btn = $(buttonSelector);
 
                     btn.prop('disabled', true);
@@ -579,10 +597,25 @@
                 });
             }
 
-            $(function () {
+            function toggleStockInput() {
+                const status = document.getElementById('status').value;
+                const stockContainer = document.getElementById('stockContainer');
+                const stockInput = document.getElementById('productStock');
+
+                if (status === 'bonus') {
+                    stockContainer.classList.remove('hidden');
+                    stockInput.setAttribute('required', 'required');
+                } else {
+                    stockContainer.classList.add('hidden');
+                    stockInput.removeAttribute('required');
+                    stockInput.value = '';
+                }
+            }
+
+            $(function() {
                 handleLoadingButton('#productForm', '#saveProductBtn');
                 handleLoadingButton('#importModal form', '#importBtn');
-                window.showPreview = function (input) {
+                window.showPreview = function(input) {
                     const fileNameEl = document.getElementById('fileName');
 
                     if (input.files && input.files.length > 0) {
@@ -607,11 +640,14 @@
                 const modal = $('#productModal')
                 const form = $('#productForm')
 
-                $('#productForm').on('submit', function () {
+                $('#productForm').on('submit', function() {
                     $('#productDescription').val(descriptionEditor.getData());
                 });
 
-                window.openCreateModal = function () {
+                window.openCreateModal = function() {
+                    document.getElementById('productForm').reset();
+                    document.getElementById('status').value = 'available';
+                    toggleStockInput();
                     modal.removeClass('hidden')
                     form.attr('action', '/products')
                     $('#methodField').val('')
@@ -625,7 +661,7 @@
                 }
 
 
-                window.openEditModal = function (data) {
+                window.openEditModal = function(data) {
                     modal.removeClass('hidden')
                     form.attr('action', `/products/${data.id}`)
                     $('#methodField').val('PUT')
@@ -657,13 +693,18 @@
                     } else {
                         galleryPreview.innerHTML = '';
                     }
+
+                    document.getElementById('status').value = data.status;
+                    document.getElementById('productStock').value = data.stock || '';
+                    toggleStockInput();
+
                 }
 
-                window.closeModal = function () {
+                window.closeModal = function() {
                     modal.addClass('hidden')
                 }
 
-                window.deleteProduct = function (id) {
+                window.deleteProduct = function(id) {
                     Swal.fire({
                         title: 'Yakin?',
                         text: 'Produk akan dihapus!',
@@ -676,7 +717,8 @@
                             const form = document.createElement('form')
                             form.method = 'POST'
                             form.action = `/products/${id}`
-                            form.innerHTML = `
+                            form.innerHTML =
+                                `
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     <input type="hidden" name="_method" value="DELETE">
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 `
@@ -688,11 +730,11 @@
 
                 const importModal = $('#importModal');
 
-                window.openImportModal = function () {
+                window.openImportModal = function() {
                     importModal.removeClass('hidden');
                 }
 
-                window.closeImportModal = function () {
+                window.closeImportModal = function() {
                     importModal.addClass('hidden');
 
                     $('#importFile').val('');
@@ -703,14 +745,14 @@
                 }
 
 
-                window.previewProductImage = function (input) {
+                window.previewProductImage = function(input) {
                     const preview = document.getElementById('imagePreview');
                     const icon = document.getElementById('imageIcon');
 
                     if (input.files && input.files[0]) {
                         const reader = new FileReader();
 
-                        reader.onload = function (e) {
+                        reader.onload = function(e) {
                             preview.src = e.target.result;
                             preview.classList.remove('hidden');
                             icon.classList.add('hidden');
@@ -720,7 +762,7 @@
                     }
                 };
 
-                window.formatRupiahInput = function (el) {
+                window.formatRupiahInput = function(el) {
                     let value = el.value.replace(/[^0-9]/g, '');
                     let hiddenInputId = el.id.replace('Display', '');
                     document.getElementById(hiddenInputId).value = value;

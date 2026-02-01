@@ -55,7 +55,9 @@ class ProductController extends Controller
             'purchase_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'description' => 'nullable'
+            'description' => 'nullable',
+            'status' => 'required|in:available,sold,bonus',
+            'stock' => 'nullable|integer|min:0'
         ], [
             'product_code.required' => 'Kode produk harus diisi',
             'product_code.unique' => 'Kode produk sudah digunakan',
@@ -69,7 +71,10 @@ class ProductController extends Controller
             'selling_price.numeric' => 'Harga jual harus berupa angka',
             'image.image' => 'File harus berupa gambar',
             'image.mimes' => 'Format file harus .jpg, .jpeg, atau .png',
-            'image.max' => 'Ukuran file maksimal 2MB'
+            'image.max' => 'Ukuran file maksimal 2MB',
+            'status.in' => 'Status tidak valid',
+            'stock.integer' => 'Stok harus berupa angka',
+            'stock.min' => 'Stok minimal 0'
         ]);
 
         if ($request->hasFile('image')) {
@@ -101,7 +106,9 @@ class ProductController extends Controller
             'purchase_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'description' => 'nullable'
+            'description' => 'nullable',
+            'status' => 'required|in:available,sold,bonus',
+            'stock' => 'nullable|integer|min:0'
         ]);
 
         $data = $request->all();

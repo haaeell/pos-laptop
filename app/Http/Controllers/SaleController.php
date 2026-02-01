@@ -40,6 +40,7 @@ class SaleController extends Controller
     {
         return view('sales.create', [
             'products' => Product::where('status', 'available')->get(),
+            'productBonus' => Product::where('status', 'bonus')->where('stock', '>', 0)->get(),
             'salesPeople' => SalesPerson::all()
         ]);
     }
@@ -48,29 +49,29 @@ class SaleController extends Controller
     {
         $sale = Sale::with(['items', 'bonuses', 'salesPerson'])->findOrFail($id);
         return response()->json([
-            'invoice'      => $sale->invoice_number,
-            'date'         => Carbon::parse($sale->created_at)
+            'invoice' => $sale->invoice_number,
+            'date' => Carbon::parse($sale->created_at)
                 ->translatedFormat('d M Y H:i'),
 
-            'grand_total'  => $this->rupiah($sale->grand_total),
-            'benefit'      => $this->rupiah($sale->benefit),
-            'fee_sales'    => number_format($sale->fee_sales ?? 0, 0, ',', '.'),
+            'grand_total' => $this->rupiah($sale->grand_total),
+            'benefit' => $this->rupiah($sale->benefit),
+            'fee_sales' => number_format($sale->fee_sales ?? 0, 0, ',', '.'),
 
-            'sales_name'   => $sale->salesPerson?->name,
+            'sales_name' => $sale->salesPerson?->name,
             'sales_phone' => $sale->salesPerson?->phone,
 
-            'items'        => $sale->items->map(function ($item) {
+            'items' => $sale->items->map(function ($item) {
                 return [
-                    'name'     => $item->product->name,
-                    'price'    => $this->rupiah($item->final_price),
-                    'benefit'  => $this->rupiah($item->benefit),
+                    'name' => $item->product->name,
+                    'price' => $this->rupiah($item->final_price),
+                    'benefit' => $this->rupiah($item->benefit),
                 ];
             }),
 
-            'bonuses'      => $sale->bonuses->map(function ($bonus) {
+            'bonuses' => $sale->bonuses->map(function ($bonus) {
                 return [
-                    'name'     => $bonus->product->name,
-                    'benefit'  => $this->rupiah($bonus->benefit),
+                    'name' => $bonus->product->name,
+                    'benefit' => $this->rupiah($bonus->benefit),
                 ];
             }),
         ]);
@@ -88,13 +89,13 @@ class SaleController extends Controller
 
             $sale = Sale::create([
                 'invoice_number' => 'INV-' . date('Ymd') . '-' . str_pad(Sale::count() + 1, 4, '0', STR_PAD_LEFT),
-                'user_id'        => Auth::id(),
-                'customer_name'  => $request->customer_name,
+                'user_id' => Auth::id(),
+                'customer_name' => $request->customer_name,
                 'customer_phone' => $request->customer_phone,
                 'sales_person_id' => $request->sales_person_id,
-                'fee_sales'       => $request->fee_sales ?? 0,
-                'grand_total'    => $request->grand_total,
-                'benefit'        => $request->benefit,
+                'fee_sales' => $request->fee_sales ?? 0,
+                'grand_total' => $request->grand_total,
+                'benefit' => $request->benefit,
                 'payment_method' => $request->payment_method,
                 'payment_status' => 'paid',
             ]);
@@ -103,12 +104,12 @@ class SaleController extends Controller
             foreach ($request->items as $item) {
 
                 SaleItem::create([
-                    'sale_id'         => $sale->id,
-                    'product_id'      => $item['product_id'],
+                    'sale_id' => $sale->id,
+                    'product_id' => $item['product_id'],
                     'purchase_price' => $item['purchase_price'],
-                    'selling_price'  => $item['selling_price'],
-                    'final_price'    => $item['final_price'],
-                    'benefit'        => $item['final_price'] - $item['purchase_price'],
+                    'selling_price' => $item['selling_price'],
+                    'final_price' => $item['final_price'],
+                    'benefit' => $item['final_price'] - $item['purchase_price'],
                 ]);
 
                 Product::where('id', $item['product_id'])
@@ -122,14 +123,13 @@ class SaleController extends Controller
                     $product = Product::findOrFail($productId);
 
                     SaleBonus::create([
-                        'sale_id'        => $sale->id,
-                        'product_id'     => $product->id,
+                        'sale_id' => $sale->id,
+                        'product_id' => $product->id,
                         'purchase_price' => $product->purchase_price,
-                        'benefit'        => -$product->purchase_price,
+                        'benefit' => -$product->purchase_price,
                     ]);
 
-                    Product::where('id', $product->id)
-                        ->update(['status' => 'bonus']);
+                    $product->decrement('stock', 1);
                 }
             }
 

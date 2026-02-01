@@ -13,4 +13,9 @@ class SalesPerson extends Model
         'phone',
         'active',
     ];
+
+    public function sales()
+    {
+        return $this->hasMany(Sale::class, 'sales_person_id');
+    }
 }
