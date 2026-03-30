@@ -126,14 +126,20 @@
                 <td style="text-align: right;">Rp {{ number_format($bonusLoss, 0, ',', '.') }}</td>
             </tr>
             <tr>
+                <td>Total Penjualan</td>
+                <td style="text-align: right; ">Rp {{ number_format($totalSales, 0, ',', '.') }}
+                </td>
+            </tr>
+            <tr>
                 <td style="color: #ea580c;">Total Pengeluaran</td>
                 <td style="text-align: right; color: #ea580c;">- Rp {{ number_format($totalExpenses, 0, ',', '.') }}
                 </td>
             </tr>
             <tr style="font-weight: bold; border-top: 1px solid #000;">
-                <td>Profit Bersih</td>
-                <td style="text-align: right;">Rp
-                    {{ number_format($totalProfit + $bonusLoss - $totalExpenses, 0, ',', '.') }}</td>
+                <td>Jumlah Saldo</td>
+                <td style="text-align: right;">
+                    Rp {{ number_format($totalSales - $totalExpenses, 0, ',', '.') }}
+                </td>
             </tr>
         </table>
     </div>

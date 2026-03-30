@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Models\Product;
 use App\Models\SaleBonus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class ReportController extends Controller
         $totalProfit = $sales->sum('benefit');
         $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
+        $totalAsset = Product::where('status', 'available')->sum('purchase_price');
 
         return view('reports.index', compact(
             'sales',
@@ -43,7 +45,8 @@ class ReportController extends Controller
             'totalSales',
             'totalProfit',
             'bonusLoss',
-            'totalExpenses'
+            'totalExpenses',
+            'totalAsset',
         ));
     }
     public function pdf(Request $request)
@@ -75,11 +78,10 @@ class ReportController extends Controller
     public function excel(Request $request)
     {
         $from = Carbon::parse($request->from)->startOfDay();
-        $to = Carbon::parse($request->to)->endOfDay();
+        $to   = Carbon::parse($request->to)->endOfDay();
 
-        return Excel::download(
-            new SalesExport($from, $to),
-            'laporan-penjualan.xlsx'
-        );
+        $filename = 'laporan-penjualan_' . $from->format('d-m-Y') . '_sd_' . $to->format('d-m-Y') . '.xlsx';
+
+        return Excel::download(new SalesExport($from, $to), $filename);
     }
 }

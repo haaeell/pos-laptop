@@ -24,10 +24,50 @@
             </button>
         </div>
 
+        {{-- ===== FILTER TANGGAL ===== --}}
+        <form method="GET" action="{{ route('expenses.index') }}" id="filterForm"
+            class="flex flex-wrap items-end gap-3 mb-5 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Dari Tanggal</label>
+                <input type="date" name="from" value="{{ request('from') }}"
+                    class="px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Sampai Tanggal</label>
+                <input type="date" name="to" value="{{ request('to') }}"
+                    class="px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit"
+                    class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-xs"></i> Filter
+                </button>
+                @if(request('from') || request('to'))
+                    <a href="{{ route('expenses.index') }}"
+                        class="px-4 py-2 bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-300 transition flex items-center gap-2">
+                        <i class="fa-solid fa-xmark text-xs"></i> Reset
+                    </a>
+                @endif
+                {{-- Tombol Cetak PDF --}}
+                <a href="{{ route('expenses.export-pdf', request()->query()) }}" target="_blank"
+                    class="px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-xl hover:bg-red-600 transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-xs"></i> Cetak PDF
+                </a>
+            </div>
+        </form>
+
+        {{-- ===== SUMMARY CARDS ===== --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="p-4 bg-red-50 border border-red-100 rounded-xl">
                 <p class="text-xs font-bold text-red-600 uppercase">Total Pengeluaran</p>
                 <h3 class="text-xl font-bold text-red-700">Rp {{ number_format($expenses->sum('amount'), 0, ',', '.') }}</h3>
+                @if(request('from') || request('to'))
+                    <p class="text-[10px] text-red-400 mt-0.5">
+                        {{ request('from') ? \Carbon\Carbon::parse(request('from'))->format('d M Y') : '...' }}
+                        —
+                        {{ request('to') ? \Carbon\Carbon::parse(request('to'))->format('d M Y') : '...' }}
+                    </p>
+                @endif
             </div>
             <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl">
                 <p class="text-xs font-bold text-slate-600 uppercase">Jumlah Transaksi</p>
@@ -35,6 +75,7 @@
             </div>
         </div>
 
+        {{-- ===== TABEL ===== --}}
         <div class="bg-white rounded-xl shadow border overflow-x-auto px-4 py-5">
             <table id="datatable" class="w-full text-sm text-left">
                 <thead class="bg-slate-50 text-slate-700 uppercase text-xs">
@@ -48,7 +89,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($expenses as $i => $expense)
+                    @forelse($expenses as $i => $expense)
                         <tr class="border-b hover:bg-slate-50/50 transition">
                             <td class="px-4 py-3 text-slate-500">{{ $i + 1 }}</td>
                             <td class="px-4 py-3">{{ \Carbon\Carbon::parse($expense->entry_date)->format('d M Y') }}</td>
@@ -77,12 +118,20 @@
                                 </button>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-slate-400">
+                                <i class="fa-solid fa-receipt text-3xl mb-2 block"></i>
+                                Tidak ada data pengeluaran.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 
+    {{-- ===== MODAL ===== --}}
     <div id="expenseModal" class="fixed inset-0 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl transform transition-all">
             <div class="flex items-center justify-between px-6 py-4 border-b">
@@ -181,7 +230,6 @@
                 const title = $('#modalTitle');
                 const method = $('#methodField');
 
-                // --- FUNGSI RUPIAH ---
                 window.handleRupiahInput = function(el) {
                     let val = el.value.replace(/[^,\d]/g, "").toString();
                     let split = val.split(",");
@@ -194,12 +242,9 @@
                         rupiah += separator + ribuan.join(".");
                     }
                     el.value = rupiah;
-
-                    // Simpan angka bersih ke hidden input
                     $('#expAmountReal').val(val.replace(/\./g, ''));
                 }
 
-                // --- MODAL ACTIONS ---
                 window.openCreateModal = function () {
                     modal.removeClass('hidden').addClass('flex');
                     title.text('Catat Pengeluaran Baru');
@@ -221,11 +266,9 @@
                     $('#expCategory').val(data.category);
                     $('#expDesc').val(data.description);
 
-                    // Set Nominal
                     let amountClean = Math.floor(data.amount);
                     $('#expAmountReal').val(amountClean);
 
-                    // Format displaynya
                     let displayEl = document.getElementById('expAmountDisplay');
                     displayEl.value = amountClean.toString();
                     handleRupiahInput(displayEl);
@@ -235,7 +278,6 @@
                     modal.addClass('hidden').removeClass('flex');
                 }
 
-                // --- DELETE ACTION ---
                 window.deleteExpense = function (id) {
                     Swal.fire({
                         title: 'Hapus data pengeluaran?',

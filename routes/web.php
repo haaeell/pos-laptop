@@ -75,7 +75,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('expenses')
         ->controller(ExpenseController::class)
         ->group(function () {
-            Route::get('/', 'index');
+            Route::get('/export-pdf', 'exportPdf')->name('expenses.export-pdf');
+            Route::get('/', 'index')->name('expenses.index');
             Route::post('/', 'store');
             Route::put('/{id}', 'update');
             Route::delete('/{id}', 'destroy');

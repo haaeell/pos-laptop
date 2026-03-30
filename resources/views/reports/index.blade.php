@@ -12,9 +12,11 @@
             <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                 <form class="flex flex-wrap items-end gap-3">
                     <div class="space-y-1.5">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Dari Tanggal</label>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Dari
+                            Tanggal</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-calendar-day text-xs"></i>
                             </div>
                             <input type="date" name="from" value="{{ $from->format('Y-m-d') }}"
@@ -23,9 +25,11 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Sampai Tanggal</label>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Sampai
+                            Tanggal</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-calendar-check text-xs"></i>
                             </div>
                             <input type="date" name="to" value="{{ $to->format('Y-m-d') }}"
@@ -33,7 +37,8 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="h-[40px] px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2">
+                    <button type="submit"
+                        class="h-[40px] px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-magnifying-glass"></i> Terapkan
                     </button>
                 </form>
@@ -67,7 +72,7 @@
 
             {{-- Keuntungan Kotor --}}
             <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-emerald-500">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profit (Kotor)</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profit</p>
                 <h3 class="text-lg font-black text-emerald-600 mt-1">Rp{{ number_format($totalProfit, 0, ',', '.') }}</h3>
             </div>
 
@@ -81,14 +86,24 @@
         {{-- CALCULATION BOX --}}
         <div class="bg-indigo-900 rounded-2xl p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <p class="text-indigo-200 text-sm font-medium">Estimasi Profit Bersih</p>
-                <p class="text-xs text-indigo-300 italic">(Profit + Bonus/Loss) - Pengeluaran</p>
+                <p class="text-indigo-200 text-sm font-medium">Jumlah Saldo</p>
+                <p class="text-xs text-indigo-300 italic">Total Penjualan - Pengeluaran</p>
             </div>
             <div class="text-3xl font-black">
-                Rp {{ number_format(($totalProfit + $bonusLoss) - $totalExpenses, 0, ',', '.') }}
+                Rp {{ number_format($totalSales - $totalExpenses, 0, ',', '.') }}
             </div>
         </div>
 
+        {{-- TOTAL ASET --}}
+        <div class="bg-yellow-900 rounded-2xl p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <p class="text-indigo-200 text-sm font-medium">Total Asset</p>
+                <p class="text-xs text-indigo-300 italic">Nominal Asset</p>
+            </div>
+            <div class="text-3xl font-black">
+                Rp {{ number_format($totalAsset, 0, ',', '.') }}
+            </div>
+        </div>
         {{-- TABLE PENJUALAN --}}
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
@@ -105,20 +120,24 @@
                             <th class="px-6 py-4 font-semibold text-center">Metode</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class=" divide-y divide-slate-100">
                         @foreach ($sales as $sale)
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="px-6 py-4 font-bold text-indigo-600">#{{ $sale->invoice_number }}</td>
                                 <td class="px-6 py-4 text-slate-600">{{ $sale->created_at->format('d/m/Y H:i') }}</td>
-                                <td class="px-6 py-4 text-right font-bold">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 text-right font-bold">Rp
+                                    {{ number_format($sale->grand_total, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4 text-right">
-                                    <span class="{{ $sale->benefit >= 0 ? 'text-emerald-600' : 'text-rose-600' }} font-semibold">
+                                    <span
+                                        class="{{ $sale->benefit >= 0 ? 'text-emerald-600' : 'text-rose-600' }} font-semibold">
                                         {{ $sale->benefit >= 0 ? '+' : '' }} Rp {{ number_format($sale->benefit, 0, ',', '.') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold uppercase">{{ $sale->payment_method }}</span>
+                                    <span
+                                        class="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold uppercase">{{ $sale->payment_method }}</span>
                                 </td>
+
                             </tr>
                         @endforeach
                     </tbody>
@@ -130,16 +149,16 @@
 @endsection
 
 @push('scripts')
-<script>
-    $(document).ready(function() {
-        $('#datatable').DataTable({
-            "pageLength": 10,
-            "order": [[ 1, "desc" ]],
-            "language": {
-                "search": "Cari Invoice:",
-                "lengthMenu": "Tampilkan _MENU_ data"
-            }
+    <script>
+        $(document).ready(function () {
+            $('#datatable').DataTable({
+                "pageLength": 10,
+                "order": [[1, "desc"]],
+                "language": {
+                    "search": "Cari Invoice:",
+                    "lengthMenu": "Tampilkan _MENU_ data"
+                }
+            });
         });
-    });
-</script>
+    </script>
 @endpush
