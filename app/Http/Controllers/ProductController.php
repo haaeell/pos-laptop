@@ -99,6 +99,7 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+
         $request->validate([
             'name' => 'required',
             'category_id' => 'required|exists:categories,id',
@@ -109,32 +110,41 @@ class ProductController extends Controller
             'description' => 'nullable',
             'status' => 'required|in:available,sold,bonus',
             'stock' => 'nullable|integer|min:0'
+        ], [
+            'name.required' => 'Nama produk harus diisi',
+            'category_id.required' => 'Kategori harus diisi',
+            'category_id.exists' => 'Kategori tidak ditemukan',
+            'brand_id.exists' => 'Brand tidak ditemukan',
+            'purchase_price.required' => 'Harga beli harus diisi',
+            'purchase_price.numeric' => 'Harga beli harus berupa angka',
+            'selling_price.required' => 'Harga jual harus diisi',
+            'selling_price.numeric' => 'Harga jual harus berupa angka',
+            'image.image' => 'File harus berupa gambar',
+            'image.mimes' => 'Format file harus .jpg, .jpeg, atau .png',
+            'image.max' => 'Ukuran file maksimal 2MB',
+            'status.in' => 'Status tidak valid',
+            'stock.integer' => 'Stok harus berupa angka',
+            'stock.min' => 'Stok minimal 0'
         ]);
 
-        $data = $request->all();
+        $data = $request->except(['image', 'images']);
 
         if ($request->hasFile('image')) {
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-
-            $product->image = $request->file('image')
-                ->store('products', 'public');
+            $data['image'] = $request->file('image')->store('products', 'public');
         }
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products', 'public');
-
-                $product->images()->create([
-                    'image' => $path
-                ]);
+                $product->images()->create(['image' => $path]);
             }
         }
 
         $product->update($data);
 
-        $product->update($data);
         return redirect()->back()->with('success', 'Produk berhasil diperbarui');
     }
 
