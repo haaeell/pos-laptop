@@ -91,13 +91,13 @@
                                     class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">Batal</button>
                                 <button type="submit" id="importBtn"
                                     class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
-                                                                                                                                                                                       rounded-xl flex items-center justify-center gap-2
-                                                                                                                                                                                       disabled:opacity-60 disabled:cursor-not-allowed">
+                                                                                                                                                                                                       rounded-xl flex items-center justify-center gap-2
+                                                                                                                                                                                                       disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span class="btn-text">Proses Import</span>
                                     <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor"
                                             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                                     </svg>
@@ -154,7 +154,7 @@
                             value="{{ request('min_price') ? number_format(request('min_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                                                                                                          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                                                                                                                          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -175,7 +175,7 @@
                             value="{{ request('max_price') ? number_format(request('max_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
                             class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                                                                                                      focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                                                                                                                                                                                      focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
 
 
@@ -236,8 +236,7 @@
                                 <div
                                     class="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center">
                                     @if ($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}"
-                                            class="w-full h-full object-cover">
+                                        <img src="{{ asset('storage/' . $product->image) }}" class="w-full h-full object-cover">
                                     @else
                                         <i class="fa-solid fa-image text-slate-300"></i>
                                     @endif
@@ -255,7 +254,7 @@
                             <td class="text-nowrap">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full
-                                                                                                                                                                                        {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
+                                                                                                                                                                                                                        {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
                                     {{ $product->status === 'sold' ? 'Terjual' : ($product->status === 'bonus' ? 'Bonus' : 'Tersedia') }}
                                 </span>
                             </td>
@@ -301,6 +300,7 @@
             <form id="productForm" method="POST" class="px-4 sm:px-6 py-5 space-y-5" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="_method" id="methodField">
+                <input type="hidden" name="deleted_images" id="deletedImages">
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
@@ -342,8 +342,8 @@
                         <!-- DROPZONE -->
                         <div id="galleryDropzone"
                             class="relative border-2 border-dashed border-slate-300 rounded-2xl p-6
-                                                                   text-center cursor-pointer
-                                                                   hover:border-emerald-400 hover:bg-emerald-50/40 transition">
+                                                                                   text-center cursor-pointer
+                                                                                   hover:border-emerald-400 hover:bg-emerald-50/40 transition">
 
                             <input type="file" id="galleryInput" name="images[]" multiple accept="image/*"
                                 class="absolute inset-0 opacity-0 cursor-pointer">
@@ -392,8 +392,7 @@
                     <div>
                         <label class="text-xs font-semibold text-slate-600 mb-1 block">Brand</label>
                         <div class="relative">
-                            <i
-                                class="fa-solid fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <i class="fa-solid fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <select name="brand_id" id="brandId"
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
                                 @foreach ($brands as $brand)
@@ -476,8 +475,7 @@
                         <span class="btn-text">Simpan Produk</span>
                         <svg class="btn-loading hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                         </svg>
@@ -503,6 +501,8 @@
                     console.error(error);
                 });
 
+            let deletedImageIds = [];
+
             function renderExistingGallery(images) {
                 galleryPreview.innerHTML = '';
 
@@ -511,19 +511,25 @@
                     div.className = 'relative group';
 
                     div.innerHTML = `
-                                        <img src="/storage/${img.image}"
-                                             class="w-full h-24 object-cover rounded-xl border">
-
-                                        <button type="button"
-                                            class="absolute top-1 right-1 bg-red-600 text-white text-xs
-                                                   w-6 h-6 rounded-full flex items-center justify-center
-                                                   opacity-0 group-hover:opacity-100 transition">
-                                            ✕
-                                        </button>
-                                    `;
+                                    <img src="/storage/${img.image}"
+                                         class="w-full h-24 object-cover rounded-xl border">
+                                    <button type="button"
+                                        class="absolute top-1 right-1 bg-red-600 text-white text-xs
+                                               w-6 h-6 rounded-full flex items-center justify-center
+                                               opacity-0 group-hover:opacity-100 transition"
+                                        onclick="removeExistingImage(${img.id}, this)">
+                                        ✕
+                                    </button>
+                                `;
 
                     galleryPreview.appendChild(div);
                 });
+            }
+
+            function removeExistingImage(id, btn) {
+                deletedImageIds.push(id);
+                document.getElementById('deletedImages').value = deletedImageIds.join(',');
+                btn.parentElement.remove();
             }
 
             let galleryFiles = [];
@@ -531,7 +537,7 @@
             const galleryInput = document.getElementById('galleryInput');
             const galleryPreview = document.getElementById('galleryPreview');
 
-            galleryInput.addEventListener('change', function() {
+            galleryInput.addEventListener('change', function () {
                 handleGalleryFiles(this.files);
             });
 
@@ -547,17 +553,17 @@
                         div.className = 'relative group';
 
                         div.innerHTML = `
-                                                                                                                <img src="${e.target.result}"
-                                                                                                                    class="w-full h-24 object-cover rounded-xl border">
+                                                                                                                                                <img src="${e.target.result}"
+                                                                                                                                                    class="w-full h-24 object-cover rounded-xl border">
 
-                                                                                                                <button type="button"
-                                                                                                                    class="absolute top-1 right-1 bg-red-500 text-white text-xs
-                                                                                                                           w-6 h-6 rounded-full flex items-center justify-center
-                                                                                                                           opacity-0 group-hover:opacity-100 transition"
-                                                                                                                    onclick="removeGalleryImage(${galleryFiles.length - 1}, this)">
-                                                                                                                    ✕
-                                                                                                                </button>
-                                                                                                            `;
+                                                                                                                                                <button type="button"
+                                                                                                                                                    class="absolute top-1 right-1 bg-red-500 text-white text-xs
+                                                                                                                                                           w-6 h-6 rounded-full flex items-center justify-center
+                                                                                                                                                           opacity-0 group-hover:opacity-100 transition"
+                                                                                                                                                    onclick="removeGalleryImage(${galleryFiles.length - 1}, this)">
+                                                                                                                                                    ✕
+                                                                                                                                                </button>
+                                                                                                                                            `;
 
                         galleryPreview.appendChild(div);
                     };
@@ -586,7 +592,7 @@
             }
 
             function handleLoadingButton(formSelector, buttonSelector) {
-                $(formSelector).on('submit', function() {
+                $(formSelector).on('submit', function () {
                     const btn = $(buttonSelector);
 
                     btn.prop('disabled', true);
@@ -612,10 +618,10 @@
                 }
             }
 
-            $(function() {
+            $(function () {
                 handleLoadingButton('#productForm', '#saveProductBtn');
                 handleLoadingButton('#importModal form', '#importBtn');
-                window.showPreview = function(input) {
+                window.showPreview = function (input) {
                     const fileNameEl = document.getElementById('fileName');
 
                     if (input.files && input.files.length > 0) {
@@ -640,11 +646,13 @@
                 const modal = $('#productModal')
                 const form = $('#productForm')
 
-                $('#productForm').on('submit', function() {
+                $('#productForm').on('submit', function () {
                     $('#productDescription').val(descriptionEditor.getData());
                 });
 
-                window.openCreateModal = function() {
+                window.openCreateModal = function () {
+                    deletedImageIds = [];
+                    document.getElementById('deletedImages').value = '';
                     document.getElementById('productForm').reset();
                     document.getElementById('status').value = 'available';
                     toggleStockInput();
@@ -661,7 +669,9 @@
                 }
 
 
-                window.openEditModal = function(data) {
+                window.openEditModal = function (data) {
+                    deletedImageIds = [];
+                    document.getElementById('deletedImages').value = '';
                     modal.removeClass('hidden')
                     form.attr('action', `/products/${data.id}`)
                     $('#methodField').val('PUT')
@@ -700,11 +710,11 @@
 
                 }
 
-                window.closeModal = function() {
+                window.closeModal = function () {
                     modal.addClass('hidden')
                 }
 
-                window.deleteProduct = function(id) {
+                window.deleteProduct = function (id) {
                     Swal.fire({
                         title: 'Yakin?',
                         text: 'Produk akan dihapus!',
@@ -719,9 +729,9 @@
                             form.action = `/products/${id}`
                             form.innerHTML =
                                 `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                `
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                `
                             document.body.appendChild(form)
                             form.submit()
                         }
@@ -730,11 +740,11 @@
 
                 const importModal = $('#importModal');
 
-                window.openImportModal = function() {
+                window.openImportModal = function () {
                     importModal.removeClass('hidden');
                 }
 
-                window.closeImportModal = function() {
+                window.closeImportModal = function () {
                     importModal.addClass('hidden');
 
                     $('#importFile').val('');
@@ -745,14 +755,14 @@
                 }
 
 
-                window.previewProductImage = function(input) {
+                window.previewProductImage = function (input) {
                     const preview = document.getElementById('imagePreview');
                     const icon = document.getElementById('imageIcon');
 
                     if (input.files && input.files[0]) {
                         const reader = new FileReader();
 
-                        reader.onload = function(e) {
+                        reader.onload = function (e) {
                             preview.src = e.target.result;
                             preview.classList.remove('hidden');
                             icon.classList.add('hidden');
@@ -762,7 +772,7 @@
                     }
                 };
 
-                window.formatRupiahInput = function(el) {
+                window.formatRupiahInput = function (el) {
                     let value = el.value.replace(/[^0-9]/g, '');
                     let hiddenInputId = el.id.replace('Display', '');
                     document.getElementById(hiddenInputId).value = value;

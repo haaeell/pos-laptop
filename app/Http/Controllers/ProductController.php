@@ -7,6 +7,7 @@ use App\Imports\ProductsImport;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -128,6 +129,17 @@ class ProductController extends Controller
         ]);
 
         $data = $request->except(['image', 'images']);
+
+        if ($request->filled('deleted_images')) {
+            $ids = explode(',', $request->deleted_images);
+            foreach ($ids as $imgId) {
+                $img = ProductImage::find($imgId);
+                if ($img) {
+                    Storage::disk('public')->delete($img->image);
+                    $img->delete();
+                }
+            }
+        }
 
         if ($request->hasFile('image')) {
             if ($product->image) {
