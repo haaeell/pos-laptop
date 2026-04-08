@@ -100,7 +100,7 @@
                                 <td class="px-4 py-4  whitespace-nowrap">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                                                                                                                                                                                                {{ $sale->benefit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                                                                                                                                                                                                                        {{ $sale->benefit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
                                         {{ $sale->benefit >= 0 ? '+' : '' }} Rp
                                         {{ number_format($sale->benefit, 0, ',', '.') }}
                                     </span>
@@ -148,6 +148,17 @@
                                             title="Cetak Invoice">
                                             <i class="fa-solid fa-print text-sm"></i>
                                         </a>
+                                        <form id="delete-form-{{ $sale->id }}" action="{{ route('sales.destroy', $sale->id) }}"
+                                            method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button"
+                                                onclick="confirmDelete({{ $sale->id }}, '{{ $sale->invoice_number }}')"
+                                                class="inline-flex items-center justify-center w-9 h-9 text-rose-600 bg-rose-50 rounded-xl hover:bg-rose-600 hover:text-white transition-all duration-200 shadow-sm shadow-rose-100"
+                                                title="Hapus Transaksi">
+                                                <i class="fa-solid fa-trash text-sm"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -249,22 +260,22 @@
 
                     data.items.forEach(item => {
                         rows += `
-                                                                                                                                    <tr class="border-t">
-                                                                                                                                        <td class="px-3 py-2">${item.name}</td>
-                                                                                                                                        <td class="px-3 py-2 text-right">Rp ${item.price}</td>
-                                                                                                                                        <td class="px-3 py-2 text-right">${item.benefit}</td>
-                                                                                                                                    </tr>
-                                                                                                                                `
+                                                                                                                                        <tr class="border-t">
+                                                                                                                                            <td class="px-3 py-2">${item.name}</td>
+                                                                                                                                            <td class="px-3 py-2 text-right">Rp ${item.price}</td>
+                                                                                                                                            <td class="px-3 py-2 text-right">${item.benefit}</td>
+                                                                                                                                        </tr>
+                                                                                                                                    `
                     })
 
                     data.bonuses.forEach(item => {
                         rows += `
-                                                                                                                                    <tr class="border-t text-green-600">
-                                                                                                                                        <td class="px-3 py-2">🎁 ${item.name}</td>
-                                                                                                                                        <td class="px-3 py-2 text-right">Rp 0</td>
-                                                                                                                                        <td class="px-3 py-2 text-right">${item.benefit}</td>
-                                                                                                                                    </tr>
-                                                                                                                                `
+                                                                                                                                        <tr class="border-t text-green-600">
+                                                                                                                                            <td class="px-3 py-2">🎁 ${item.name}</td>
+                                                                                                                                            <td class="px-3 py-2 text-right">Rp 0</td>
+                                                                                                                                            <td class="px-3 py-2 text-right">${item.benefit}</td>
+                                                                                                                                        </tr>
+                                                                                                                                    `
                     })
 
                     document.getElementById('modalItems').innerHTML = rows
@@ -278,5 +289,24 @@
         $(document).ready(function () {
             $('#datatable').DataTable()
         })
+
+        function confirmDelete(id, invoice) {
+            Swal.fire({
+                title: 'Hapus Transaksi?',
+                html: `Invoice <strong>#${invoice}</strong> akan dihapus permanen.<br><span class="text-sm text-gray-500">Status produk akan dikembalikan ke <b>tersedia</b>.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fa-solid fa-trash mr-1"></i> Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`delete-form-${id}`).submit()
+                }
+            })
+        }
     </script>
 @endpush

@@ -141,6 +141,31 @@ class SaleController extends Controller
             ->with('success_sale_id', $sale->id);
     }
 
+    public function destroy($id)
+    {
+        DB::transaction(function () use ($id) {
+            $sale = Sale::with(['items', 'bonuses'])->findOrFail($id);
+
+            foreach ($sale->items as $item) {
+                Product::where('id', $item->product_id)
+                    ->update(['status' => 'available']);
+            }
+
+            foreach ($sale->bonuses as $bonus) {
+                Product::where('id', $bonus->product_id)
+                    ->increment('stock', 1);
+            }
+
+            $sale->items()->delete();
+            $sale->bonuses()->delete();
+            $sale->delete();
+        });
+
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Transaksi berhasil dihapus dan stok produk telah dikembalikan.');
+    }
+
     public function invoicePdf($id)
     {
         $sale = Sale::with(['items.product', 'bonuses.product', 'user'])

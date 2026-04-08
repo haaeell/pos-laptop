@@ -137,6 +137,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/', 'store')->name('sales.store');    // invoice / detail
             Route::get('/{id}/detail', 'detail'); // cetak invoice
             Route::get('/{id}/invoice-pdf', 'invoicePdf')->name('sales.invoice.pdf');
+            Route::delete('/{id}', 'destroy')->name('sales.destroy');
         });
 
     /*
