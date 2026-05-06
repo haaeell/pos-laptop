@@ -26,270 +26,295 @@
                 <!-- ================= LEFT : PRODUCT LIST ================= -->
                 <div class="col-span-12 lg:col-span-8">
 
-                    <div class="border rounded-xl overflow-hidden">
-                        <table class="w-full text-sm">
-                            <thead class="bg-slate-100 text-slate-700">
-                                <tr>
-                                    <th class="p-3">Produk</th>
-                                    <th class="p-3 text-center">Harga Beli</th>
-                                    <th class="p-3 text-center">Harga Jual</th>
-                                    <th class="p-3 text-center">Harga Final</th>
-                                    <th class="p-3 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="itemTable">
-                                <!-- Empty state -->
-                                <tr id="emptyRow">
-                                    <td colspan="6" class="p-6 text-center text-slate-400">
-                                        <i class="fa-solid fa-box-open text-2xl mb-2"></i>
-                                        <div>Belum ada produk</div>
-                                        <div class="text-xs">Klik “Tambah Produk” untuk mulai</div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <button type="button" id="addItemBtn"
-                        class="mt-4 inline-flex items-center gap-2 px-4 py-2
-                                                                       bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl
-                                                                       text-white
-                                                                       hover:from-indigo-700 hover:to-blue-700
-                                                                       transition-all duration-200 shadow-sm shadow-indigo-200">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span class="font-semibold">Tambah Produk</span>
-                    </button>
-
-
-
-                </div>
-
-                <!-- ================= RIGHT : SUMMARY ================= -->
-                <div class="col-span-12 lg:col-span-4">
-                    <div
-                        class="relative overflow-hidden rounded-2xl border bg-white/80 backdrop-blur shadow-lg shadow-indigo-100 p-5 space-y-4">
-
-                        <div class="absolute -top-16 -right-16 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
-
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-base font-semibold text-slate-800">Ringkasan Transaksi</h3>
-                                <p class="text-[11px] text-slate-500">Preview sebelum disimpan</p>
-                            </div>
-                            <i class="fa-solid fa-receipt text-indigo-500"></i>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-medium text-slate-600">
-                                Nama Customer
-                            </label>
-                            <input type="text" name="customer_name" placeholder="Opsional"
-                                class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-200">
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-medium text-slate-600">
-                                No. HP Customer
-                            </label>
-                            <input type="text" name="customer_phone" placeholder="08xxxxxxxxxx"
-                                class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-200">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-medium text-slate-600">
-                                Sales
-                            </label>
-                            <select name="sales_person_id" id="salesPerson" class="w-full select2 text-sm">
-                                <option value="">-- Tanpa Sales --</option>
-                                @foreach($salesPeople as $sp)
-                                    <option value="{{ $sp->id }}">
-                                        {{ $sp->name }} ({{ $sp->phone }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-medium text-slate-600">
-                                Fee Sales
-                            </label>
-                            <input type="text" id="feeSalesText" class="w-full px-3 py-2 rounded-xl border text-sm">
-                            <input type="hidden" name="fee_sales" id="feeSales">
-                        </div>
-
-
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-medium text-slate-600">
-                                Metode Pembayaran
-                            </label>
-
-                            <input type="hidden" name="payment_method" id="paymentMethod" value="cash">
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <button type="button" data-value="cash"
-                                    class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
-                                                                                                                                                   bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200
-                                                                                                                                                   text-indigo-700 font-semibold shadow-sm transition">
-                                    <div
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 text-green-600">
-                                        <i class="fa-solid fa-money-bill-wave text-sm"></i>
-                                    </div>
-                                    <span class="text-xs">Cash</span>
-                                    <i class="fa-solid fa-check ml-auto text-[10px]"></i>
-                                </button>
-
-                                <button type="button" data-value="transfer"
-                                    class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
-                                                                                                                                                   bg-white text-slate-600 transition hover:shadow-sm">
-                                    <div
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                                        <i class="fa-solid fa-building-columns text-sm"></i>
-                                    </div>
-                                    <span class="text-xs">Transfer</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div
-                                class="rounded-xl p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-200">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-[10px] uppercase tracking-wider text-indigo-200">
-                                            Grand Total
-                                        </p>
-                                        <p class="text-2xl font-bold mt-0.5">
-                                            Rp <span id="grandText">0</span>
-                                        </p>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                        <i class="fa-solid fa-wallet"></i>
+                    <!-- BARCODE SCANNER INPUT -->
+                        <div class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-indigo-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center">
+                                    <i class="fa-solid fa-barcode text-lg"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-xs font-medium text-slate-600 block mb-1">
+                                        Scan Barcode Produk
+                                    </label>
+                                    <input type="text" id="barcodeInput" 
+                                        placeholder="Klik di sini, lalu scan barcode..."
+                                        class="w-full px-3 py-2 rounded-lg border border-indigo-300 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                                        autocomplete="off">
+                                </div>
+                                <div id="scanStatus" class="hidden">
+                                    <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center animate-pulse">
+                                        <i class="fa-solid fa-check text-sm"></i>
                                     </div>
                                 </div>
-                                <input type="hidden" name="grand_total" id="grandTotal">
                             </div>
-
-                            <div class="rounded-xl border px-4 py-3 bg-slate-50">
-                                <p class="text-[11px] text-slate-500 flex items-center gap-1">
-                                    <i class="fa-solid fa-chart-line"></i>
-                                    Profit
-                                </p>
-                                <p id="benefitText" class="text-base font-bold text-green-600 mt-1">
-                                    Rp 0
-                                </p>
-                                <input type="hidden" name="benefit" id="benefit">
-                            </div>
-                        </div>
-
-                        <div id="bonusContainer" class="rounded-xl border px-4 py-3 bg-slate-50 space-y-2">
-                            <p class="text-[11px] text-slate-500 flex items-center gap-1">
-                                <i class="fa-solid fa-gift"></i>
-                                Bonus Produk
+                            <p class="text-xs text-slate-500 mt-2 ml-13">
+                                <i class="fa-solid fa-circle-info text-indigo-500"></i>
+                                Produk akan otomatis ditambahkan ke daftar setelah di-scan
                             </p>
-
-                            <select name="bonus_products[]" id="bonusSelect" class="w-full select2 text-xs" multiple>
-                                @foreach($productBonus  as $product)
-                                    <option value="{{ $product->id }}" data-purchase="{{ $product->purchase_price }}">
-                                        {{ $product->product_code }} - {{ $product->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-
-                            <div id="bonusInfo" class="hidden text-[11px] text-slate-600 space-y-1"></div>
                         </div>
 
-                        <button type="button" id="submitBtn"
-                            class="w-full py-2.5 rounded-xl text-sm text-white font-semibold
-                                                                                                           bg-gradient-to-r from-indigo-500 to-indigo-600
-                                                                                                           hover:from-indigo-600 hover:to-indigo-700
-                                                                                                           shadow-md shadow-indigo-200
-                                                                                                           active:scale-[0.98] transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-floppy-disk text-sm"></i>
-                            Simpan Transaksi
+                        <div class="border rounded-xl overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-100 text-slate-700">
+                                    <tr>
+                                        <th class="p-3">Produk</th>
+                                        <th class="p-3 text-center">Harga Beli</th>
+                                        <th class="p-3 text-center">Harga Jual</th>
+                                        <th class="p-3 text-center">Harga Final</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="itemTable">
+                                    <!-- Empty state -->
+                                    <tr id="emptyRow">
+                                        <td colspan="6" class="p-6 text-center text-slate-400">
+                                            <i class="fa-solid fa-box-open text-2xl mb-2"></i>
+                                            <div>Belum ada produk</div>
+                                            <div class="text-xs">Scan barcode atau klik "Tambah Produk"</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button type="button" id="addItemBtn"
+                            class="mt-4 inline-flex items-center gap-2 px-4 py-2
+                                                                           bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl
+                                                                           text-white
+                                                                           hover:from-indigo-700 hover:to-blue-700
+                                                                           transition-all duration-200 shadow-sm shadow-indigo-200">
+                            <i class="fa-solid fa-plus text-sm"></i>
+                            <span class="font-semibold">Tambah Produk Manual</span>
                         </button>
 
+                    </div>
 
-                        <p class="text-center text-[10px] text-slate-400">
-                            Pastikan data sudah benar sebelum menyimpan
-                        </p>
+                    <!-- ================= RIGHT : SUMMARY ================= -->
+                    <div class="col-span-12 lg:col-span-4">
+                        <div
+                            class="relative overflow-hidden rounded-2xl border bg-white/80 backdrop-blur shadow-lg shadow-indigo-100 p-5 space-y-4">
+
+                            <div class="absolute -top-16 -right-16 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
+
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-base font-semibold text-slate-800">Ringkasan Transaksi</h3>
+                                    <p class="text-[11px] text-slate-500">Preview sebelum disimpan</p>
+                                </div>
+                                <i class="fa-solid fa-receipt text-indigo-500"></i>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">
+                                    Nama Customer
+                                </label>
+                                <input type="text" name="customer_name" placeholder="Opsional"
+                                    class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-200">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">
+                                    No. HP Customer
+                                </label>
+                                <input type="text" name="customer_phone" placeholder="08xxxxxxxxxx"
+                                    class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-200">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">
+                                    Sales
+                                </label>
+                                <select name="sales_person_id" id="salesPerson" class="w-full select2 text-sm">
+                                    <option value="">-- Tanpa Sales --</option>
+                                    @foreach($salesPeople as $sp)
+                                        <option value="{{ $sp->id }}">
+                                            {{ $sp->name }} ({{ $sp->phone }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">
+                                    Fee Sales
+                                </label>
+                                <input type="text" id="feeSalesText" class="w-full px-3 py-2 rounded-xl border text-sm">
+                                <input type="hidden" name="fee_sales" id="feeSales">
+                            </div>
+
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">
+                                    Metode Pembayaran
+                                </label>
+
+                                <input type="hidden" name="payment_method" id="paymentMethod" value="cash">
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" data-value="cash"
+                                        class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
+                                                                                                                                                       bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200
+                                                                                                                                                       text-indigo-700 font-semibold shadow-sm transition">
+                                        <div
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 text-green-600">
+                                            <i class="fa-solid fa-money-bill-wave text-sm"></i>
+                                        </div>
+                                        <span class="text-xs">Cash</span>
+                                        <i class="fa-solid fa-check ml-auto text-[10px]"></i>
+                                    </button>
+
+                                    <button type="button" data-value="transfer"
+                                        class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
+                                                                                                                                                       bg-white text-slate-600 transition hover:shadow-sm">
+                                        <div
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                                            <i class="fa-solid fa-building-columns text-sm"></i>
+                                        </div>
+                                        <span class="text-xs">Transfer</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div
+                                    class="rounded-xl p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-[10px] uppercase tracking-wider text-indigo-200">
+                                                Grand Total
+                                            </p>
+                                            <p class="text-2xl font-bold mt-0.5">
+                                                Rp <span id="grandText">0</span>
+                                            </p>
+                                        </div>
+                                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                            <i class="fa-solid fa-wallet"></i>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="grand_total" id="grandTotal">
+                                </div>
+
+                                <div class="rounded-xl border px-4 py-3 bg-slate-50">
+                                    <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                                        <i class="fa-solid fa-chart-line"></i>
+                                        Profit
+                                    </p>
+                                    <p id="benefitText" class="text-base font-bold text-green-600 mt-1">
+                                        Rp 0
+                                    </p>
+                                    <input type="hidden" name="benefit" id="benefit">
+                                </div>
+                            </div>
+
+                            <div id="bonusContainer" class="rounded-xl border px-4 py-3 bg-slate-50 space-y-2">
+                                <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-gift"></i>
+                                    Bonus Produk
+                                </p>
+
+                                <select name="bonus_products[]" id="bonusSelect" class="w-full select2 text-xs" multiple>
+                                    @foreach($productBonus as $product)
+                                        <option value="{{ $product->id }}" data-purchase="{{ $product->purchase_price }}">
+                                            {{ $product->product_code }} - {{ $product->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <div id="bonusInfo" class="hidden text-[11px] text-slate-600 space-y-1"></div>
+                            </div>
+
+                            <button type="button" id="submitBtn"
+                                class="w-full py-2.5 rounded-xl text-sm text-white font-semibold
+                                                                                                               bg-gradient-to-r from-indigo-500 to-indigo-600
+                                                                                                               hover:from-indigo-600 hover:to-indigo-700
+                                                                                                               shadow-md shadow-indigo-200
+                                                                                                               active:scale-[0.98] transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-floppy-disk text-sm"></i>
+                                Simpan Transaksi
+                            </button>
+
+
+                            <p class="text-center text-[10px] text-slate-400">
+                                Pastikan data sudah benar sebelum menyimpan
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+
+            @if(session('success_sale_id'))
+                <div id="successModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-xl">
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800">Transaksi Berhasil</h3>
+                                <p class="text-xs text-slate-500">Invoice berhasil dibuat</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <a href="{{ route('sales.invoice.pdf', session('success_sale_id')) }}" target="_blank"
+                                class="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold text-center">
+                                Cetak Invoice
+                            </a>
+
+                            <button onclick="document.getElementById('successModal').remove()"
+                                class="flex-1 py-2 rounded-xl border text-sm">
+                                Tutup
+                            </button>
+                        </div>
                     </div>
                 </div>
+            @endif
 
-            </div>
-        </form>
 
-        @if(session('success_sale_id'))
-            <div id="successModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                <div class="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-xl">
+            <div id="confirmModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50">
+
+                <div class="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-xl">
 
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                            <i class="fa-solid fa-check"></i>
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                            <i class="fa-solid fa-circle-question"></i>
                         </div>
                         <div>
-                            <h3 class="font-semibold text-slate-800">Transaksi Berhasil</h3>
-                            <p class="text-xs text-slate-500">Invoice berhasil dibuat</p>
+                            <h3 class="text-base font-semibold text-slate-800">
+                                Konfirmasi Transaksi
+                            </h3>
+                            <p class="text-xs text-slate-500">
+                                Pastikan data sudah benar
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl bg-slate-50 p-3 text-sm">
+                        <div class="flex justify-between">
+                            <span>Total</span>
+                            <span class="font-semibold">Rp <span id="modalGrand">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-500 mt-1">
+                            <span>Pembayaran</span>
+                            <span id="modalPayment">Cash</span>
                         </div>
                     </div>
 
                     <div class="flex gap-3">
-                        <a href="{{ route('sales.invoice.pdf', session('success_sale_id')) }}" target="_blank"
-                            class="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold text-center">
-                            Cetak Invoice
-                        </a>
+                        <button type="button" id="cancelConfirm" class="flex-1 py-2 rounded-xl border text-sm">
+                            Batal
+                        </button>
 
-                        <button onclick="document.getElementById('successModal').remove()"
-                            class="flex-1 py-2 rounded-xl border text-sm">
-                            Tutup
+                        <button type="button" id="confirmSubmit"
+                            class="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
+                            Ya, Simpan
                         </button>
                     </div>
                 </div>
             </div>
-        @endif
 
-
-        <div id="confirmModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50">
-
-            <div class="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-xl">
-
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                        <i class="fa-solid fa-circle-question"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-semibold text-slate-800">
-                            Konfirmasi Transaksi
-                        </h3>
-                        <p class="text-xs text-slate-500">
-                            Pastikan data sudah benar
-                        </p>
-                    </div>
-                </div>
-
-                <div class="rounded-xl bg-slate-50 p-3 text-sm">
-                    <div class="flex justify-between">
-                        <span>Total</span>
-                        <span class="font-semibold">Rp <span id="modalGrand">0</span></span>
-                    </div>
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>Pembayaran</span>
-                        <span id="modalPayment">Cash</span>
-                    </div>
-                </div>
-
-                <div class="flex gap-3">
-                    <button type="button" id="cancelConfirm" class="flex-1 py-2 rounded-xl border text-sm">
-                        Batal
-                    </button>
-
-                    <button type="button" id="confirmSubmit"
-                        class="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
-                        Ya, Simpan
-                    </button>
-                </div>
-            </div>
         </div>
-
-    </div>
 @endsection
 
 @push('scripts')
@@ -326,6 +351,7 @@
             const products = @json($products);
             let index = 0;
             const $table = $('#itemTable')
+            const addedProductIds = new Set(); // Track produk yang sudah ditambahkan
 
             // ================= UTIL =================
             function formatRupiah(angka) {
@@ -336,75 +362,149 @@
                 return Number(String(val).replace(/\./g, '')) || 0
             }
 
-            // ================= ADD ITEM =================
-            $('#addItemBtn').on('click', function () {
+            // ================= BARCODE SCANNER =================
+            let barcodeBuffer = '';
+            let barcodeTimeout;
 
-                $('#emptyRow').remove()
+            $('#barcodeInput').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+
+                    const barcode = $(this).val().trim();
+
+                    if (barcode) {
+                        // Cari produk berdasarkan product_code
+                        const product = products.find(p => p.product_code === barcode);
+
+                        if (product) {
+                            // Cek apakah produk sudah ditambahkan
+                            if (addedProductIds.has(product.id)) {
+                                showNotification('Produk sudah ada dalam transaksi!', 'warning');
+                                $(this).val('').focus();
+                                return;
+                            }
+
+                            // Tambahkan produk otomatis
+                            addProductRow(product);
+                            showNotification(`✓ ${product.name} berhasil ditambahkan`, 'success');
+
+                            // Clear input
+                            $(this).val('').focus();
+                        } else {
+                            showNotification('Produk tidak ditemukan!', 'error');
+                            $(this).val('').focus();
+                        }
+                    }
+                }
+            });
+
+            // Auto-focus barcode input saat halaman load
+            $('#barcodeInput').focus();
+
+            // Fungsi untuk menampilkan notifikasi
+            function showNotification(message, type) {
+                const bgColor = type === 'success' ? 'bg-green-500' : 
+                               type === 'warning' ? 'bg-yellow-500' : 'bg-red-500';
+
+                const notification = $(`
+                    <div class="fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-slideIn">
+                        <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `);
+
+                $('body').append(notification);
+
+                setTimeout(() => {
+                    notification.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }, 3000);
+            }
+
+            // ================= ADD PRODUCT ROW =================
+            function addProductRow(product = null) {
+                $('#emptyRow').remove();
 
                 const row = `
-                                                                                                                                                                                                                                                                                                <tr class="border-ttext-sm">
-                                                        <td class="p-1">
-                                                            <select name="items[${index}][product_id]"
-                                                                class="w-full px-1 py-0.5 h-8 border rounded product-select select2 text-sm">
-                                                                <option value="">-- Pilih Produk --</option>
-                                                                ${products.map(p => `
-                                                                    <option value="${p.id}"
-                                                                        data-purchase="${p.purchase_price}"
-                                                                        data-selling="${p.selling_price}">
-                                                                        ${p.product_code} - ${p.name}
-                                                                    </option>
-                                                                `).join('')}
-                                                            </select>
-                                                        </td>
+                    <tr class="border-t text-sm" data-product-id="${product ? product.id : ''}">
+                        <td class="p-1">
+                            <select name="items[${index}][product_id]"
+                                class="w-full px-1 py-0.5 h-8 border rounded product-select select2 text-sm">
+                                <option value="">-- Pilih Produk --</option>
+                                ${products.map(p => `
+                                    <option value="${p.id}"
+                                        data-purchase="${p.purchase_price}"
+                                        data-selling="${p.selling_price}"
+                                        ${product && p.id === product.id ? 'selected' : ''}>
+                                        ${p.product_code} - ${p.name}
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </td>
 
-                                                        <td class="p-1">
-                                                            <div class="relative">
-                                                                <i class="fa-solid fa-cart-shopping absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                                                <input type="text"
-                                                                    class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded purchase-text text-sm"
-                                                                    readonly>
-                                                                <input type="hidden" name="items[${index}][purchase_price]" class="purchase-val">
-                                                            </div>
-                                                        </td>
+                        <td class="p-1">
+                            <div class="relative">
+                                <i class="fa-solid fa-cart-shopping absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text"
+                                    class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded purchase-text text-sm"
+                                    value="${product ? formatRupiah(product.purchase_price) : ''}"
+                                    readonly>
+                                <input type="hidden" name="items[${index}][purchase_price]" class="purchase-val" value="${product ? product.purchase_price : ''}">
+                            </div>
+                        </td>
 
-                                                        <td class="p-1">
-                                                            <div class="relative">
-                                                                <i class="fa-solid fa-tag absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                                                <input type="text"
-                                                                    class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded selling-text text-sm"
-                                                                    readonly>
-                                                                <input type="hidden" name="items[${index}][selling_price]" class="selling-val">
-                                                            </div>
-                                                        </td>
+                        <td class="p-1">
+                            <div class="relative">
+                                <i class="fa-solid fa-tag absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text"
+                                    class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded selling-text text-sm"
+                                    value="${product ? formatRupiah(product.selling_price) : ''}"
+                                    readonly>
+                                <input type="hidden" name="items[${index}][selling_price]" class="selling-val" value="${product ? product.selling_price : ''}">
+                            </div>
+                        </td>
 
-                                                        <td class="p-1">
-                                                            <div class="relative">
-                                                                <i class="fa-solid fa-pen absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                                                                <input type="text"
-                                                                    class="w-full h-8 pl-7 px-1 border rounded final-text text-sm">
-                                                                <input type="hidden" name="items[${index}][final_price]" class="final-val">
-                                                            </div>
-                                                        </td>
+                        <td class="p-1">
+                            <div class="relative">
+                                <i class="fa-solid fa-pen absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                                <input type="text"
+                                    class="w-full h-8 pl-7 px-1 border rounded final-text text-sm"
+                                    value="${product ? formatRupiah(product.selling_price) : ''}">
+                                <input type="hidden" name="items[${index}][final_price]" class="final-val" value="${product ? product.selling_price : ''}">
+                            </div>
+                        </td>
 
-                                                        <td class="p-1 text-center">
-                                                            <button type="button"
-                                                                class="remove-btn px-2 py-1 bg-red-500 text-white rounded text-xs">
-                                                                <i class="fa-solid fa-trash"></i>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                    `
+                        <td class="p-1 text-center">
+                            <button type="button"
+                                class="remove-btn px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
 
-                $table.append(row)
+                $table.append(row);
 
-                const $select = $table.find('.select2').last()
+                const $select = $table.find('.select2').last();
                 $select.select2({
                     placeholder: 'Cari produk',
                     width: '100%',
                     dropdownParent: $select.closest('td')
-                })
+                });
 
-                index++
+                // Track produk yang ditambahkan
+                if (product) {
+                    addedProductIds.add(product.id);
+                }
+
+                index++;
+                calculate();
+            }
+
+            // ================= ADD ITEM MANUAL =================
+            $('#addItemBtn').on('click', function () {
+                addProductRow();
             })
 
 
@@ -421,6 +521,20 @@
             $(document).on('change', '.product-select', function () {
                 const $row = $(this).closest('tr')
                 const $opt = $(this).find(':selected')
+                const productId = $(this).val();
+
+                // Remove previous product ID from tracking
+                const oldProductId = $row.data('product-id');
+                if (oldProductId) {
+                    addedProductIds.delete(oldProductId);
+                }
+
+                // Check if product already added in another row
+                if (productId && addedProductIds.has(parseInt(productId))) {
+                    showNotification('Produk sudah ada dalam transaksi!', 'warning');
+                    $(this).val('').trigger('change');
+                    return;
+                }
 
                 const purchase = Number($opt.data('purchase') || 0)
                 const selling = Number($opt.data('selling') || 0)
@@ -433,6 +547,12 @@
 
                 $row.find('.final-text').val(formatRupiah(selling))
                 $row.find('.final-val').val(selling)
+
+                // Update tracking
+                if (productId) {
+                    addedProductIds.add(parseInt(productId));
+                    $row.data('product-id', parseInt(productId));
+                }
 
                 calculate()
             })
@@ -447,19 +567,27 @@
 
             // ================= REMOVE =================
             $(document).on('click', '.remove-btn', function () {
-                $(this).closest('tr').remove()
-                calculate()
+                const $row = $(this).closest('tr');
+                const productId = $row.data('product-id');
+
+                // Remove from tracking
+                if (productId) {
+                    addedProductIds.delete(productId);
+                }
+
+                $row.remove();
+                calculate();
 
                 if (!$table.children().length) {
                     $table.html(`
-                                                                                                                                                                                                                                                                                                        <tr id="emptyRow">
-                                                                                                                                                                                                                                                                                                            <td colspan="6" class="p-6 text-center text-slate-400">
-                                                                                                                                                                                                                                                                                                                <i class="fa-solid fa-box-open text-2xl mb-2"></i>
-                                                                                                                                                                                                                                                                                                                <div>Belum ada produk</div>
-                                                                                                                                                                                                                                                                                                                <div class="text-xs">Klik “Tambah Produk” untuk mulai</div>
-                                                                                                                                                                                                                                                                                                            </td>
-                                                                                                                                                                                                                                                                                                        </tr>
-                                                                                                                                                                                                                                                                                                    `)
+                        <tr id="emptyRow">
+                            <td colspan="6" class="p-6 text-center text-slate-400">
+                                <i class="fa-solid fa-box-open text-2xl mb-2"></i>
+                                <div>Belum ada produk</div>
+                                <div class="text-xs">Scan barcode atau klik "Tambah Produk"</div>
+                            </td>
+                        </tr>
+                    `)
                 }
             })
 
@@ -496,11 +624,11 @@
                     bonusCost += purchase
 
                     $bonusInfo.append(`
-                                                                                                                                                <div class="flex justify-between">
-                                                                                                                                                    <span>🎁 ${name}</span>
-                                                                                                                                                    <span class="text-red-600">-Rp ${formatRupiah(purchase)}</span>
-                                                                                                                                                </div>
-                                                                                                                                            `)
+                        <div class="flex justify-between">
+                            <span>🎁 ${name}</span>
+                            <span class="text-red-600">-Rp ${formatRupiah(purchase)}</span>
+                        </div>
+                    `)
                 })
 
                 if (bonusCost > 0) {
@@ -548,6 +676,24 @@
                 calculate()
             })
 
+            // Add CSS for animation
+            $('head').append(`
+                <style>
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    .animate-slideIn {
+                        animation: slideIn 0.3s ease-out;
+                    }
+                </style>
+            `);
 
         })
     </script>
