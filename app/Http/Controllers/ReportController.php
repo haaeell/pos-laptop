@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SalesExport;
 use App\Exports\ProfitLossExport;
+use App\Models\Modal;
 
 class ReportController extends Controller
 {
@@ -37,6 +38,7 @@ class ReportController extends Controller
         $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
         $totalAsset = Product::where('status', 'available')->sum('purchase_price');
+        $totalPenambahanModal = Modal::where('tanggal_pencairan', '<=', $to->endOfDay())->sum('nominal_pencairan');
 
         return view('reports.index', compact(
             'sales',
@@ -47,6 +49,7 @@ class ReportController extends Controller
             'bonusLoss',
             'totalExpenses',
             'totalAsset',
+            'totalPenambahanModal'
         ));
     }
     public function pdf(Request $request)

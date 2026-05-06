@@ -56,6 +56,8 @@
             outline: none;
         }
     </style>
+
+    @stack('styles')
 </head>
 
 <body class="bg-slate-50 text-slate-700">
@@ -143,6 +145,12 @@
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('expenses') }}">
                     <i class="fa-solid fa-money-bill-wave w-5"></i>
                     Pengeluaran
+                </a>
+
+                <a href="/modals"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('modals*') }}">
+                    <i class="fa-solid fa-hand-holding-dollar w-5"></i>
+                    Modal / Hutang
                 </a>
 
                 <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">

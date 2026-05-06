@@ -20,6 +20,10 @@
             </div>
 
             <div class="flex gap-2">
+                <button onclick="printAllBarcodes()"
+                    class="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Cetak Semua
+                </button>
                 <button onclick="openImportModal()"
                     class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2">
                     <i class="fa-solid fa-file-import"></i> Import
@@ -91,8 +95,8 @@
                                     class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">Batal</button>
                                 <button type="submit" id="importBtn"
                                     class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
-                                                                                                                                                                                                       rounded-xl flex items-center justify-center gap-2
-                                                                                                                                                                                                       disabled:opacity-60 disabled:cursor-not-allowed">
+                                                                                                                                                                                                                                                                                                                   rounded-xl flex items-center justify-center gap-2
+                                                                                                                                                                                                                                                                                                                   disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span class="btn-text">Proses Import</span>
                                     <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -117,7 +121,8 @@
             </div>
 
             <form action="{{ route('products.index') }}" method="GET"
-                class="grid grid-cols-1 md:grid-cols-6 gap-5 items-end">
+                class="grid grid-cols-1 md:grid-cols-7 gap-5 items-end">
+
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Kategori</label>
                     <select name="category" class="select2-filter w-full">
@@ -143,64 +148,55 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">
-                        Harga Minimal
-                    </label>
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">Harga Minimal</label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
-
-                        <!-- DISPLAY -->
                         <input type="text" id="minPriceDisplay"
                             value="{{ request('min_price') ? number_format(request('min_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                                                                                                                          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
-
-
                         <input type="hidden" name="min_price" id="minPrice" value="{{ request('min_price') }}">
                     </div>
                 </div>
 
-
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">
-                        Harga Maksimal
-                    </label>
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">Harga Maksimal</label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
-
-                        <!-- DISPLAY -->
                         <input type="text" id="maxPriceDisplay"
                             value="{{ request('max_price') ? number_format(request('max_price'), 0, ',', '.') : '' }}"
                             oninput="formatRupiahInput(this)"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm
-                                                                                                                                                                                                                      focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                             placeholder="0">
-
-
                         <input type="hidden" name="max_price" id="maxPrice" value="{{ request('max_price') }}">
                     </div>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">
-                        Status Produk
-                    </label>
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Status Produk</label>
                     <select name="status" class="select2-filter w-full">
                         <option value="">Semua Status</option>
-                        <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia
-                        </option>
+                        <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Tersedia</option>
                         <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Terjual</option>
                         <option value="bonus" {{ request('status') == 'bonus' ? 'selected' : '' }}>Bonus</option>
                     </select>
                 </div>
 
+                <div class="space-y-1 md:col-span-2">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Scan Barcode</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500"></i>
+                        <input type="text" id="barcodeScanner" name="barcode_search" value="{{ request('barcode_search') }}"
+                            placeholder="Scan barcode atau ketik kode produk..." autocomplete="off" class="w-full pl-10 pr-3 py-2.5 border border-indigo-300 rounded-xl text-sm
+                                               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                                               bg-indigo-50 placeholder:text-indigo-300" />
+                    </div>
+                </div>
 
-
-                <div class="flex gap-2">
+                <div class="flex gap-2 md:col-span-7">
                     <button type="submit"
-                        class="flex-1 bg-indigo-600 text-white h-[42px] rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-100 flex items-center justify-center gap-2 text-sm font-bold">
+                        class="px-6 bg-indigo-600 text-white h-[42px] rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-100 flex items-center justify-center gap-2 text-sm font-bold">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i> Cari
                     </button>
                     <a href="{{ route('products.index') }}"
@@ -209,6 +205,7 @@
                         <i class="fa-solid fa-rotate-right"></i>
                     </a>
                 </div>
+
             </form>
         </div>
 
@@ -254,12 +251,17 @@
                             <td class="text-nowrap">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full
-                                                                                                                                                                                                                        {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
                                     {{ $product->status === 'sold' ? 'Terjual' : ($product->status === 'bonus' ? 'Bonus' : 'Tersedia') }}
                                 </span>
                             </td>
 
                             <td class="text-center text-nowrap space-x-2">
+                                <button onclick="printBarcode({{ $product->id }})"
+                                    class="px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                                    title="Cetak Barcode">
+                                    <i class="fa-solid fa-barcode"></i>
+                                </button>
                                 <button onclick='openEditModal(@json($product->load('images')))'
                                     class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500">
                                     <i class="fa-solid fa-pen"></i>
@@ -342,8 +344,8 @@
                         <!-- DROPZONE -->
                         <div id="galleryDropzone"
                             class="relative border-2 border-dashed border-slate-300 rounded-2xl p-6
-                                                                                   text-center cursor-pointer
-                                                                                   hover:border-emerald-400 hover:bg-emerald-50/40 transition">
+                                                                                                                                                                                               text-center cursor-pointer
+                                                                                                                                                                                               hover:border-emerald-400 hover:bg-emerald-50/40 transition">
 
                             <input type="file" id="galleryInput" name="images[]" multiple accept="image/*"
                                 class="absolute inset-0 opacity-0 cursor-pointer">
@@ -486,9 +488,56 @@
         </div>
     </div>
 
+    <div id="barcodeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl border w-full max-w-sm">
+
+            {{-- Header --}}
+            <div class="bg-indigo-600 px-5 py-3 rounded-t-2xl flex justify-between items-center text-white">
+                <h3 class="font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-barcode"></i> Cetak Label Barcode
+                </h3>
+                <button onclick="closeBarcodeModal()" class="hover:rotate-90 transition-transform">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            {{-- Preview label POS 58mm --}}
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <label class="text-xs font-semibold text-slate-600">Jumlah Cetak:</label>
+                    <input type="number" id="printQty" value="1" min="1" max="50"
+                        class="w-20 border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+                </div>
+
+                {{-- Preview area --}}
+                <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 bg-slate-50 flex justify-center">
+                    <div id="barcodePreview" class="text-center"></div>
+                </div>
+
+                <div class="flex gap-2 mt-4">
+                    <button onclick="closeBarcodeModal()"
+                        class="flex-1 py-2 border border-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-100">
+                        Batal
+                    </button>
+                    <button onclick="doPrint()"
+                        class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-print"></i> Cetak
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     @push('scripts')
+        <script>
+            var productData = {
+                @foreach ($products as $product)
+                    {{ $product->id }}: @json($product),
+                @endforeach
+                                                                                                                                };
+        </script>
         <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
         <script>
             let descriptionEditor;
@@ -511,16 +560,16 @@
                     div.className = 'relative group';
 
                     div.innerHTML = `
-                                    <img src="/storage/${img.image}"
-                                         class="w-full h-24 object-cover rounded-xl border">
-                                    <button type="button"
-                                        class="absolute top-1 right-1 bg-red-600 text-white text-xs
-                                               w-6 h-6 rounded-full flex items-center justify-center
-                                               opacity-0 group-hover:opacity-100 transition"
-                                        onclick="removeExistingImage(${img.id}, this)">
-                                        ✕
-                                    </button>
-                                `;
+                                                                                                                                                                                                                                                            <img src="/storage/${img.image}"
+                                                                                                                                                                                                                                                                 class="w-full h-24 object-cover rounded-xl border">
+                                                                                                                                                                                                                                                            <button type="button"
+                                                                                                                                                                                                                                                                class="absolute top-1 right-1 bg-red-600 text-white text-xs
+                                                                                                                                                                                                                                                                       w-6 h-6 rounded-full flex items-center justify-center
+                                                                                                                                                                                                                                                                       opacity-0 group-hover:opacity-100 transition"
+                                                                                                                                                                                                                                                                onclick="removeExistingImage(${img.id}, this)">
+                                                                                                                                                                                                                                                                ✕
+                                                                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                                                                        `;
 
                     galleryPreview.appendChild(div);
                 });
@@ -553,17 +602,17 @@
                         div.className = 'relative group';
 
                         div.innerHTML = `
-                                                                                                                                                <img src="${e.target.result}"
-                                                                                                                                                    class="w-full h-24 object-cover rounded-xl border">
+                                                                                                                                                                                                                                                                                                                                                                        <img src="${e.target.result}"
+                                                                                                                                                                                                                                                                                                                                                                            class="w-full h-24 object-cover rounded-xl border">
 
-                                                                                                                                                <button type="button"
-                                                                                                                                                    class="absolute top-1 right-1 bg-red-500 text-white text-xs
-                                                                                                                                                           w-6 h-6 rounded-full flex items-center justify-center
-                                                                                                                                                           opacity-0 group-hover:opacity-100 transition"
-                                                                                                                                                    onclick="removeGalleryImage(${galleryFiles.length - 1}, this)">
-                                                                                                                                                    ✕
-                                                                                                                                                </button>
-                                                                                                                                            `;
+                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                            class="absolute top-1 right-1 bg-red-500 text-white text-xs
+                                                                                                                                                                                                                                                                                                                                                                                   w-6 h-6 rounded-full flex items-center justify-center
+                                                                                                                                                                                                                                                                                                                                                                                   opacity-0 group-hover:opacity-100 transition"
+                                                                                                                                                                                                                                                                                                                                                                            onclick="removeGalleryImage(${galleryFiles.length - 1}, this)">
+                                                                                                                                                                                                                                                                                                                                                                            ✕
+                                                                                                                                                                                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                                                                                                                                                                                    `;
 
                         galleryPreview.appendChild(div);
                     };
@@ -729,9 +778,9 @@
                             form.action = `/products/${id}`
                             form.innerHTML =
                                 `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="_method" value="DELETE">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                `
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        `
                             document.body.appendChild(form)
                             form.submit()
                         }
@@ -785,6 +834,235 @@
                 };
 
             })
+        </script>
+
+        {{-- CDN JsBarcode --}}
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+        <script>
+            let currentBarcodeProduct = null;
+
+            window.printBarcode = function (id) {
+                const product = productData[id];
+                currentBarcodeProduct = product;
+                const preview = document.getElementById('barcodePreview');
+
+                // Tampilkan modal dulu
+                document.getElementById('barcodeModal').classList.remove('hidden');
+
+                // Kosongkan preview
+                preview.innerHTML = '';
+
+                // Buat SVG dan append
+                const svg = document.createElement('svg');
+                svg.id = 'svgPreview';
+                svg.style.width = '160px';
+                svg.style.height = '60px';
+                svg.style.display = 'block';
+                svg.style.margin = '0 auto';
+                preview.appendChild(svg);
+
+                const desc = product.description
+                    ? product.description
+                        .replace(/<\/p>/gi, ' | ')
+                        .replace(/<[^>]+>/g, '')
+                        .replace(/\s*\|\s*$/, '')
+                        .trim()
+                    : '-';
+
+                preview.insertAdjacentHTML('beforeend',
+                    '<p style="font-size:11px;font-weight:bold;margin-top:4px;">' + (product.product_code || '') + '</p>' +
+                    '<p style="font-size:11px;margin-top:2px;">' + (product.name || '') + '</p>' +
+                    '<p style="font-size:10px;color:#666;margin-top:2px;">' + desc + '</p>' +
+                    '<p style="font-size:13px;font-weight:bold;color:#4f46e5;margin-top:4px;">Rp ' +
+                    new Intl.NumberFormat('id-ID').format(product.selling_price) +
+                    '</p>'
+                );
+
+                // Render barcode setelah modal & SVG sudah ada di DOM
+                setTimeout(function () {
+                    const svgEl = document.getElementById('svgPreview');
+                    JsBarcode(svgEl, product.product_code, {
+                        format: "CODE128",
+                        width: 1.5,
+                        height: 40,
+                        displayValue: false,
+                        margin: 0
+                    });
+                }, 100);
+            };
+
+            window.closeBarcodeModal = function () {
+                document.getElementById('barcodeModal').classList.add('hidden');
+                currentBarcodeProduct = null;
+            };
+
+            window.doPrint = function () {
+                const qty = parseInt(document.getElementById('printQty').value) || 1;
+                const p = currentBarcodeProduct;
+                const desc = p.description
+                    ? p.description
+                        .replace(/<\/p>/gi, ' | ')   // ganti </p> jadi separator
+                        .replace(/<[^>]+>/g, '')     // hapus semua tag HTML sisanya
+                        .replace(/\s*\|\s*$/, '')    // buang separator di akhir
+                        .trim()
+                    : '-';
+                const price = 'Rp ' + new Intl.NumberFormat('id-ID').format(p.selling_price);
+
+                // Buat SVG barcode sebagai string
+                const tmpSvg = document.createElement('svg');
+                JsBarcode(tmpSvg, p.product_code, {
+                    format: "CODE128", width: 1.8, height: 50,
+                    displayValue: false, margin: 0
+                });
+                const svgStr = tmpSvg.outerHTML;
+
+                // Buat satu label HTML
+                const labelHtml =
+                    '<div class="label">' +
+                    svgStr +
+                    '<div class="code">' + p.product_code + '</div>' +
+                    '<div class="name">' + p.name + '</div>' +
+                    '<div class="desc">' + desc + '</div>' +
+                    '<div class="price">' + price + '</div>' +
+                    '</div>';
+
+                const repeatedLabels = labelHtml.repeat(qty);
+
+                const win = window.open('', '_blank');
+                const html =
+                    '<!DOCTYPE html>' +
+                    '<html><head>' +
+                    '<meta charset="UTF-8">' +
+                    '<title>Label Barcode</title>' +
+                    '<style>' +
+                    '* { margin:0; padding:0; box-sizing:border-box; }' +
+                    '@page { size: 58mm auto; margin: 2mm; }' +
+                    'body { font-family: Arial, sans-serif; width: 54mm; }' +
+                    '.label { width:54mm; padding:2mm 1mm; text-align:center; page-break-after:always; border-bottom:1px dashed #ccc; }' +
+                    '.label:last-child { border-bottom: none; }' +
+                    'svg { width:52mm; height:auto; display:block; margin:0 auto; }' +
+                    '.code  { font-size:8pt; font-weight:bold; margin-top:1mm; letter-spacing:1px; }' +
+                    '.name  { font-size:8pt; font-weight:bold; margin-top:1mm; }' +
+                    '.desc  { font-size:7pt; color:#555; margin-top:0.5mm; white-space: pre-line; }' +
+                    '.price { font-size:10pt; font-weight:bold; margin-top:1mm; }' +
+                    '</style>' +
+                    '</head><body>' +
+                    repeatedLabels +
+                    '<script>window.onload=function(){ window.print(); window.close(); }</' + 'script>' +
+                    '</body></html>';
+
+                win.document.write(html);
+                win.document.close();
+            };
+
+            // === SCAN BARCODE (auto-submit saat scan) ===
+            const barcodeInput = document.getElementById('barcodeScanner');
+            if (barcodeInput) {
+                let scanBuffer = '', scanTimer = null;
+
+                barcodeInput.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        // Enter dari alat scan → langsung submit form
+                        e.preventDefault();
+                        barcodeInput.closest('form').submit();
+                    }
+                });
+
+                barcodeInput.addEventListener('input', function () {
+                    clearTimeout(scanTimer);
+                    // Auto-submit 300ms setelah scan selesai (alat scan cepat)
+                    scanTimer = setTimeout(function () {
+                        if (barcodeInput.value.length > 3) {
+                            barcodeInput.closest('form').submit();
+                        }
+                    }, 300);
+                });
+            }
+            window.printAllBarcodes = async function () {
+                const ids = Object.keys(productData).filter(id => productData[id].status === 'available');
+
+                if (ids.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Tidak Ada Produk',
+                        text: 'Tidak ada produk dengan status Tersedia.',
+                        confirmButtonColor: '#4f46e5',
+                    });
+                    return;
+                }
+
+                const konfirmasi = await Swal.fire({
+                    icon: 'question',
+                    title: 'Cetak Semua Barcode?',
+                    html: `Akan mencetak <strong>${ids.length} label</strong> produk berstatus <span class="text-green-600 font-bold">Tersedia</span>.`,
+                    showCancelButton: true,
+                    confirmButtonColor: '#4f46e5',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Ya, Cetak',
+                    cancelButtonText: 'Batal',
+                });
+
+                if (!konfirmasi.isConfirmed) return;
+
+                let allLabels = '';
+
+                ids.forEach(function (id) {
+                    const p = productData[id];
+
+                    const tmpSvg = document.createElement('svg');
+                    JsBarcode(tmpSvg, p.product_code, {
+                        format: "CODE128", width: 1.8, height: 50,
+                        displayValue: false, margin: 0
+                    });
+                    const svgStr = tmpSvg.outerHTML;
+
+                    const desc = p.description
+                        ? p.description
+                            .replace(/<\/p>/gi, ' | ')
+                            .replace(/<[^>]+>/g, '')
+                            .replace(/\s*\|\s*$/, '')
+                            .trim()
+                        : '-';
+
+                    const price = 'Rp ' + new Intl.NumberFormat('id-ID').format(p.selling_price);
+
+                    allLabels +=
+                        '<div class="label">' +
+                        svgStr +
+                        '<div class="code">' + p.product_code + '</div>' +
+                        '<div class="name">' + p.name + '</div>' +
+                        '<div class="desc">' + desc + '</div>' +
+                        '<div class="price">' + price + '</div>' +
+                        '</div>';
+                });
+
+                const win = window.open('', '_blank');
+                const html =
+                    '<!DOCTYPE html>' +
+                    '<html><head>' +
+                    '<meta charset="UTF-8">' +
+                    '<title>Cetak Semua Barcode</title>' +
+                    '<style>' +
+                    '* { margin:0; padding:0; box-sizing:border-box; }' +
+                    '@page { size: 58mm auto; margin: 0; }' +
+                    'body { font-family: Arial, sans-serif; width: 58mm; padding: 2mm; }' +
+                    '.label { width:54mm; padding:2mm 1mm; text-align:center; page-break-after:always; border-bottom:1px dashed #ccc; }' +
+                    '.label:last-child { border-bottom: none; }' +
+                    'svg { width:52mm; height:auto; display:block; margin:0 auto; }' +
+                    '.code  { font-size:8pt; font-weight:bold; margin-top:1mm; letter-spacing:1px; }' +
+                    '.name  { font-size:8pt; font-weight:bold; margin-top:1mm; }' +
+                    '.desc  { font-size:7pt; color:#555; margin-top:0.5mm; white-space:pre-line; }' +
+                    '.price { font-size:10pt; font-weight:bold; margin-top:1mm; }' +
+                    '</style>' +
+                    '</head><body>' +
+                    allLabels +
+                    '<script>window.onload=function(){ window.print(); window.close(); }</' + 'script>' +
+                    '</body></html>';
+
+                win.document.write(html);
+                win.document.close();
+            };
         </script>
     @endpush
 @endsection

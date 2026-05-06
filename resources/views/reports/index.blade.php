@@ -90,7 +90,7 @@
                 <p class="text-xs text-indigo-300 italic">Total Penjualan - Pengeluaran</p>
             </div>
             <div class="text-3xl font-black">
-                Rp {{ number_format($totalSales - $totalExpenses, 0, ',', '.') }}
+                Rp {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal, 0, ',', '.') }}
             </div>
         </div>
 

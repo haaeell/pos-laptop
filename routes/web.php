@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ModalController;
 use App\Http\Controllers\PenjualController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -155,4 +156,23 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/update', [ProfileController::class, 'update'])->name('profile.update');
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modal / Hutang
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('modals')
+        ->controller(ModalController::class)
+        ->group(function () {
+            Route::get('/',              'index')->name('modals.index');
+            Route::post('/',             'store')->name('modals.store');
+            Route::get('/{id}',          'show')->name('modals.show');
+            Route::put('/{id}',          'update')->name('modals.update');
+            Route::delete('/{id}',       'destroy')->name('modals.destroy');
+
+            // Aksi khusus
+            Route::post('/{id}/bayar-cicilan', 'bayarCicilan')->name('modals.bayar-cicilan');
+            Route::post('/kalkulasi',          'kalkulasi')->name('modals.kalkulasi');
+        });
 });

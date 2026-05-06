@@ -38,7 +38,7 @@
                 @php
                     $description = App\Models\Setting::where('key', 'deskripsi')->first();
                    @endphp
-                {{ $description->value }}
+                {{ $description->value ?? '' }}
             </p>
 
             <div class="mt-12 flex gap-3 text-[10px] uppercase font-bold tracking-widest">

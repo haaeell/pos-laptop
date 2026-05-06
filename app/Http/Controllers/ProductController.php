@@ -38,6 +38,10 @@ class ProductController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('barcode_search')) {
+            $query->where('product_code', 'like', "%{$request->barcode_search}%");
+        }
+
 
         return view('master.products.index', [
             'products' => $query->get(),
