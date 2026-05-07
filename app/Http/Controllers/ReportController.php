@@ -33,7 +33,7 @@ class ReportController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $totalSales = $sales->sum('grand_total');
+        $totalSales = $sales->sum('grand_total') - $sales->sum('fee_sales');
         $totalProfit = $sales->sum('benefit');
         $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
@@ -59,7 +59,7 @@ class ReportController extends Controller
 
         $sales = Sale::whereBetween('created_at', [$from, $to])->orderBy('created_at')->get();
 
-        $totalSales = $sales->sum('grand_total');
+        $totalSales = $sales->sum('grand_total') - $sales->sum('fee_sales');
         $totalProfit = $sales->sum('benefit');
         $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
 
