@@ -95,8 +95,8 @@
                                     class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">Batal</button>
                                 <button type="submit" id="importBtn"
                                     class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
-                                                                                                                                                                                                                                                                                                                   rounded-xl flex items-center justify-center gap-2
-                                                                                                                                                                                                                                                                                                                   disabled:opacity-60 disabled:cursor-not-allowed">
+                                                                                                                                                                                                                                                                                                                                                                   rounded-xl flex items-center justify-center gap-2
+                                                                                                                                                                                                                                                                                                                                                                   disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span class="btn-text">Proses Import</span>
                                     <svg class="btn-loading hidden animate-spin h-4 w-4 text-white"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -188,9 +188,10 @@
                     <div class="relative">
                         <i class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500"></i>
                         <input type="text" id="barcodeScanner" name="barcode_search" value="{{ request('barcode_search') }}"
-                            placeholder="Scan barcode atau ketik kode produk..." autocomplete="off" class="w-full pl-10 pr-3 py-2.5 border border-indigo-300 rounded-xl text-sm
-                                               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
-                                               bg-indigo-50 placeholder:text-indigo-300" />
+                            placeholder="Scan barcode atau ketik kode produk..." autocomplete="off"
+                            class="w-full pl-10 pr-3 py-2.5 border border-indigo-300 rounded-xl text-sm
+                                                                                               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                                                                                               bg-indigo-50 placeholder:text-indigo-300" />
                     </div>
                 </div>
 
@@ -251,7 +252,7 @@
                             <td class="text-nowrap">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
                                     {{ $product->status === 'sold' ? 'Terjual' : ($product->status === 'bonus' ? 'Bonus' : 'Tersedia') }}
                                 </span>
                             </td>
@@ -344,8 +345,8 @@
                         <!-- DROPZONE -->
                         <div id="galleryDropzone"
                             class="relative border-2 border-dashed border-slate-300 rounded-2xl p-6
-                                                                                                                                                                                               text-center cursor-pointer
-                                                                                                                                                                                               hover:border-emerald-400 hover:bg-emerald-50/40 transition">
+                                                                                                                                                                                                                                               text-center cursor-pointer
+                                                                                                                                                                                                                                               hover:border-emerald-400 hover:bg-emerald-50/40 transition">
 
                             <input type="file" id="galleryInput" name="images[]" multiple accept="image/*"
                                 class="absolute inset-0 opacity-0 cursor-pointer">
@@ -536,7 +537,7 @@
                 @foreach ($products as $product)
                     {{ $product->id }}: @json($product),
                 @endforeach
-                                                                                                                                };
+                                                                                                                                                                                                                                };
         </script>
         <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
         <script>
@@ -560,16 +561,16 @@
                     div.className = 'relative group';
 
                     div.innerHTML = `
-                                                                                                                                                                                                                                                            <img src="/storage/${img.image}"
-                                                                                                                                                                                                                                                                 class="w-full h-24 object-cover rounded-xl border">
-                                                                                                                                                                                                                                                            <button type="button"
-                                                                                                                                                                                                                                                                class="absolute top-1 right-1 bg-red-600 text-white text-xs
-                                                                                                                                                                                                                                                                       w-6 h-6 rounded-full flex items-center justify-center
-                                                                                                                                                                                                                                                                       opacity-0 group-hover:opacity-100 transition"
-                                                                                                                                                                                                                                                                onclick="removeExistingImage(${img.id}, this)">
-                                                                                                                                                                                                                                                                ✕
-                                                                                                                                                                                                                                                            </button>
-                                                                                                                                                                                                                                                        `;
+                                                                                                                                                                                                                                                                                                                                                            <img src="/storage/${img.image}"
+                                                                                                                                                                                                                                                                                                                                                                 class="w-full h-24 object-cover rounded-xl border">
+                                                                                                                                                                                                                                                                                                                                                            <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                class="absolute top-1 right-1 bg-red-600 text-white text-xs
+                                                                                                                                                                                                                                                                                                                                                                       w-6 h-6 rounded-full flex items-center justify-center
+                                                                                                                                                                                                                                                                                                                                                                       opacity-0 group-hover:opacity-100 transition"
+                                                                                                                                                                                                                                                                                                                                                                onclick="removeExistingImage(${img.id}, this)">
+                                                                                                                                                                                                                                                                                                                                                                ✕
+                                                                                                                                                                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                                                                                                                                                                        `;
 
                     galleryPreview.appendChild(div);
                 });
@@ -602,17 +603,17 @@
                         div.className = 'relative group';
 
                         div.innerHTML = `
-                                                                                                                                                                                                                                                                                                                                                                        <img src="${e.target.result}"
-                                                                                                                                                                                                                                                                                                                                                                            class="w-full h-24 object-cover rounded-xl border">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <img src="${e.target.result}"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="w-full h-24 object-cover rounded-xl border">
 
-                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                            class="absolute top-1 right-1 bg-red-500 text-white text-xs
-                                                                                                                                                                                                                                                                                                                                                                                   w-6 h-6 rounded-full flex items-center justify-center
-                                                                                                                                                                                                                                                                                                                                                                                   opacity-0 group-hover:opacity-100 transition"
-                                                                                                                                                                                                                                                                                                                                                                            onclick="removeGalleryImage(${galleryFiles.length - 1}, this)">
-                                                                                                                                                                                                                                                                                                                                                                            ✕
-                                                                                                                                                                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                                                                                                                                                                    `;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="absolute top-1 right-1 bg-red-500 text-white text-xs
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   w-6 h-6 rounded-full flex items-center justify-center
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   opacity-0 group-hover:opacity-100 transition"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            onclick="removeGalleryImage(${galleryFiles.length - 1}, this)">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ✕
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    `;
 
                         galleryPreview.appendChild(div);
                     };
@@ -778,9 +779,9 @@
                             form.action = `/products/${id}`
                             form.innerHTML =
                                 `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <input type="hidden" name="_method" value="DELETE">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        `
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <input type="hidden" name="_method" value="DELETE">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        `
                             document.body.appendChild(form)
                             form.submit()
                         }
@@ -856,8 +857,8 @@
                 // Buat SVG dan append
                 const svg = document.createElement('svg');
                 svg.id = 'svgPreview';
-                svg.style.width = '160px';
-                svg.style.height = '60px';
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
                 svg.style.display = 'block';
                 svg.style.margin = '0 auto';
                 preview.appendChild(svg);
@@ -884,10 +885,10 @@
                     const svgEl = document.getElementById('svgPreview');
                     JsBarcode(svgEl, product.product_code, {
                         format: "CODE128",
-                        width: 1.5,
+                        width: 1,       // ← lebih kecil
                         height: 40,
                         displayValue: false,
-                        margin: 0
+                        margin: 2
                     });
                 }, 100);
             };
@@ -912,8 +913,8 @@
                 // Buat SVG barcode sebagai string
                 const tmpSvg = document.createElement('svg');
                 JsBarcode(tmpSvg, p.product_code, {
-                    format: "CODE128", width: 1.8, height: 50,
-                    displayValue: false, margin: 0
+                    format: "CODE128", width: 1, height: 45,  // ← 1 sudah cukup untuk 58mm
+                    displayValue: false, margin: 2
                 });
                 const svgStr = tmpSvg.outerHTML;
 
@@ -939,12 +940,12 @@
                     '* { margin:0; padding:0; box-sizing:border-box; }' +
                     '@page { size: 58mm auto; margin: 2mm; }' +
                     'body { font-family: Arial, sans-serif; width: 54mm; }' +
-                    '.label { width:54mm; padding:2mm 1mm; text-align:center; page-break-after:always; border-bottom:1px dashed #ccc; }' +
+                    '.label { width:54mm; padding:1mm; text-align:center; page-break-after:always; overflow:hidden; }' +
                     '.label:last-child { border-bottom: none; }' +
-                    'svg { width:52mm; height:auto; display:block; margin:0 auto; }' +
+                    'svg { width:50mm; max-width:50mm; height:auto; display:block; margin:4px auto 0; overflow:hidden; }' +
                     '.code  { font-size:8pt; font-weight:bold; margin-top:1mm; letter-spacing:1px; }' +
                     '.name  { font-size:8pt; font-weight:bold; margin-top:1mm; }' +
-                    '.desc  { font-size:7pt; color:#555; margin-top:0.5mm; white-space: pre-line; }' +
+                    '.desc  { font-size:8pt; margin-top:0.5mm; font-weight:bold; white-space: pre-line; }' +
                     '.price { font-size:10pt; font-weight:bold; margin-top:1mm; }' +
                     '</style>' +
                     '</head><body>' +
@@ -1012,8 +1013,8 @@
 
                     const tmpSvg = document.createElement('svg');
                     JsBarcode(tmpSvg, p.product_code, {
-                        format: "CODE128", width: 1.8, height: 50,
-                        displayValue: false, margin: 0
+                        format: "CODE128", width: 1, height: 45,  // ← 1 sudah cukup untuk 58mm
+                        displayValue: false, margin: 2
                     });
                     const svgStr = tmpSvg.outerHTML;
 
@@ -1047,12 +1048,12 @@
                     '* { margin:0; padding:0; box-sizing:border-box; }' +
                     '@page { size: 58mm auto; margin: 0; }' +
                     'body { font-family: Arial, sans-serif; width: 58mm; padding: 2mm; }' +
-                    '.label { width:54mm; padding:2mm 1mm; text-align:center; page-break-after:always; border-bottom:1px dashed #ccc; }' +
+                    '.label { width:54mm; padding:1mm; text-align:center; page-break-after:always; overflow:hidden; }' +
                     '.label:last-child { border-bottom: none; }' +
-                    'svg { width:52mm; height:auto; display:block; margin:0 auto; }' +
+                    'svg { width:50mm; max-width:50mm; height:auto; display:block; margin:4px auto 0; overflow:hidden; }' +
                     '.code  { font-size:8pt; font-weight:bold; margin-top:1mm; letter-spacing:1px; }' +
                     '.name  { font-size:8pt; font-weight:bold; margin-top:1mm; }' +
-                    '.desc  { font-size:7pt; color:#555; margin-top:0.5mm; white-space:pre-line; }' +
+                    '.desc  { font-size:8pt; margin-top:0.5mm; font-weight:bold; white-space:pre-line; }' +
                     '.price { font-size:10pt; font-weight:bold; margin-top:1mm; }' +
                     '</style>' +
                     '</head><body>' +
