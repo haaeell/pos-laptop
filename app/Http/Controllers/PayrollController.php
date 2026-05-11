@@ -175,8 +175,10 @@ class PayrollController extends Controller
             ->where('employee_id', $employeeId)
             ->with('employee')
             ->firstOrFail();
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        $contacts = \App\Models\Contact::all();
 
-        $pdf = Pdf::loadView('payroll.slip-pdf', compact('payroll', 'detail'));
+        $pdf = Pdf::loadView('payroll.slip-pdf', compact('payroll', 'detail', 'settings', 'contacts'));
 
         return $pdf->stream('slip-gaji-' . $detail->employee->employee_number . '.pdf');
     }
