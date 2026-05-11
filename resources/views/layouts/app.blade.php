@@ -89,46 +89,59 @@
                 <img src="/logo.jpeg" class="w-8 h-8" alt=""> Barokah Computer
             </div>
 
-            <!-- NAV -->
             <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
 
+                <!-- Dashboard — semua role -->
                 <a href="/home"
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('home') }}">
                     <i class="fa-solid fa-gauge-high w-5"></i>
                     Dashboard
                 </a>
 
-                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Master Data
-                </div>
+                @if (Auth::user()->isSuperAdmin())
 
-                <a href="/categories"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('categories*') }}">
-                    <i class="fa-solid fa-layer-group w-5"></i>
-                    Kategori
-                </a>
+                    <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Master Data
+                    </div>
 
-                <a href="/brands"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('brands*') }}">
-                    <i class="fa-solid fa-tags w-5"></i>
-                    Brand
-                </a>
+                    <a href="/categories"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('categories*') }}">
+                        <i class="fa-solid fa-layer-group w-5"></i>
+                        Kategori
+                    </a>
 
-                <a href="/products"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('products*') }}">
-                    <i class="fa-solid fa-box-open w-5"></i>
-                    Produk
-                </a>
-                <a href="/penjuals"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('penjuals*') }}">
-                    <i class="fa-solid fa-user w-5"></i>
-                    Sales
-                </a>
+                    <a href="/brands"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('brands*') }}">
+                        <i class="fa-solid fa-tags w-5"></i>
+                        Brand
+                    </a>
+
+                    <a href="/products"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('products*') }}">
+                        <i class="fa-solid fa-box-open w-5"></i>
+                        Produk
+                    </a>
+
+                    <a href="/penjuals"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('penjuals*') }}">
+                        <i class="fa-solid fa-user w-5"></i>
+                        Marketing
+                    </a>
+
+                    <a href="/employees"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('employees*') }}">
+                        <i class="fa-solid fa-users w-5"></i>
+                        Karyawan
+                    </a>
+
+                @endif
+                {{-- ===================================================== --}}
 
                 <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Transaksi
                 </div>
 
+                <!-- Penjualan — semua role -->
                 <a href="/sales"
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales') }}">
                     <i class="fa-solid fa-cash-register w-5"></i>
@@ -141,43 +154,76 @@
                     Transaksi Baru
                 </a>
 
-                <a href="/expenses"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('expenses') }}">
-                    <i class="fa-solid fa-money-bill-wave w-5"></i>
-                    Pengeluaran
+                <a href="/services"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('services*') }}">
+                    <i class="fa-solid fa-screwdriver-wrench w-5"></i>
+                    Service
                 </a>
 
-                <a href="/modals"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('modals*') }}">
-                    <i class="fa-solid fa-hand-holding-dollar w-5"></i>
-                    Modal / Hutang
-                </a>
+                {{-- ===================== ADMIN ONLY ===================== --}}
+                @if (Auth::user()->isSuperAdmin())
 
-                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Laporan
-                </div>
+                    <a href="/expenses"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('expenses') }}">
+                        <i class="fa-solid fa-money-bill-wave w-5"></i>
+                        Pengeluaran
+                    </a>
 
-                <a href="/reports"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('reports*') }}">
-                    <i class="fa-solid fa-chart-line w-5"></i>
-                    Laporan Penjualan
-                </a>
+                    <a href="/modals"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('modals*') }}">
+                        <i class="fa-solid fa-hand-holding-dollar w-5"></i>
+                        Modal / Hutang
+                    </a>
 
-                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Pengaturan
-                </div>
+                    <a href="/payrolls"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('payrolls*') }}">
+                        <i class="fa-solid fa-coins w-5"></i>
+                        Penggajian
+                    </a>
 
-                <a href="/contacts"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('contacts*') }}">
-                    <i class="fa-brands fa-whatsapp w-5"></i>
-                    Nomor WhatsApp
-                </a>
+                @endif
 
-                <a href="/settings"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('settings*') }}">
-                    <i class="fa-solid fa-gear w-5"></i>
-                    Setting Toko
-                </a>
+
+                {{-- ===================== ADMIN ONLY ===================== --}}
+                @if (Auth::user()->isSuperAdmin())
+
+                    {{-- ===================================================== --}}
+
+                    <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Laporan
+                    </div>
+
+                    <!-- Laporan — semua role -->
+                    <a href="/reports"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('reports*') }}">
+                        <i class="fa-solid fa-chart-line w-5"></i>
+                        Laporan Penjualan
+                    </a>
+
+                    <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Pengaturan
+                    </div>
+
+                    <a href="/contacts"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('contacts*') }}">
+                        <i class="fa-brands fa-whatsapp w-5"></i>
+                        Nomor WhatsApp
+                    </a>
+
+                    <a href="/settings"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('settings*') }}">
+                        <i class="fa-solid fa-gear w-5"></i>
+                        Setting Toko
+                    </a>
+
+                    <a href="/users"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('users*') }}">
+                        <i class="fa-solid fa-user-shield w-5"></i>
+                        Manajemen User
+                    </a>
+
+                @endif
+                {{-- ===================================================== --}}
 
             </nav>
         </aside>

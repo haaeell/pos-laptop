@@ -56,30 +56,153 @@
             </div>
         </div>
 
-        {{-- SUMMARY CARDS --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {{-- Penjualan --}}
-            <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-indigo-500">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Penjualan</p>
-                <h3 class="text-lg font-black text-slate-800 mt-1">Rp{{ number_format($totalSales, 0, ',', '.') }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Penjualan -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Penjualan</p>
+                        <h3 class="text-xl font-bold text-slate-800 mt-2">Rp{{ number_format($totalSales, 0, ',', '.') }}
+                        </h3>
+                    </div>
+                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="浸13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-indigo-500"></div>
             </div>
 
-            {{-- Pengeluaran --}}
-            <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-orange-500">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Pengeluaran</p>
-                <h3 class="text-lg font-black text-orange-600 mt-1">Rp{{ number_format($totalExpenses, 0, ',', '.') }}</h3>
+            <!-- Fee Sales -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Fee Sales</p>
+                        <h3 class="text-xl font-bold text-slate-800 mt-2">Rp{{ number_format($totalFeeSales, 0, ',', '.') }}
+                        </h3>
+                    </div>
+                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-indigo-500/50"></div>
             </div>
 
-            {{-- Keuntungan Kotor --}}
-            <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-emerald-500">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profit</p>
-                <h3 class="text-lg font-black text-emerald-600 mt-1">Rp{{ number_format($totalProfit, 0, ',', '.') }}</h3>
+            <!-- Pengeluaran -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Pengeluaran</p>
+                        <h3 class="text-xl font-bold text-rose-600 mt-2">Rp{{ number_format($totalExpenses, 0, ',', '.') }}
+                        </h3>
+                    </div>
+                    <div class="p-2 bg-rose-50 rounded-lg text-rose-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-rose-500"></div>
             </div>
 
-            {{-- Bonus/Loss --}}
-            <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-rose-500">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bonus / (Loss)</p>
-                <h3 class="text-lg font-black text-rose-600 mt-1">Rp{{ number_format($bonusLoss, 0, ',', '.') }}</h3>
+            <!-- Profit -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profit</p>
+                        <h3 class="text-xl font-bold text-emerald-600 mt-2">Rp{{ number_format($totalProfit, 0, ',', '.') }}
+                        </h3>
+                    </div>
+                    <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-12c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4m0 5V3m0 18v-2" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-emerald-500"></div>
+            </div>
+
+            <!-- Bonus/Loss -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bonus / (Loss)</p>
+                        <h3 class="text-xl font-bold text-amber-600 mt-2">Rp{{ number_format($bonusLoss, 0, ',', '.') }}
+                        </h3>
+                    </div>
+                    <div class="p-2 bg-amber-50 rounded-lg text-amber-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-amber-500"></div>
+            </div>
+
+            <!-- Jasa Service -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jasa Service</p>
+                        <h3 class="text-xl font-bold text-cyan-600 mt-2">
+                            Rp{{ number_format($totalJasaService, 0, ',', '.') }}</h3>
+                    </div>
+                    <div class="p-2 bg-cyan-50 rounded-lg text-cyan-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-cyan-500"></div>
+            </div>
+
+            <!-- Gaji Karyawan -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Gaji Karyawan <span
+                                class="text-[9px] text-slate-400 lowercase italic">(Tanpa Fee)</span></p>
+                        <h3 class="text-xl font-bold text-slate-800 mt-2">
+                            Rp{{ number_format($totalGajiKaryawan, 0, ',', '.') }}</h3>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-slate-400"></div>
+            </div>
+
+            <!-- Sparepart -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pembelian Sparepart <span
+                                class="text-[9px] text-slate-400 lowercase italic">(Service)</span></p>
+                        <h3 class="text-xl font-bold text-slate-800 mt-2">
+                            Rp{{ number_format($totalPurchaseServices, 0, ',', '.') }}</h3>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-slate-400"></div>
             </div>
         </div>
 
@@ -87,10 +210,10 @@
         <div class="bg-indigo-900 rounded-2xl p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <p class="text-indigo-200 text-sm font-medium">Jumlah Saldo</p>
-                <p class="text-xs text-indigo-300 italic">Total Penjualan - Pengeluaran</p>
             </div>
             <div class="text-3xl font-black">
-                Rp {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal, 0, ',', '.') }}
+                Rp
+                {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal - $totalCicilan - $totalGajiKaryawan - $totalPurchaseServices, 0, ',', '.') }}
             </div>
         </div>
 
@@ -126,7 +249,8 @@
                                 <td class="px-6 py-4 font-bold text-indigo-600">#{{ $sale->invoice_number }}</td>
                                 <td class="px-6 py-4 text-slate-600">{{ $sale->created_at->format('d/m/Y H:i') }}</td>
                                 <td class="px-6 py-4 text-right font-bold">Rp
-                                    {{ number_format($sale->grand_total, 0, ',', '.') }}</td>
+                                    {{ number_format($sale->grand_total, 0, ',', '.') }}
+                                </td>
                                 <td class="px-6 py-4 text-right">
                                     <span
                                         class="{{ $sale->benefit >= 0 ? 'text-emerald-600' : 'text-rose-600' }} font-semibold">
