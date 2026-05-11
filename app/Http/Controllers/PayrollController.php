@@ -184,11 +184,6 @@ class PayrollController extends Controller
     public function destroy($id)
     {
         $payroll = Payroll::findOrFail($id);
-
-        if ($payroll->status === 'released') {
-            return redirect()->back()->with('error', 'Gaji yang sudah dirilis tidak dapat dihapus');
-        }
-
         $payroll->delete();
 
         return redirect()->back()->with('success', 'Penggajian berhasil dihapus');

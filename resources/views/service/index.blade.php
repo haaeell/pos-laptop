@@ -145,15 +145,13 @@
                                             <span class="tooltip-text">Sudah Diambil</span>
                                         </div>
                                     @endif
-                                    @if (!in_array($svc->status, ['in_progress', 'done', 'taken']))
-                                        <div class="tooltip-wrap">
-                                            <button onclick="deleteService({{ $svc->id }})"
-                                                class="action-btn bg-red-500 hover:bg-red-600 text-white">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                            <span class="tooltip-text">Hapus</span>
-                                        </div>
-                                    @endif
+                                    <div class="tooltip-wrap">
+                                        <button onclick="deleteService({{ $svc->id }})"
+                                            class="action-btn bg-red-500 hover:bg-red-600 text-white">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                        <span class="tooltip-text">Hapus</span>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -563,22 +561,22 @@
             function addSpareRow(name = '', price = 0) {
                 const i = spareIndex++;
                 const row = $(`
-                                                                                                <div class="spare-row flex gap-2 items-center" data-index="${i}">
-                                                                                                    <input type="text" name="spare_parts[${i}][name]" placeholder="Nama sparepart"
-                                                                                                        value="${name}" class="field-input flex-1 text-sm py-2">
-                                                                                                    <div class="relative w-40">
-                                                                                                        <input type="text" placeholder="0"
-                                                                                                            value="${price > 0 ? toRupiah(price) : ''}"
-                                                                                                            class="field-input pl-8 pr-2 text-sm py-2 spare-price-display"
-                                                                                                            oninput="onSparePriceInput(this)">
-                                                                                                        <input type="hidden" name="spare_parts[${i}][price]" class="spare-price-raw" value="${price}">
-                                                                                                    </div>
-                                                                                                    <button type="button" onclick="removeSpareRow(this)"
-                                                                                                        class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center flex-shrink-0 transition">
-                                                                                                        <i class="fa-solid fa-times text-xs"></i>
-                                                                                                    </button>
-                                                                                                </div>
-                                                                                            `);
+                                                                                                        <div class="spare-row flex gap-2 items-center" data-index="${i}">
+                                                                                                            <input type="text" name="spare_parts[${i}][name]" placeholder="Nama sparepart"
+                                                                                                                value="${name}" class="field-input flex-1 text-sm py-2">
+                                                                                                            <div class="relative w-40">
+                                                                                                                <input type="text" placeholder="0"
+                                                                                                                    value="${price > 0 ? toRupiah(price) : ''}"
+                                                                                                                    class="field-input pl-8 pr-2 text-sm py-2 spare-price-display"
+                                                                                                                    oninput="onSparePriceInput(this)">
+                                                                                                                <input type="hidden" name="spare_parts[${i}][price]" class="spare-price-raw" value="${price}">
+                                                                                                            </div>
+                                                                                                            <button type="button" onclick="removeSpareRow(this)"
+                                                                                                                class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center flex-shrink-0 transition">
+                                                                                                                <i class="fa-solid fa-times text-xs"></i>
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                    `);
                 $('#spareRows').append(row);
                 calcEstTotal();
             }
@@ -661,27 +659,27 @@
                 let spareList = '';
                 if (data.spare_parts.length) {
                     spareList = data.spare_parts.map((sp, i) => `
-                                                                                                    <div class="detail-row border-b border-slate-100 last:border-0 py-2">
-                                                                                                        <span class="detail-label">${i + 1}. ${sp.name}</span>
-                                                                                                        <span class="detail-value">${formatRp(sp.price)}</span>
-                                                                                                    </div>
-                                                                                                `).join('');
+                                                                                                            <div class="detail-row border-b border-slate-100 last:border-0 py-2">
+                                                                                                                <span class="detail-label">${i + 1}. ${sp.name}</span>
+                                                                                                                <span class="detail-value">${formatRp(sp.price)}</span>
+                                                                                                            </div>
+                                                                                                        `).join('');
                 } else {
                     spareList = `<p class="text-slate-400 text-xs italic">Tidak ada sparepart</p>`;
                 }
 
                 const techs = data.technicians?.length
                     ? data.technicians.map(t => `
-                                                                                                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-                                                                                                        <div class="flex items-center gap-2">
-                                                                                                            <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                                                                                                                ${t.employee.full_name.charAt(0)}
+                                                                                                            <div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
+                                                                                                                <div class="flex items-center gap-2">
+                                                                                                                    <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                                                                                                        ${t.employee.full_name.charAt(0)}
+                                                                                                                    </div>
+                                                                                                                    <span class="font-medium text-slate-700">${t.employee.full_name}</span>
+                                                                                                                </div>
+                                                                                                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">${formatRp(t.fee_share)}</span>
                                                                                                             </div>
-                                                                                                            <span class="font-medium text-slate-700">${t.employee.full_name}</span>
-                                                                                                        </div>
-                                                                                                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">${formatRp(t.fee_share)}</span>
-                                                                                                    </div>
-                                                                                                `).join('')
+                                                                                                        `).join('')
                     : '<p class="text-slate-400 text-xs italic">Belum ada teknisi</p>';
 
                 const statusColors = {
@@ -703,67 +701,67 @@
                 const statusBadge = `<span class="px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[data.status] ?? 'bg-slate-100 text-slate-600'}">${statusLabels[data.status] ?? data.status}</span>`;
 
                 $('#detailBody').html(`
-                                                                                                <div class="detail-section">
-                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-user text-slate-400"></i> Informasi Konsumen</div>
-                                                                                                    <div class="detail-row">
-                                                                                                        <span class="detail-label">Nama</span>
-                                                                                                        <span class="detail-value font-semibold">${data.customer_name}</span>
-                                                                                                    </div>
-                                                                                                    <div class="detail-row">
-                                                                                                        <span class="detail-label">No. Telepon</span>
-                                                                                                        <span class="detail-value">${data.customer_phone ?? '-'}</span>
-                                                                                                    </div>
-                                                                                                    <div class="detail-row">
-                                                                                                        <span class="detail-label">Status</span>
-                                                                                                        <span class="detail-value">${statusBadge}</span>
-                                                                                                    </div>
-                                                                                                </div>
+                                                                                                        <div class="detail-section">
+                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-user text-slate-400"></i> Informasi Konsumen</div>
+                                                                                                            <div class="detail-row">
+                                                                                                                <span class="detail-label">Nama</span>
+                                                                                                                <span class="detail-value font-semibold">${data.customer_name}</span>
+                                                                                                            </div>
+                                                                                                            <div class="detail-row">
+                                                                                                                <span class="detail-label">No. Telepon</span>
+                                                                                                                <span class="detail-value">${data.customer_phone ?? '-'}</span>
+                                                                                                            </div>
+                                                                                                            <div class="detail-row">
+                                                                                                                <span class="detail-label">Status</span>
+                                                                                                                <span class="detail-value">${statusBadge}</span>
+                                                                                                            </div>
+                                                                                                        </div>
 
-                                                                                                <div class="detail-section">
-                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-laptop text-slate-400"></i> Perangkat</div>
-                                                                                                    <div class="detail-row">
-                                                                                                        <span class="detail-label">Brand / Jenis</span>
-                                                                                                        <span class="detail-value">${((data.device_brand ?? '') + ' ' + (data.device_type ?? '')).trim() || '-'}</span>
-                                                                                                    </div>
-                                                                                                    ${data.device_sn ? `<div class="detail-row">
-                                                                                                        <span class="detail-label">Serial Number</span>
-                                                                                                        <span class="detail-value font-mono text-xs">${data.device_sn}</span>
-                                                                                                    </div>` : ''}
-                                                                                                    <div class="detail-row border-t border-slate-100 pt-2 mt-1">
-                                                                                                        <span class="detail-label">Keluhan</span>
-                                                                                                        <span class="detail-value text-slate-600 text-right max-w-xs">${data.complaint}</span>
-                                                                                                    </div>
-                                                                                                    ${data.notes ? `<div class="detail-row">
-                                                                                                        <span class="detail-label">Catatan</span>
-                                                                                                        <span class="detail-value text-slate-500 text-right max-w-xs">${data.notes}</span>
-                                                                                                    </div>` : ''}
-                                                                                                </div>
+                                                                                                        <div class="detail-section">
+                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-laptop text-slate-400"></i> Perangkat</div>
+                                                                                                            <div class="detail-row">
+                                                                                                                <span class="detail-label">Brand / Jenis</span>
+                                                                                                                <span class="detail-value">${((data.device_brand ?? '') + ' ' + (data.device_type ?? '')).trim() || '-'}</span>
+                                                                                                            </div>
+                                                                                                            ${data.device_sn ? `<div class="detail-row">
+                                                                                                                <span class="detail-label">Serial Number</span>
+                                                                                                                <span class="detail-value font-mono text-xs">${data.device_sn}</span>
+                                                                                                            </div>` : ''}
+                                                                                                            <div class="detail-row border-t border-slate-100 pt-2 mt-1">
+                                                                                                                <span class="detail-label">Keluhan</span>
+                                                                                                                <span class="detail-value text-slate-600 text-right max-w-xs">${data.complaint}</span>
+                                                                                                            </div>
+                                                                                                            ${data.notes ? `<div class="detail-row">
+                                                                                                                <span class="detail-label">Catatan</span>
+                                                                                                                <span class="detail-value text-slate-500 text-right max-w-xs">${data.notes}</span>
+                                                                                                            </div>` : ''}
+                                                                                                        </div>
 
-                                                                                                <div class="detail-section">
-                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-receipt text-slate-400"></i> Rincian Biaya</div>
-                                                                                                    <div class="mb-2">
-                                                                                                        <div class="text-xs text-slate-400 mb-1.5 font-semibold">Sparepart</div>
-                                                                                                        ${spareList}
-                                                                                                    </div>
-                                                                                                    ${data.technician_notes ? `<div class="detail-row border-t border-slate-200 pt-2">
-                                                                                                        <span class="detail-label">Catatan Teknisi</span>
-                                                                                                        <span class="detail-value text-slate-500 text-right max-w-xs italic">${data.technician_notes}</span>
-                                                                                                    </div>` : ''}
-                                                                                                    <div class="detail-row border-t border-slate-200 pt-2">
-                                                                                                        <span class="detail-label">Harga Jasa</span>
-                                                                                                        <span class="detail-value">${formatRp(data.service_cost)}</span>
-                                                                                                    </div>
-                                                                                                    <div class="flex justify-between items-center mt-2 bg-indigo-600 text-white rounded-xl px-4 py-2.5">
-                                                                                                        <span class="font-bold text-sm">Total Biaya</span>
-                                                                                                        <span class="font-bold text-base">${formatRp(data.total_cost)}</span>
-                                                                                                    </div>
-                                                                                                </div>
+                                                                                                        <div class="detail-section">
+                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-receipt text-slate-400"></i> Rincian Biaya</div>
+                                                                                                            <div class="mb-2">
+                                                                                                                <div class="text-xs text-slate-400 mb-1.5 font-semibold">Sparepart</div>
+                                                                                                                ${spareList}
+                                                                                                            </div>
+                                                                                                            ${data.technician_notes ? `<div class="detail-row border-t border-slate-200 pt-2">
+                                                                                                                <span class="detail-label">Catatan Teknisi</span>
+                                                                                                                <span class="detail-value text-slate-500 text-right max-w-xs italic">${data.technician_notes}</span>
+                                                                                                            </div>` : ''}
+                                                                                                            <div class="detail-row border-t border-slate-200 pt-2">
+                                                                                                                <span class="detail-label">Harga Jasa</span>
+                                                                                                                <span class="detail-value">${formatRp(data.service_cost)}</span>
+                                                                                                            </div>
+                                                                                                            <div class="flex justify-between items-center mt-2 bg-indigo-600 text-white rounded-xl px-4 py-2.5">
+                                                                                                                <span class="font-bold text-sm">Total Biaya</span>
+                                                                                                                <span class="font-bold text-base">${formatRp(data.total_cost)}</span>
+                                                                                                            </div>
+                                                                                                        </div>
 
-                                                                                                <div class="detail-section">
-                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-wrench text-slate-400"></i> Teknisi</div>
-                                                                                                    ${techs}
-                                                                                                </div>
-                                                                                            `);
+                                                                                                        <div class="detail-section">
+                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-wrench text-slate-400"></i> Teknisi</div>
+                                                                                                            ${techs}
+                                                                                                        </div>
+                                                                                                    `);
 
                 $('#detailModal').removeClass('hidden');
             }
@@ -810,9 +808,9 @@
                         form.method = 'POST';
                         form.action = `/services/${id}`;
                         form.innerHTML = `
-                                                                                                        <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                        <input type="hidden" name="_method" value="DELETE">
-                                                                                                    `;
+                                                                                                                <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                                                                <input type="hidden" name="_method" value="DELETE">
+                                                                                                            `;
                         document.body.appendChild(form);
                         form.submit();
                     }

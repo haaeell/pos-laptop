@@ -109,10 +109,11 @@
                                             <i class="fa-solid fa-eye text-sm"></i>
                                         </button>
 
-                                        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap
-                                                                        bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg
-                                                                        opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                                                                        transition duration-200 shadow-lg z-10">
+                                        <div
+                                            class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap
+                                                                                        bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg
+                                                                                        opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                                                                                        transition duration-200 shadow-lg z-10">
                                             Lihat Detail
                                         </div>
                                     </div>
@@ -126,30 +127,34 @@
                                                 <i class="fa-solid fa-paper-plane text-sm"></i>
                                             </button>
 
-                                            <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap
-                                                                                        bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg
-                                                                                        opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                                                                                        transition duration-200 shadow-lg z-10">
+                                            <div
+                                                class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap
+                                                                                                                bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg
+                                                                                                                opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                                                                                                                transition duration-200 shadow-lg z-10">
                                                 Rilis Gaji
                                             </div>
                                         </div>
 
-                                        <!-- HAPUS -->
-                                        <div class="relative group">
-                                            <button onclick="deletePayroll({{ $payroll->id }})"
-                                                class="w-9 h-9 flex items-center justify-center rounded-lg bg-red-500 text-white hover:bg-red-600 transition shadow-sm">
-                                                <i class="fa-solid fa-trash text-sm"></i>
-                                            </button>
-
-                                            <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap
-                                                                                        bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg
-                                                                                        opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                                                                                        transition duration-200 shadow-lg z-10">
-                                                Hapus Penggajian
-                                            </div>
-                                        </div>
 
                                     @endif
+
+
+                                    <!-- HAPUS -->
+                                    <div class="relative group">
+                                        <button onclick="deletePayroll({{ $payroll->id }})"
+                                            class="w-9 h-9 flex items-center justify-center rounded-lg bg-red-500 text-white hover:bg-red-600 transition shadow-sm">
+                                            <i class="fa-solid fa-trash text-sm"></i>
+                                        </button>
+
+                                        <div
+                                            class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap
+                                                                                                bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-lg
+                                                                                                opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                                                                                                transition duration-200 shadow-lg z-10">
+                                            Hapus Penggajian
+                                        </div>
+                                    </div>
 
                                 </div>
                             </td>
@@ -231,11 +236,11 @@
                     ],
                     language: {
                         emptyTable: `
-                                <div class="py-10 text-slate-400">
-                                    <i class="fa-solid fa-inbox text-3xl mb-3 block"></i>
-                                    Belum ada data penggajian
-                                </div>
-                            `
+                                                <div class="py-10 text-slate-400">
+                                                    <i class="fa-solid fa-inbox text-3xl mb-3 block"></i>
+                                                    Belum ada data penggajian
+                                                </div>
+                                            `
                     }
                 });
             });
@@ -273,24 +278,24 @@
                 let rows = '';
                 payroll.details.forEach(detail => {
                     rows += `
-                                                        <tr class="border-t hover:bg-slate-50">
-                                                            <td class="px-4 py-3">
-                                                                <div class="font-medium">${detail.employee.full_name}</div>
-                                                                <div class="text-xs text-slate-400">${detail.employee.position}</div>
-                                                            </td>
-                                                            <td class="px-4 py-3 text-right">${formatRupiah(detail.basic_salary)}</td>
-                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_bonus)}</td>
-                                                            <td class="px-4 py-3 text-right text-blue-600">${formatRupiah(detail.technician_fee)}</td>
-                                                            <td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(detail.net_salary)}</td>
-                                                            <td class="px-4 py-3 text-center">
-                                                                <a href="/payrolls/${payroll.id}/slip/${detail.employee_id}"
-                                                                    target="_blank"
-                                                                    class="px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition text-xs">
-                                                                    <i class="fa-solid fa-print mr-1"></i>Cetak
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    `;
+                                                                        <tr class="border-t hover:bg-slate-50">
+                                                                            <td class="px-4 py-3">
+                                                                                <div class="font-medium">${detail.employee.full_name}</div>
+                                                                                <div class="text-xs text-slate-400">${detail.employee.position}</div>
+                                                                            </td>
+                                                                            <td class="px-4 py-3 text-right">${formatRupiah(detail.basic_salary)}</td>
+                                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_bonus)}</td>
+                                                                            <td class="px-4 py-3 text-right text-blue-600">${formatRupiah(detail.technician_fee)}</td>
+                                                                            <td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(detail.net_salary)}</td>
+                                                                            <td class="px-4 py-3 text-center">
+                                                                                <a href="/payrolls/${payroll.id}/slip/${detail.employee_id}"
+                                                                                    target="_blank"
+                                                                                    class="px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition text-xs">
+                                                                                    <i class="fa-solid fa-print mr-1"></i>Cetak
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    `;
                 });
 
                 $('#detailTableBody').html(rows);
@@ -316,8 +321,8 @@
                         form.method = 'POST';
                         form.action = `/payrolls/${id}/release`;
                         form.innerHTML = `
-                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                        `;
+                                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                        `;
                         document.body.appendChild(form);
                         form.submit();
                     }
@@ -339,9 +344,9 @@
                         form.method = 'POST';
                         form.action = `/payrolls/${id}`;
                         form.innerHTML = `
-                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                            <input type="hidden" name="_method" value="DELETE">
-                                                        `;
+                                                                            <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
+                                                                            <input type="hidden" name="_method" value="DELETE">
+                                                                        `;
                         document.body.appendChild(form);
                         form.submit();
                     }

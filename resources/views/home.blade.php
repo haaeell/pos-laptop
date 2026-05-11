@@ -37,14 +37,19 @@
                         'border' => 'border-indigo-100',
                         'text' => 'text-indigo-600',
                     ],
-                    [
-                        'label' => 'Total Profit',
-                        'value' => $totalProfit,
-                        'icon' => 'fa-arrow-up-right-dots',
-                        'bg' => 'bg-emerald-50',
-                        'border' => 'border-emerald-100',
-                        'text' => 'text-emerald-600',
-                    ],
+
+                    // tampilkan hanya jika bukan admin
+                    ...(!auth()->user()->isAdmin() ? [
+                        [
+                            'label' => 'Total Profit',
+                            'value' => $totalProfit,
+                            'icon' => 'fa-arrow-up-right-dots',
+                            'bg' => 'bg-emerald-50',
+                            'border' => 'border-emerald-100',
+                            'text' => 'text-emerald-600',
+                        ]
+                    ] : []),
+
                     [
                         'label' => 'Total Transaksi',
                         'value' => $totalTransactions,
@@ -235,8 +240,7 @@
                                 </div>
                             </div>
                             <div class="text-right">
-                                <span
-                                    class="block text-sm font-extrabold text-center text-slate-900">{{ $pm->total }}</span>
+                                <span class="block text-sm font-extrabold text-center text-slate-900">{{ $pm->total }}</span>
                                 <span class="text-[10px] text-slate-400">Transaksi</span>
                             </div>
                         </div>
@@ -288,49 +292,55 @@
             </div>
         </div>
 
-        {{-- Bottom Insights: Top Brands & Inventory Status --}}
-        <div class="mb-8">
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-                <div class="p-6 border-b border-slate-50 flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-amber-50 rounded-lg text-amber-600">
-                            <i class="fa-solid fa-award text-lg"></i>
+        @if (!auth()->user()->isAdmin())
+            <div class="mb-8">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                    <div class="p-6 border-b border-slate-50 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-amber-50 rounded-lg text-amber-600">
+                                <i class="fa-solid fa-award text-lg"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-800">Merk Terlaris</h3>
                         </div>
-                        <h3 class="font-bold text-slate-800">Merk Terlaris</h3>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-[10px] uppercase tracking-widest text-slate-400 bg-slate-50/50">
+                                    <th class="px-6 py-4">Merk</th>
+                                    <th class="px-6 py-4 text-center">Produk Terjual</th>
+                                    <th class="px-6 py-4 text-right">Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                @foreach ($topBrands as $brand)
+                                    <tr class="hover:bg-slate-50/80 transition-all group">
+                                        <td class="px-6 py-4">
+                                            <span class="font-bold text-slate-700 text-sm italic">
+                                                {{ $brand->name ?: 'No Brand' }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="text-sm font-black text-slate-900">
+                                                {{ $brand->total_sold }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-6 py-4 text-right">
+                                            <span class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
+                                                Rp {{ number_format($brand->total_profit, 0, ',', '.') }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-[10px] uppercase tracking-widest text-slate-400 bg-slate-50/50">
-                                <th class="px-6 py-4">Merk</th>
-                                <th class="px-6 py-4 text-center">Produk Terjual</th>
-                                <th class="px-6 py-4 text-right">Profit</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            @foreach ($topBrands as $brand)
-                                <tr class="hover:bg-slate-50/80 transition-all group">
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="font-bold text-slate-700 text-sm italic">{{ $brand->name ?: 'No Brand' }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <span class="text-sm font-black text-slate-900">{{ $brand->total_sold }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
-                                            Rp {{ number_format($brand->total_profit, 0, ',', '.') }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
             </div>
-        </div>
+        @endif
         <div id="inventoryModal" class="fixed inset-0 bg-black/40 hidden z-50">
             <div class="bg-white max-w-4xl mx-auto mt-20 rounded-3xl shadow-xl overflow-hidden">
 
@@ -472,8 +482,8 @@
 
         function loadInventory() {
             fetch(
-                    `{{ route('dashboard.inventory') }}?status=${currentStatus}&brand_id=${filterBrand.value}&category_id=${filterCategory.value}`
-                    )
+                `{{ route('dashboard.inventory') }}?status=${currentStatus}&brand_id=${filterBrand.value}&category_id=${filterCategory.value}`
+            )
                 .then(res => res.json())
                 .then(res => {
                     const tbody = document.getElementById('inventoryTable');
@@ -481,13 +491,13 @@
 
                     res.products.forEach(p => {
                         tbody.innerHTML += `
-                                    <tr>
-                                        <td class="py-3 font-semibold">${p.name}</td>
-                                        <td class="text-center">${p.brand?.name ?? '-'}</td>
-                                        <td class="text-center">${p.category?.name ?? '-'}</td>
-                                        <td class="text-right font-bold">Rp ${Number(p.selling_price).toLocaleString('id-ID')}</td>
-                                    </tr>
-                                `;
+                                                <tr>
+                                                    <td class="py-3 font-semibold">${p.name}</td>
+                                                    <td class="text-center">${p.brand?.name ?? '-'}</td>
+                                                    <td class="text-center">${p.category?.name ?? '-'}</td>
+                                                    <td class="text-right font-bold">Rp ${Number(p.selling_price).toLocaleString('id-ID')}</td>
+                                                </tr>
+                                            `;
                     });
                 });
         }
