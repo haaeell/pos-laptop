@@ -5,28 +5,25 @@
 @section('content')
     <div class="mx-auto bg-white rounded-xl">
 
-        <!-- HEADER -->
         <div class="flex justify-between items-start mb-6">
-            <div>
-                <h1 class="text-2xl font-semibold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-cash-register text-indigo-600"></i>
-                    Transaksi Baru
-                </h1>
-                <p class="text-sm text-slate-500 mt-1">
-                    Pilih produk, tentukan harga final, lalu simpan transaksi
-                </p>
+                <div>
+                    <h1 class="text-2xl font-semibold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-cash-register text-indigo-600"></i>
+                        Transaksi Baru
+                    </h1>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Pilih produk, tentukan harga final, lalu simpan transaksi
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <form action="{{ route('sales.store') }}" method="POST" id="saleForm">
-            @csrf
+            <form action="{{ route('sales.store') }}" method="POST" id="saleForm">
+                @csrf
 
-            <div class="grid grid-cols-12 gap-6">
+                <div class="grid grid-cols-12 gap-6">
 
-                <!-- ================= LEFT : PRODUCT LIST ================= -->
-                <div class="col-span-12 lg:col-span-8">
+                    <div class="col-span-12 lg:col-span-8">
 
-                    <!-- BARCODE SCANNER INPUT -->
                         <div class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-indigo-200">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center">
@@ -36,7 +33,7 @@
                                     <label class="text-xs font-medium text-slate-600 block mb-1">
                                         Scan Barcode Produk
                                     </label>
-                                    <input type="text" id="barcodeInput" 
+                                    <input type="text" id="barcodeInput"
                                         placeholder="Klik di sini, lalu scan barcode..."
                                         class="w-full px-3 py-2 rounded-lg border border-indigo-300 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
                                         autocomplete="off">
@@ -58,7 +55,9 @@
                                 <thead class="bg-slate-100 text-slate-700">
                                     <tr>
                                         <th class="p-3">Produk</th>
-                                        <th class="p-3 text-center">Harga Beli</th>
+                                        @if (Auth::user()->role == 'super_admin')
+                                            <th class="p-3 text-center">Harga Beli</th>
+                                        @endif
                                         <th class="p-3 text-center">Harga Jual</th>
                                         <th class="p-3 text-center">Harga Final</th>
                                         <th class="p-3 text-center">Aksi</th>
@@ -66,9 +65,8 @@
                                 </thead>
 
                                 <tbody id="itemTable">
-                                    <!-- Empty state -->
                                     <tr id="emptyRow">
-                                        <td colspan="6" class="p-6 text-center text-slate-400">
+                                        <td colspan="{{ Auth::user()->role == 'super_admin' ? 6 : 5 }}" class="p-6 text-center text-slate-400">
                                             <i class="fa-solid fa-box-open text-2xl mb-2"></i>
                                             <div>Belum ada produk</div>
                                             <div class="text-xs">Scan barcode atau klik "Tambah Produk"</div>
@@ -80,20 +78,17 @@
 
                         <button type="button" id="addItemBtn"
                             class="mt-4 inline-flex items-center gap-2 px-4 py-2
-                                                                           bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl
-                                                                           text-white
-                                                                           hover:from-indigo-700 hover:to-blue-700
-                                                                           transition-all duration-200 shadow-sm shadow-indigo-200">
+                                   bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl
+                                   text-white hover:from-indigo-700 hover:to-blue-700
+                                   transition-all duration-200 shadow-sm shadow-indigo-200">
                             <i class="fa-solid fa-plus text-sm"></i>
                             <span class="font-semibold">Tambah Produk Manual</span>
                         </button>
 
                     </div>
 
-                    <!-- ================= RIGHT : SUMMARY ================= -->
                     <div class="col-span-12 lg:col-span-4">
-                        <div
-                            class="relative overflow-hidden rounded-2xl border bg-white/80 backdrop-blur shadow-lg shadow-indigo-100 p-5 space-y-4">
+                        <div class="relative overflow-hidden rounded-2xl border bg-white/80 backdrop-blur shadow-lg shadow-indigo-100 p-5 space-y-4">
 
                             <div class="absolute -top-16 -right-16 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
 
@@ -106,56 +101,44 @@
                             </div>
 
                             <div class="space-y-2">
-                                <label class="text-[11px] font-medium text-slate-600">
-                                    Nama Customer
-                                </label>
+                                <label class="text-[11px] font-medium text-slate-600">Nama Customer</label>
                                 <input type="text" name="customer_name" placeholder="Opsional"
                                     class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-200">
                             </div>
 
                             <div class="space-y-2">
-                                <label class="text-[11px] font-medium text-slate-600">
-                                    No. HP Customer
-                                </label>
+                                <label class="text-[11px] font-medium text-slate-600">No. HP Customer</label>
                                 <input type="text" name="customer_phone" placeholder="08xxxxxxxxxx"
                                     class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-200">
                             </div>
+
                             <div class="space-y-2">
-                                <label class="text-[11px] font-medium text-slate-600">
-                                    Sales
-                                </label>
+                                <label class="text-[11px] font-medium text-slate-600">Sales</label>
                                 <select name="sales_person_id" id="salesPerson" class="w-full select2 text-sm">
                                     <option value="">-- Tanpa Sales --</option>
                                     @foreach($salesPeople as $sp)
-                                        <option value="{{ $sp->id }}">
-                                            {{ $sp->name }} ({{ $sp->phone }})
-                                        </option>
+                                        <option value="{{ $sp->id }}">{{ $sp->name }} ({{ $sp->phone }})</option>
                                     @endforeach
                                 </select>
                             </div>
+
                             <div class="space-y-2">
-                                <label class="text-[11px] font-medium text-slate-600">
-                                    Fee Sales
-                                </label>
+                                <label class="text-[11px] font-medium text-slate-600">Fee Sales</label>
                                 <input type="text" id="feeSalesText" class="w-full px-3 py-2 rounded-xl border text-sm">
                                 <input type="hidden" name="fee_sales" id="feeSales">
                             </div>
 
-
                             <div class="space-y-2">
-                                <label class="text-[11px] font-medium text-slate-600">
-                                    Metode Pembayaran
-                                </label>
+                                <label class="text-[11px] font-medium text-slate-600">Metode Pembayaran</label>
 
                                 <input type="hidden" name="payment_method" id="paymentMethod" value="cash">
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <button type="button" data-value="cash"
                                         class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
-                                                                                                                                                       bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200
-                                                                                                                                                       text-indigo-700 font-semibold shadow-sm transition">
-                                        <div
-                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 text-green-600">
+                                               bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200
+                                               text-indigo-700 font-semibold shadow-sm transition">
+                                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 text-green-600">
                                             <i class="fa-solid fa-money-bill-wave text-sm"></i>
                                         </div>
                                         <span class="text-xs">Cash</span>
@@ -164,9 +147,8 @@
 
                                     <button type="button" data-value="transfer"
                                         class="payment-card flex items-center gap-2 px-3 py-2 rounded-xl border
-                                                                                                                                                       bg-white text-slate-600 transition hover:shadow-sm">
-                                        <div
-                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                                               bg-white text-slate-600 transition hover:shadow-sm">
+                                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
                                             <i class="fa-solid fa-building-columns text-sm"></i>
                                         </div>
                                         <span class="text-xs">Transfer</span>
@@ -175,16 +157,11 @@
                             </div>
 
                             <div class="space-y-3">
-                                <div
-                                    class="rounded-xl p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-200">
+                                <div class="rounded-xl p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-200">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <p class="text-[10px] uppercase tracking-wider text-indigo-200">
-                                                Grand Total
-                                            </p>
-                                            <p class="text-2xl font-bold mt-0.5">
-                                                Rp <span id="grandText">0</span>
-                                            </p>
+                                            <p class="text-[10px] uppercase tracking-wider text-indigo-200">Grand Total</p>
+                                            <p class="text-2xl font-bold mt-0.5">Rp <span id="grandText">0</span></p>
                                         </div>
                                         <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
                                             <i class="fa-solid fa-wallet"></i>
@@ -193,16 +170,18 @@
                                     <input type="hidden" name="grand_total" id="grandTotal">
                                 </div>
 
-                                <div class="rounded-xl border px-4 py-3 bg-slate-50">
-                                    <p class="text-[11px] text-slate-500 flex items-center gap-1">
-                                        <i class="fa-solid fa-chart-line"></i>
-                                        Profit
-                                    </p>
-                                    <p id="benefitText" class="text-base font-bold text-green-600 mt-1">
-                                        Rp 0
-                                    </p>
+                                @if (Auth::user()->role == 'super_admin')
+                                    <div class="rounded-xl border px-4 py-3 bg-slate-50">
+                                        <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                                            <i class="fa-solid fa-chart-line"></i>
+                                            Profit
+                                        </p>
+                                        <p id="benefitText" class="text-base font-bold text-green-600 mt-1">Rp 0</p>
+                                        <input type="hidden" name="benefit" id="benefit">
+                                    </div>
+                                @else
                                     <input type="hidden" name="benefit" id="benefit">
-                                </div>
+                                @endif
                             </div>
 
                             <div id="bonusContainer" class="rounded-xl border px-4 py-3 bg-slate-50 space-y-2">
@@ -224,14 +203,13 @@
 
                             <button type="button" id="submitBtn"
                                 class="w-full py-2.5 rounded-xl text-sm text-white font-semibold
-                                                                                                               bg-gradient-to-r from-indigo-500 to-indigo-600
-                                                                                                               hover:from-indigo-600 hover:to-indigo-700
-                                                                                                               shadow-md shadow-indigo-200
-                                                                                                               active:scale-[0.98] transition flex items-center justify-center gap-2">
+                                       bg-gradient-to-r from-indigo-500 to-indigo-600
+                                       hover:from-indigo-600 hover:to-indigo-700
+                                       shadow-md shadow-indigo-200
+                                       active:scale-[0.98] transition flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-floppy-disk text-sm"></i>
                                 Simpan Transaksi
                             </button>
-
 
                             <p class="text-center text-[10px] text-slate-400">
                                 Pastikan data sudah benar sebelum menyimpan
@@ -245,7 +223,6 @@
             @if(session('success_sale_id'))
                 <div id="successModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                     <div class="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-xl">
-
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
                                 <i class="fa-solid fa-check"></i>
@@ -255,13 +232,11 @@
                                 <p class="text-xs text-slate-500">Invoice berhasil dibuat</p>
                             </div>
                         </div>
-
                         <div class="flex gap-3">
                             <a href="{{ route('sales.invoice.pdf', session('success_sale_id')) }}" target="_blank"
                                 class="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold text-center">
                                 Cetak Invoice
                             </a>
-
                             <button onclick="document.getElementById('successModal').remove()"
                                 class="flex-1 py-2 rounded-xl border text-sm">
                                 Tutup
@@ -271,22 +246,15 @@
                 </div>
             @endif
 
-
             <div id="confirmModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50">
-
                 <div class="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-xl">
-
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
                             <i class="fa-solid fa-circle-question"></i>
                         </div>
                         <div>
-                            <h3 class="text-base font-semibold text-slate-800">
-                                Konfirmasi Transaksi
-                            </h3>
-                            <p class="text-xs text-slate-500">
-                                Pastikan data sudah benar
-                            </p>
+                            <h3 class="text-base font-semibold text-slate-800">Konfirmasi Transaksi</h3>
+                            <p class="text-xs text-slate-500">Pastikan data sudah benar</p>
                         </div>
                     </div>
 
@@ -302,10 +270,7 @@
                     </div>
 
                     <div class="flex gap-3">
-                        <button type="button" id="cancelConfirm" class="flex-1 py-2 rounded-xl border text-sm">
-                            Batal
-                        </button>
-
+                        <button type="button" id="cancelConfirm" class="flex-1 py-2 rounded-xl border text-sm">Batal</button>
                         <button type="button" id="confirmSubmit"
                             class="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
                             Ya, Simpan
@@ -324,14 +289,12 @@
             const $form = $('#saleForm')
             const $submitBtn = $('#submitBtn')
             const $modal = $('#confirmModal')
+            const isSuperAdmin = {{ Auth::user()->role === 'super_admin' ? 'true' : 'false' }}
 
             $('#submitBtn').on('click', function () {
                 $('#modalGrand').text($('#grandText').text())
-
-                const payment =
-                    $('#paymentMethod').val() === 'transfer' ? 'Transfer' : 'Cash'
+                const payment = $('#paymentMethod').val() === 'transfer' ? 'Transfer' : 'Cash'
                 $('#modalPayment').text(payment)
-
                 $modal.removeClass('hidden').addClass('flex')
             })
 
@@ -341,19 +304,15 @@
 
             $('#confirmSubmit').on('click', function () {
                 $(this).prop('disabled', true).text('Menyimpan...')
-                $submitBtn
-                    .prop('disabled', true)
-                    .addClass('opacity-60 cursor-not-allowed')
-
+                $submitBtn.prop('disabled', true).addClass('opacity-60 cursor-not-allowed')
                 $form.submit()
             })
 
             const products = @json($products);
             let index = 0;
             const $table = $('#itemTable')
-            const addedProductIds = new Set(); // Track produk yang sudah ditambahkan
+            const addedProductIds = new Set();
 
-            // ================= UTIL =================
             function formatRupiah(angka) {
                 return new Intl.NumberFormat('id-ID').format(angka || 0)
             }
@@ -362,33 +321,20 @@
                 return Number(String(val).replace(/\./g, '')) || 0
             }
 
-            // ================= BARCODE SCANNER =================
-            let barcodeBuffer = '';
-            let barcodeTimeout;
-
             $('#barcodeInput').on('keypress', function(e) {
-                if (e.which === 13) { // Enter key
+                if (e.which === 13) {
                     e.preventDefault();
-
                     const barcode = $(this).val().trim();
-
                     if (barcode) {
-                        // Cari produk berdasarkan product_code
                         const product = products.find(p => p.product_code === barcode);
-
                         if (product) {
-                            // Cek apakah produk sudah ditambahkan
                             if (addedProductIds.has(product.id)) {
                                 showNotification('Produk sudah ada dalam transaksi!', 'warning');
                                 $(this).val('').focus();
                                 return;
                             }
-
-                            // Tambahkan produk otomatis
                             addProductRow(product);
                             showNotification(`✓ ${product.name} berhasil ditambahkan`, 'success');
-
-                            // Clear input
                             $(this).val('').focus();
                         } else {
                             showNotification('Produk tidak ditemukan!', 'error');
@@ -398,33 +344,38 @@
                 }
             });
 
-            // Auto-focus barcode input saat halaman load
             $('#barcodeInput').focus();
 
-            // Fungsi untuk menampilkan notifikasi
             function showNotification(message, type) {
-                const bgColor = type === 'success' ? 'bg-green-500' : 
+                const bgColor = type === 'success' ? 'bg-green-500' :
                                type === 'warning' ? 'bg-yellow-500' : 'bg-red-500';
-
                 const notification = $(`
                     <div class="fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-slideIn">
                         <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle'}"></i>
                         <span>${message}</span>
                     </div>
                 `);
-
                 $('body').append(notification);
-
                 setTimeout(() => {
-                    notification.fadeOut(300, function() {
-                        $(this).remove();
-                    });
+                    notification.fadeOut(300, function() { $(this).remove(); });
                 }, 3000);
             }
 
-            // ================= ADD PRODUCT ROW =================
             function addProductRow(product = null) {
                 $('#emptyRow').remove();
+
+                const purchaseCol = isSuperAdmin ? `
+                    <td class="p-1">
+                        <div class="relative">
+                            <i class="fa-solid fa-cart-shopping absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text"
+                                class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded purchase-text text-sm"
+                                value="${product ? formatRupiah(product.purchase_price) : ''}"
+                                readonly>
+                            <input type="hidden" name="items[${index}][purchase_price]" class="purchase-val" value="${product ? product.purchase_price : ''}">
+                        </div>
+                    </td>
+                ` : `<input type="hidden" name="items[${index}][purchase_price]" class="purchase-val" value="${product ? product.purchase_price : ''}">`;
 
                 const row = `
                     <tr class="border-t text-sm" data-product-id="${product ? product.id : ''}">
@@ -443,16 +394,7 @@
                             </select>
                         </td>
 
-                        <td class="p-1">
-                            <div class="relative">
-                                <i class="fa-solid fa-cart-shopping absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                <input type="text"
-                                    class="w-full h-8 pl-7 px-1 bg-slate-100 border rounded purchase-text text-sm"
-                                    value="${product ? formatRupiah(product.purchase_price) : ''}"
-                                    readonly>
-                                <input type="hidden" name="items[${index}][purchase_price]" class="purchase-val" value="${product ? product.purchase_price : ''}">
-                            </div>
-                        </td>
+                        ${purchaseCol}
 
                         <td class="p-1">
                             <div class="relative">
@@ -493,7 +435,6 @@
                     dropdownParent: $select.closest('td')
                 });
 
-                // Track produk yang ditambahkan
                 if (product) {
                     addedProductIds.add(product.id);
                 }
@@ -502,11 +443,9 @@
                 calculate();
             }
 
-            // ================= ADD ITEM MANUAL =================
             $('#addItemBtn').on('click', function () {
                 addProductRow();
             })
-
 
             $('#bonusSelect').select2({
                 placeholder: 'Pilih bonus produk',
@@ -517,19 +456,16 @@
                 calculate()
             })
 
-            // ================= SELECT PRODUCT =================
             $(document).on('change', '.product-select', function () {
                 const $row = $(this).closest('tr')
                 const $opt = $(this).find(':selected')
                 const productId = $(this).val();
 
-                // Remove previous product ID from tracking
                 const oldProductId = $row.data('product-id');
                 if (oldProductId) {
                     addedProductIds.delete(oldProductId);
                 }
 
-                // Check if product already added in another row
                 if (productId && addedProductIds.has(parseInt(productId))) {
                     showNotification('Produk sudah ada dalam transaksi!', 'warning');
                     $(this).val('').trigger('change');
@@ -539,7 +475,9 @@
                 const purchase = Number($opt.data('purchase') || 0)
                 const selling = Number($opt.data('selling') || 0)
 
-                $row.find('.purchase-text').val(formatRupiah(purchase))
+                if (isSuperAdmin) {
+                    $row.find('.purchase-text').val(formatRupiah(purchase))
+                }
                 $row.find('.purchase-val').val(purchase)
 
                 $row.find('.selling-text').val(formatRupiah(selling))
@@ -548,7 +486,6 @@
                 $row.find('.final-text').val(formatRupiah(selling))
                 $row.find('.final-val').val(selling)
 
-                // Update tracking
                 if (productId) {
                     addedProductIds.add(parseInt(productId));
                     $row.data('product-id', parseInt(productId));
@@ -557,7 +494,6 @@
                 calculate()
             })
 
-            // ================= FINAL PRICE INPUT =================
             $(document).on('input', '.final-text', function () {
                 const val = cleanNumber($(this).val())
                 $(this).val(formatRupiah(val))
@@ -565,23 +501,18 @@
                 calculate()
             })
 
-            // ================= REMOVE =================
             $(document).on('click', '.remove-btn', function () {
                 const $row = $(this).closest('tr');
                 const productId = $row.data('product-id');
-
-                // Remove from tracking
                 if (productId) {
                     addedProductIds.delete(productId);
                 }
-
                 $row.remove();
                 calculate();
-
                 if (!$table.children().length) {
                     $table.html(`
                         <tr id="emptyRow">
-                            <td colspan="6" class="p-6 text-center text-slate-400">
+                            <td colspan="${isSuperAdmin ? 6 : 5}" class="p-6 text-center text-slate-400">
                                 <i class="fa-solid fa-box-open text-2xl mb-2"></i>
                                 <div>Belum ada produk</div>
                                 <div class="text-xs">Scan barcode atau klik "Tambah Produk"</div>
@@ -591,13 +522,11 @@
                 }
             })
 
-            // ================= CALCULATE =================
             function calculate() {
                 let total = 0
                 let profit = 0
                 let bonusCost = 0
 
-                // ================= ITEM PROFIT =================
                 $table.find('tr').each(function () {
                     const purchase = Number($(this).find('.purchase-val').val() || 0)
                     const final = Number($(this).find('.final-val').val() || 0)
@@ -613,16 +542,13 @@
                         .addClass(benefit < 0 ? 'text-red-600' : 'text-green-600')
                 })
 
-                // ================= BONUS PROFIT (PENTING) =================
                 const $bonusInfo = $('#bonusInfo')
                 $bonusInfo.empty()
 
                 $('#bonusSelect option:selected').each(function () {
                     const name = $(this).text()
                     const purchase = Number($(this).data('purchase') || 0)
-
                     bonusCost += purchase
-
                     $bonusInfo.append(`
                         <div class="flex justify-between">
                             <span>🎁 ${name}</span>
@@ -638,34 +564,31 @@
                     $bonusInfo.addClass('hidden')
                 }
 
-                // ================= OUTPUT =================
                 $('#grandTotal').val(total)
                 $('#grandText').text(formatRupiah(total))
+
                 const feeSales = cleanNumber($('#feeSales').val())
                 profit -= feeSales
 
                 $('#benefit').val(profit)
 
-                $('#benefitText')
-                    .text(formatRupiah(profit))
-                    .removeClass('text-red-600 text-green-600')
-                    .addClass(profit < 0 ? 'text-red-600' : 'text-green-600')
-
+                if (isSuperAdmin) {
+                    $('#benefitText')
+                        .text(formatRupiah(profit))
+                        .removeClass('text-red-600 text-green-600')
+                        .addClass(profit < 0 ? 'text-red-600' : 'text-green-600')
+                }
             }
 
             $(document).on('click', '.payment-card', function () {
                 const $btn = $(this)
-
                 $('.payment-card')
                     .removeClass('bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200 text-indigo-700 font-semibold shadow-md')
                     .find('.fa-check').remove()
-
                 $btn.addClass('bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200 text-indigo-700 font-semibold shadow-md')
-
                 if ($btn.find('.fa-check').length === 0) {
                     $btn.append('<i class="fa-solid fa-check ml-auto text-xs"></i>')
                 }
-
                 $('#paymentMethod').val($btn.data('value'))
             })
 
@@ -676,22 +599,13 @@
                 calculate()
             })
 
-            // Add CSS for animation
             $('head').append(`
                 <style>
                     @keyframes slideIn {
-                        from {
-                            transform: translateX(100%);
-                            opacity: 0;
-                        }
-                        to {
-                            transform: translateX(0);
-                            opacity: 1;
-                        }
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
                     }
-                    .animate-slideIn {
-                        animation: slideIn 0.3s ease-out;
-                    }
+                    .animate-slideIn { animation: slideIn 0.3s ease-out; }
                 </style>
             `);
 
