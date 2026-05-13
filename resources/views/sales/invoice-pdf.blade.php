@@ -242,7 +242,7 @@
                                             {{ $contacts->pluck('label')->zip($contacts->pluck('phone'))
                             ->map(fn($c) => $c[0] . ': ' . $c[1])
                             ->implode(' | ')
-                                                                                                                                                                                                                                                                            }}
+                                                                                                                                                                                                                                                                                                                                        }}
                         @endif
                     </div>
                 </td>
@@ -294,7 +294,7 @@
                             <strong>{{ $item->product->name }}</strong><br>
                             <small style="color: #6b7280;">{{ $item->product->product_code }}</small>
                         </td>
-                        <td class="text-center">1</td>
+                        <td class="text-center">{{ $item->qty ?? 1 }}</td>
                         <td class="text-right">Rp {{ number_format($item->final_price) }}</td>
                         <td class="text-right">Rp {{ number_format($item->final_price) }}</td>
                     </tr>

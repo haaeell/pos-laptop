@@ -16,6 +16,7 @@ class SaleItem extends Model
         'selling_price',
         'final_price',
         'benefit',
+        'qty',
     ];
 
     protected $casts = [

@@ -102,20 +102,29 @@ class SaleController extends Controller
 
             // ================= SOLD ITEMS =================
             foreach ($request->items as $item) {
+                $qty = max(1, (int) ($item['qty'] ?? 1));
 
                 SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
+                    'sale_id'        => $sale->id,
+                    'product_id'     => $item['product_id'],
                     'purchase_price' => $item['purchase_price'],
-                    'selling_price' => $item['selling_price'],
-                    'final_price' => $item['final_price'],
-                    'benefit' => $item['final_price'] - $item['purchase_price'],
+                    'selling_price'  => $item['selling_price'],
+                    'final_price'    => $item['final_price'],
+                    'qty'            => $qty,
+                    'benefit'        => ($item['final_price'] - $item['purchase_price']) * $qty,
                 ]);
 
-                Product::where('id', $item['product_id'])
-                    ->update(['status' => 'sold']);
-            }
+                $product = Product::findOrFail($item['product_id']);
 
+                if ($product->stock > $qty) {
+                    $product->decrement('stock', $qty);
+                } else {
+                    $product->update([
+                        'status' => 'sold',
+                        'stock'  => 0,
+                    ]);
+                }
+            }
             // ================= BONUS ITEMS =================
             if ($request->filled('bonus_products')) {
                 foreach ($request->bonus_products as $productId) {
@@ -147,8 +156,19 @@ class SaleController extends Controller
             $sale = Sale::with(['items', 'bonuses'])->findOrFail($id);
 
             foreach ($sale->items as $item) {
-                Product::where('id', $item->product_id)
-                    ->update(['status' => 'available']);
+                $product = Product::find($item->product_id);
+                if (!$product) continue;
+
+                $qty = $item->qty ?? 1;
+
+                if ($product->status === 'available') {
+                    $product->increment('stock', $qty);
+                } else {
+                    $product->update([
+                        'status' => 'available',
+                        'stock'  => $qty,
+                    ]);
+                }
             }
 
             foreach ($sale->bonuses as $bonus) {

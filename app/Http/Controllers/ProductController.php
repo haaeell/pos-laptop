@@ -86,6 +86,10 @@ class ProductController extends Controller
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
+        $data['stock'] = in_array($data['status'], ['available', 'bonus'])
+            ? (int) ($data['stock'] ?? 0)
+            : 0;
+
         $product = Product::create($data);
 
         if ($request->hasFile('images')) {
@@ -133,6 +137,9 @@ class ProductController extends Controller
         ]);
 
         $data = $request->except(['image', 'images']);
+        $data['stock'] = in_array($data['status'], ['available', 'bonus'])
+            ? (int) ($data['stock'] ?? 0)
+            : 0;
 
         if ($request->filled('deleted_images')) {
             $ids = explode(',', $request->deleted_images);
