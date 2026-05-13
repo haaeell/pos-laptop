@@ -286,7 +286,7 @@
             <tr>
                 <td>
                     @if($logo)
-                        <img src="{{ asset('storage/' . $logo) }}" class="logo" alt="Logo">
+                        <img src="{{ public_path('storage/' . $logo) }}" class="logo" alt="Logo">
                     @endif
                     <div class="brand-name">{{ $namaToko }}</div>
                     <div class="brand-details">
@@ -334,7 +334,7 @@
             <span class="keluhan-label">Keluhan</span>
             <div class="keluhan-text">{{ $service->complaint }}</div>
             @if($service->technician_notes)
-                <div class="teknisi-note">✓ {{ $service->technician_notes }}</div>
+                <div class="teknisi-note">{{ $service->technician_notes }}</div>
             @endif
         </div>
 
