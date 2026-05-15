@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceTechnician;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -18,7 +19,14 @@ class ServiceController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('service.index', compact('services'));
+        $spareProducts = Product::whereHas('category', fn($q) => $q->where('name', 'like', '%sparepart%'))
+            ->where('status', 'available')
+            ->where('stock', '>', 0)
+            ->with('category')
+            ->orderBy('name')
+            ->get(['id', 'name', 'purchase_price', 'selling_price', 'stock', 'category_id']);
+
+        return view('service.index', compact('services', 'spareProducts'));
     }
 
     public function store(Request $request)
@@ -46,7 +54,6 @@ class ServiceController extends Controller
             'created_by'     => Auth::id(),
         ]);
 
-        // Return JSON for AJAX (frontend will show SweetAlert with cetak struk)
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'id'             => $service->id,
@@ -58,16 +65,12 @@ class ServiceController extends Controller
         return redirect()->back()->with('success', 'Data service berhasil ditambahkan');
     }
 
-    /**
-     * Teknisi input estimasi biaya.
-     * spare_parts dikirim sebagai array: [{ name, price }, ...]
-     */
     public function estimate(Request $request, $id)
     {
         $request->validate([
             'spare_parts'           => 'nullable|array',
-            'spare_parts.*.name'    => 'nullable|string|max:255',
-            'spare_parts.*.price'   => 'nullable|numeric|min:0',
+            'spare_parts.*.product_id' => 'required_with:spare_parts|exists:products,id',
+            'spare_parts.*.qty'        => 'required_with:spare_parts|integer|min:1',
             'service_cost'          => 'required|numeric|min:0',
             'technician_notes'      => 'nullable|string',
             'estimated_done'        => 'nullable|date',
@@ -75,24 +78,40 @@ class ServiceController extends Controller
 
         $service = Service::findOrFail($id);
 
-        // Hitung total sparepart
-        $spareParts = collect($request->spare_parts ?? [])
-            ->filter(fn($sp) => !empty($sp['name']) && !empty($sp['price']))
-            ->values()
-            ->map(fn($sp) => [
-                'name'  => $sp['name'],
-                'price' => (int) $sp['price'],
-            ])
-            ->toArray();
+        $spareParts   = [];
+        $totalSell    = 0;
+        $totalHpp     = 0;
 
-        $spareCost = collect($spareParts)->sum('price');
-        $total     = $spareCost + $request->service_cost;
+        foreach ($request->spare_parts ?? [] as $item) {
+            $product = Product::findOrFail($item['product_id']);
+            $qty     = (int) $item['qty'];
+
+            $subtotalSell = (int) ($product->selling_price  * $qty);
+            $subtotalHpp  = (int) ($product->purchase_price * $qty);
+
+            $spareParts[] = [
+                'product_id'    => $product->id,
+                'name'          => $product->name,
+                'qty'           => $qty,
+                'price_hpp'     => (int) $product->purchase_price,
+                'price_sell'    => (int) $product->selling_price,
+                'subtotal_hpp'  => $subtotalHpp,
+                'subtotal_sell' => $subtotalSell,
+            ];
+
+            $totalSell += $subtotalSell;
+            $totalHpp  += $subtotalHpp;
+        }
+
+        $serviceCost = (int) $request->service_cost;
+        $totalCost   = $totalSell + $serviceCost;
 
         $service->update([
-            'spare_parts'      => json_encode($spareParts),
-            'spare_part_cost'  => $spareCost,
-            'service_cost'     => $request->service_cost,
-            'total_cost'       => $total,
+            'spare_parts'      => $spareParts,
+            'spare_part_cost'  => $totalSell,
+            'spare_part_hpp'   => $totalHpp,
+            'service_cost'     => $serviceCost,
+            'total_cost'       => $totalCost,
             'technician_notes' => $request->technician_notes,
             'estimated_done'   => $request->estimated_done,
             'status'           => 'estimated',
@@ -101,24 +120,21 @@ class ServiceController extends Controller
         return redirect()->back()->with('success', 'Estimasi biaya berhasil disimpan');
     }
 
-    /**
-     * Admin konfirmasi ke konsumen: approve / reject
-     */
     public function confirm(Request $request, $id)
     {
         $request->validate([
-            'decision'          => 'required|in:approved,rejected',
-            'employee_ids'      => 'required_if:decision,approved|array',
-            'employee_ids.*'    => 'exists:employees,id',
+            'decision'       => 'required|in:approved,rejected',
+            'employee_ids'   => 'required_if:decision,approved|array',
+            'employee_ids.*' => 'exists:employees,id',
         ]);
 
         $service = Service::findOrFail($id);
 
         DB::transaction(function () use ($request, $service) {
             if ($request->decision === 'approved') {
-                $technicianCount = count($request->employee_ids);
-                $feePerTech      = $technicianCount > 0
-                    ? round($service->service_cost / $technicianCount, 2)
+                $techCount  = count($request->employee_ids);
+                $feePerTech = $techCount > 0
+                    ? round($service->service_cost / $techCount, 2)
                     : 0;
 
                 $service->technicians()->delete();
@@ -144,9 +160,6 @@ class ServiceController extends Controller
         return redirect()->back()->with('success', $msg);
     }
 
-    /**
-     * Tandai selesai
-     */
     public function done($id)
     {
         Service::findOrFail($id)->update([
@@ -157,22 +170,20 @@ class ServiceController extends Controller
         return redirect()->back()->with('success', 'Service ditandai selesai');
     }
 
-    /**
-     * Tandai sudah diambil konsumen
-     */
     public function taken($id)
     {
-        Service::findOrFail($id)->update([
-            'status'   => 'taken',
-            'taken_at' => now(),
-        ]);
+        $service = Service::findOrFail($id);
+
+        DB::transaction(function () use ($service) {
+            $service->update([
+                'status'   => 'taken',
+                'taken_at' => now(),
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Barang telah diambil konsumen');
     }
 
-    /**
-     * Cetak nota awal / tanda terima
-     */
     public function printReceive($id)
     {
         $service  = Service::with('createdBy')->findOrFail($id);
@@ -185,7 +196,7 @@ class ServiceController extends Controller
     }
 
     /**
-     * Cetak nota pengambilan
+     * Cetak nota pengambilan (invoice final).
      */
     public function printPickup($id)
     {

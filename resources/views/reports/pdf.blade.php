@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Laporan Penjualan</title>
+    <title>Laporan Keuangan</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -49,14 +49,24 @@
             text-align: right;
         }
 
+        .text-center {
+            text-align: center;
+        }
+
         .summary {
             margin-top: 20px;
+            float: right;
+            width: 320px;
+        }
+
+        .summary table {
             width: 100%;
         }
 
         .summary td {
             border: none;
-            padding: 6px 0;
+            padding: 5px 0;
+            font-size: 11px;
         }
 
         .summary .label {
@@ -68,34 +78,59 @@
             text-align: right;
         }
 
+        .summary .minus {
+            color: #dc2626;
+        }
+
+        .summary .divider td {
+            border-top: 1px solid #d1d5db;
+            padding-top: 6px;
+        }
+
+        .summary .total td {
+            font-weight: bold;
+            font-size: 12px;
+            border-top: 2px solid #111827;
+            padding-top: 6px;
+        }
+
         .footer {
             margin-top: 30px;
             font-size: 10px;
             color: #9ca3af;
             text-align: right;
+            clear: both;
+        }
+
+        .badge {
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
     </style>
 </head>
 
 <body>
 
-    {{-- HEADER --}}
     <div class="header">
-        <div class="title">Laporan Penjualan</div>
+        <div class="title">Laporan Keuangan</div>
         <div class="subtitle">
-            Periode {{ $from->format('d M Y') }} – {{ $to->format('d M Y') }}
+            Periode {{ $from->format('d M Y') }} &ndash; {{ $to->format('d M Y') }}
         </div>
     </div>
 
-    {{-- TABLE --}}
     <table>
         <thead>
             <tr>
                 <th style="width:5%">#</th>
-                <th style="width:20%">Invoice</th>
-                <th style="width:20%">Tanggal</th>
-                <th style="width:20%" class="text-right">Grand Total</th>
-                <th style="width:20%" class="text-right">Profit</th>
+                <th style="width:18%">Invoice</th>
+                <th style="width:18%">Tanggal</th>
+                <th style="width:18%" class="text-right">Grand Total</th>
+                <th style="width:18%" class="text-right">Profit</th>
+                <th style="width:13%" class="text-center">Metode</th>
             </tr>
         </thead>
         <tbody>
@@ -104,42 +139,54 @@
                     <td>{{ $i + 1 }}</td>
                     <td>{{ $sale->invoice_number }}</td>
                     <td>{{ $sale->created_at->format('d M Y H:i') }}</td>
-                    <td class="text-right">
-                        Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
-                    </td>
-                    <td class="text-right">
-                        Rp {{ number_format($sale->benefit, 0, ',', '.') }}
-                    </td>
+                    <td class="text-right">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($sale->benefit, 0, ',', '.') }}</td>
+                    <td class="text-center"><span class="badge">{{ $sale->payment_method }}</span></td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
-    <div style="margin-top: 20px; float: right; width: 300px;">
-        <table style="width: 100%;">
+    <div class="summary">
+        <table>
             <tr>
-                <td>Profit Penjualan</td>
-                <td style="text-align: right;">Rp {{ number_format($totalProfit, 0, ',', '.') }}</td>
+                <td class="label">Total Penjualan</td>
+                <td class="value">Rp {{ number_format($totalSales, 0, ',', '.') }}</td>
             </tr>
             <tr>
-                <td>Bonus/Loss</td>
-                <td style="text-align: right;">Rp {{ number_format($bonusLoss, 0, ',', '.') }}</td>
+                <td class="label">Bonus / (Loss)</td>
+                <td class="value">Rp {{ number_format($bonusLoss, 0, ',', '.') }}</td>
             </tr>
             <tr>
-                <td>Total Penjualan</td>
-                <td style="text-align: right; ">Rp {{ number_format($totalSales, 0, ',', '.') }}
+                <td class="label">Pendapatan Service</td>
+                <td class="value">Rp {{ number_format($totalServices, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td class="label">Penambahan Modal</td>
+                <td class="value">Rp {{ number_format($totalPenambahanModal, 0, ',', '.') }}</td>
+            </tr>
+            <tr class="divider">
+                <td class="label minus">Total Pengeluaran</td>
+                <td class="value minus">- Rp {{ number_format($totalExpenses, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td class="label minus">Cicilan Modal</td>
+                <td class="value minus">- Rp {{ number_format($totalCicilan, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td class="label minus">Gaji Karyawan</td>
+                <td class="value minus">- Rp {{ number_format($totalGajiKaryawan, 0, ',', '.') }}</td>
+            </tr>
+            <tr class="total">
+                <td class="label">Jumlah Saldo</td>
+                <td class="value">
+                    Rp
+                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
                 </td>
             </tr>
             <tr>
-                <td style="color: #ea580c;">Total Pengeluaran</td>
-                <td style="text-align: right; color: #ea580c;">- Rp {{ number_format($totalExpenses, 0, ',', '.') }}
-                </td>
-            </tr>
-            <tr style="font-weight: bold; border-top: 1px solid #000;">
-                <td>Jumlah Saldo</td>
-                <td style="text-align: right;">
-                    Rp {{ number_format($totalSales - $totalExpenses, 0, ',', '.') }}
-                </td>
+                <td class="label" style="padding-top:10px;">Total Asset</td>
+                <td class="value" style="padding-top:10px;">Rp {{ number_format($totalAsset, 0, ',', '.') }}</td>
             </tr>
         </table>
     </div>

@@ -161,134 +161,11 @@
         </div>
     </div>
 
-    <style>
-        .tooltip-wrap {
-            position: relative;
-            display: inline-flex;
-        }
 
-        .tooltip-text {
-            visibility: hidden;
-            opacity: 0;
-            background: #1e293b;
-            color: #fff;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            text-align: center;
-            border-radius: 7px;
-            padding: 5px 10px;
-            white-space: nowrap;
-            position: absolute;
-            bottom: calc(100% + 7px);
-            left: 50%;
-            transform: translateX(-50%);
-            transition: opacity 0.18s ease, transform 0.18s ease;
-            transform-origin: bottom center;
-            pointer-events: none;
-            z-index: 100;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-        }
 
-        .tooltip-text::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-top-color: #1e293b;
-        }
-
-        .tooltip-wrap:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-            transform: translateX(-50%) translateY(-2px);
-        }
-
-        .action-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            font-size: 12px;
-            transition: all 0.15s ease;
-            cursor: pointer;
-            border: none;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        .field-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .field-input {
-            width: 100%;
-            padding: 0.625rem 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid #cbd5e1;
-            font-size: 0.875rem;
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
-        }
-
-        .field-input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
-        }
-
-        .detail-section {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 14px 16px;
-        }
-
-        .detail-section-title {
-            font-size: 10px;
-            font-weight: 800;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 4px 0;
-            gap: 8px;
-        }
-
-        .detail-label {
-            font-size: 12px;
-            color: #94a3b8;
-            flex-shrink: 0;
-        }
-
-        .detail-value {
-            font-size: 13px;
-            font-weight: 500;
-            color: #1e293b;
-            text-align: right;
-        }
-    </style>
-
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- MODAL: Tambah Service --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
     <div id="createModal" class="fixed inset-0 hidden bg-black/40 backdrop-blur-sm z-50 overflow-y-auto">
         <div class="min-h-screen px-4 py-8 flex items-start justify-center">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl">
@@ -341,9 +218,12 @@
         </div>
     </div>
 
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- MODAL: Input Estimasi — sparepart dari produk --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
     <div id="estimateModal" class="fixed inset-0 hidden bg-black/40 backdrop-blur-sm z-50 overflow-y-auto">
         <div class="min-h-screen px-4 py-8 flex items-start justify-center">
-            <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl">
+            <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl">
                 <div class="flex items-center gap-3 px-6 py-4 border-b">
                     <div class="w-9 h-9 rounded-lg bg-yellow-50 text-yellow-600 flex items-center justify-center">
                         <i class="fa-solid fa-calculator"></i>
@@ -352,33 +232,51 @@
                 </div>
                 <form id="estimateForm" method="POST" class="p-6 space-y-5">
                     @csrf
+
+                    {{-- ── Sparepart ── --}}
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <label class="field-label">Daftar Sparepart</label>
+                            <label class="field-label">Sparepart</label>
                             <button type="button" onclick="addSpareRow()"
                                 class="text-xs px-3 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-300 rounded-lg hover:bg-yellow-100 transition font-semibold">
-                                <i class="fa-solid fa-plus mr-1"></i>Tambah Item
+                                <i class="fa-solid fa-plus mr-1"></i>Tambah Sparepart
                             </button>
                         </div>
+
+                        {{-- Header kolom --}}
+                        <div class="grid grid-cols-12 gap-2 text-xs font-bold text-slate-400 uppercase px-1 mb-1">
+                            <div class="col-span-6">Produk</div>
+                            <div class="col-span-2 text-center">Qty</div>
+                            <div class="col-span-3 text-right">Subtotal</div>
+                            <div class="col-span-1"></div>
+                        </div>
+
                         <div id="spareRows" class="space-y-2"></div>
-                        <div class="mt-2 flex justify-between items-center text-xs text-slate-500 border-t pt-2">
+
+                        <div class="mt-3 flex justify-between items-center text-xs text-slate-500 border-t pt-2">
                             <span>Subtotal Sparepart</span>
                             <span id="spare_subtotal" class="font-bold text-slate-700">Rp 0</span>
                         </div>
                     </div>
+
+                    {{-- ── Biaya Jasa ── --}}
                     <div>
-                        <label class="field-label">Harga Jasa / Service (Rp)</label>
+                        <label class="field-label">Biaya Jasa (Rp)</label>
                         <div class="relative mt-1">
                             <input type="text" id="est_service_display" class="field-input pl-9" placeholder="0"
                                 oninput="onServiceInput(this)">
                             <input type="hidden" name="service_cost" id="est_service" value="0">
                         </div>
                     </div>
+
+                    {{-- ── Total ── --}}
                     <div
                         class="bg-yellow-50 rounded-xl px-4 py-3 flex justify-between items-center border border-yellow-200">
                         <span class="text-sm font-bold text-slate-700">Total Estimasi</span>
                         <span id="est_total" class="text-lg font-bold text-yellow-700">Rp 0</span>
                     </div>
+
+                    {{-- ── Catatan & Estimasi Selesai ── --}}
                     <div>
                         <label class="field-label">Catatan Teknisi</label>
                         <textarea name="technician_notes" rows="2" class="field-input mt-1"></textarea>
@@ -387,6 +285,7 @@
                         <label class="field-label">Estimasi Selesai</label>
                         <input type="date" name="estimated_done" class="field-input mt-1">
                     </div>
+
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" onclick="$('#estimateModal').addClass('hidden')"
                             class="px-4 py-2 rounded-xl border text-sm font-semibold hover:bg-slate-50">Batal</button>
@@ -399,6 +298,9 @@
         </div>
     </div>
 
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- MODAL: Konfirmasi Konsumen --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
     <div id="confirmModal" class="fixed inset-0 hidden bg-black/40 backdrop-blur-sm z-50 overflow-y-auto">
         <div class="min-h-screen px-4 py-8 flex items-start justify-center">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl">
@@ -419,7 +321,7 @@
                             <span id="conf_spare" class="font-semibold"></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Harga Jasa</span>
+                            <span class="text-slate-500">Biaya Jasa</span>
                             <span id="conf_service" class="font-semibold"></span>
                         </div>
                         <div class="flex justify-between border-t pt-2 mt-1">
@@ -446,7 +348,8 @@
                     </div>
                     <div id="technicianSection">
                         <label class="field-label">Pilih Teknisi <span class="text-red-500">*</span></label>
-                        <p class="text-xs text-slate-400 mb-2">Fee jasa akan dibagi rata antar teknisi yang dipilih.</p>
+                        <p class="text-xs text-slate-400 mb-2">Fee jasa dibagi rata antar teknisi yang dipilih. Akan
+                            dipotong dari saldo saat penggajian dirilis.</p>
                         <div class="space-y-2 max-h-48 overflow-y-auto border rounded-xl p-3">
                             @foreach (\App\Models\Employee::where('is_active', true)->get() as $emp)
                                 <label class="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg">
@@ -471,6 +374,9 @@
         </div>
     </div>
 
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- MODAL: Detail Service --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
     <div id="detailModal" class="fixed inset-0 hidden bg-black/40 backdrop-blur-sm z-50 overflow-y-auto">
         <div class="min-h-screen px-4 py-8 flex items-start justify-center">
             <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl">
@@ -493,30 +399,170 @@
         </div>
     </div>
 
+    {{-- Data produk sparepart untuk JS --}}
+    <script>
+        const SPARE_PRODUCTS = @json($spareProducts);
+    </script>
+
+    <style>
+        .tooltip-wrap {
+            position: relative;
+            display: inline-flex;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            background: #1e293b;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .02em;
+            text-align: center;
+            border-radius: 7px;
+            padding: 5px 10px;
+            white-space: nowrap;
+            position: absolute;
+            bottom: calc(100% + 7px);
+            left: 50%;
+            transform: translateX(-50%);
+            transition: opacity .18s ease, transform .18s ease;
+            transform-origin: bottom center;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+        }
+
+        .tooltip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1e293b;
+        }
+
+        .tooltip-wrap:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            font-size: 12px;
+            transition: all .15s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .15);
+        }
+
+        .field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: .625rem 1rem;
+            border-radius: .75rem;
+            border: 1px solid #cbd5e1;
+            font-size: .875rem;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        .field-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+        }
+
+        .detail-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .detail-section-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 4px 0;
+            gap: 8px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+            text-align: right;
+        }
+
+        .spare-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right .75rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
+        }
+    </style>
+
     @push('scripts')
         <script>
             $(document).ready(function () {
                 $('#datatable').DataTable({ order: [[0, 'desc']] });
             });
 
-            function toRaw(str) { return parseInt(str.replace(/\D/g, '')) || 0; }
+            function toRaw(str) { return parseInt(String(str).replace(/\D/g, '')) || 0; }
             function toRupiah(num) { return new Intl.NumberFormat('id-ID').format(num); }
             function formatRp(n) { return 'Rp ' + toRupiah(n); }
 
+            // ── Create Modal ──────────────────────────────────────────────────────
+
             window.openCreateModal = function () {
                 $('#createModal').removeClass('hidden');
-            }
+            };
 
             $('#createForm').on('submit', function (e) {
                 e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-
-                fetch($(form).attr('action'), {
+                fetch($(this).attr('action'), {
                     method: 'POST',
-                    body: formData,
+                    body: new FormData(this),
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    redirect: 'follow'
                 }).then(async res => {
                     const ct = res.headers.get('content-type') || '';
                     if (ct.includes('application/json')) {
@@ -524,72 +570,106 @@
                         showSaveSuccess(data.id, data.service_number);
                     } else {
                         $('#createModal').addClass('hidden');
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Data service berhasil disimpan.',
-                            confirmButtonColor: '#4f46e5'
-                        }).then(() => location.reload());
+                        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data service berhasil disimpan.', confirmButtonColor: '#4f46e5' })
+                            .then(() => location.reload());
                     }
-                }).catch(() => {
-                    Swal.fire('Gagal', 'Terjadi kesalahan, coba lagi.', 'error');
-                });
-
+                }).catch(() => Swal.fire('Gagal', 'Terjadi kesalahan, coba lagi.', 'error'));
                 return false;
             });
 
             function showSaveSuccess(serviceId, serviceNumber) {
                 $('#createModal').addClass('hidden');
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Service Tersimpan!',
+                    icon: 'success', title: 'Service Tersimpan!',
                     html: `No. <b class="text-indigo-600 font-mono">${serviceNumber}</b> berhasil dibuat.`,
-                    showCancelButton: true,
-                    confirmButtonColor: '#4f46e5',
-                    cancelButtonColor: '#64748b',
+                    showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#64748b',
                     confirmButtonText: '<i class="fa-solid fa-print mr-1"></i> Cetak Struk',
-                    cancelButtonText: 'Tutup',
-                    reverseButtons: true
+                    cancelButtonText: 'Tutup', reverseButtons: true,
                 }).then(result => {
                     if (result.isConfirmed) window.open(`/services/${serviceId}/print-receive`, '_blank');
                     location.reload();
                 });
             }
 
+            // ── Estimate Modal ────────────────────────────────────────────────────
+
             let spareIndex = 0;
 
-            function addSpareRow(name = '', price = 0) {
+            /**
+             * Tambah baris sparepart.
+             * @param {number|null} productId  — null = baris baru kosong
+             * @param {number}      qty
+             * @param {number}      subtotalSell — diisi saat edit existing
+             */
+            function addSpareRow(productId = null, qty = 1, subtotalSell = 0) {
                 const i = spareIndex++;
+
+                const options = SPARE_PRODUCTS.map(p =>
+                    `<option value="${p.id}"
+                                                    data-sell="${p.selling_price}"
+                                                    data-hpp="${p.purchase_price}"
+                                                    data-stock="${p.stock}"
+                                                    ${p.id == productId ? 'selected' : ''}>
+                                                    ${p.name} (stok: ${p.stock})
+                                                </option>`
+                ).join('');
+
                 const row = $(`
-                                                                                                        <div class="spare-row flex gap-2 items-center" data-index="${i}">
-                                                                                                            <input type="text" name="spare_parts[${i}][name]" placeholder="Nama sparepart"
-                                                                                                                value="${name}" class="field-input flex-1 text-sm py-2">
-                                                                                                            <div class="relative w-40">
-                                                                                                                <input type="text" placeholder="0"
-                                                                                                                    value="${price > 0 ? toRupiah(price) : ''}"
-                                                                                                                    class="field-input pl-8 pr-2 text-sm py-2 spare-price-display"
-                                                                                                                    oninput="onSparePriceInput(this)">
-                                                                                                                <input type="hidden" name="spare_parts[${i}][price]" class="spare-price-raw" value="${price}">
-                                                                                                            </div>
-                                                                                                            <button type="button" onclick="removeSpareRow(this)"
-                                                                                                                class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center flex-shrink-0 transition">
-                                                                                                                <i class="fa-solid fa-times text-xs"></i>
-                                                                                                            </button>
-                                                                                                        </div>
-                                                                                                    `);
+                                                <div class="spare-row grid grid-cols-12 gap-2 items-center" data-index="${i}">
+                                                    <div class="col-span-6">
+                                                        <select name="spare_parts[${i}][product_id]"
+                                                            class="field-input spare-select text-sm py-2 spare-product-select">
+                                                            <option value="">— Pilih Produk —</option>
+                                                            ${options}
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-span-2">
+                                                        <input type="number" name="spare_parts[${i}][qty]"
+                                                            min="1" value="${qty}"
+                                                            class="field-input text-sm py-2 text-center spare-qty">
+                                                    </div>
+                                                    <div class="col-span-3 text-right">
+                                                        <span class="spare-subtotal text-sm font-semibold text-slate-700">${subtotalSell > 0 ? formatRp(subtotalSell) : '-'}</span>
+                                                    </div>
+                                                    <div class="col-span-1 flex justify-center">
+                                                        <button type="button" onclick="removeSpareRow(this)"
+                                                            class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition">
+                                                            <i class="fa-solid fa-times text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            `);
+
+                // Update subtotal realtime saat produk/qty berubah
+                row.find('.spare-product-select, .spare-qty').on('change input', function () {
+                    updateSpareRowSubtotal(row);
+                    calcEstTotal();
+                });
+
                 $('#spareRows').append(row);
                 calcEstTotal();
             }
 
-            function removeSpareRow(btn) {
-                $(btn).closest('.spare-row').remove();
-                calcEstTotal();
+            function updateSpareRowSubtotal(row) {
+                const select = row.find('.spare-product-select');
+                const qty = parseInt(row.find('.spare-qty').val()) || 0;
+                const opt = select.find('option:selected');
+                const sell = parseFloat(opt.data('sell')) || 0;
+                const stock = parseInt(opt.data('stock')) || 0;
+                const subtotal = sell * qty;
+
+                // Warning jika qty > stok
+                if (qty > stock && stock > 0) {
+                    row.find('.spare-qty').addClass('border-red-400');
+                } else {
+                    row.find('.spare-qty').removeClass('border-red-400');
+                }
+
+                row.find('.spare-subtotal').text(subtotal > 0 ? formatRp(subtotal) : '-');
             }
 
-            function onSparePriceInput(el) {
-                const raw = toRaw(el.value);
-                el.value = raw > 0 ? toRupiah(raw) : '';
-                $(el).siblings('.spare-price-raw').val(raw);
+            function removeSpareRow(btn) {
+                $(btn).closest('.spare-row').remove();
                 calcEstTotal();
             }
 
@@ -602,7 +682,12 @@
 
             function calcEstTotal() {
                 let spareTotal = 0;
-                $('.spare-price-raw').each(function () { spareTotal += parseInt($(this).val()) || 0; });
+                $('#spareRows .spare-row').each(function () {
+                    const select = $(this).find('.spare-product-select');
+                    const qty = parseInt($(this).find('.spare-qty').val()) || 0;
+                    const sell = parseFloat(select.find('option:selected').data('sell')) || 0;
+                    spareTotal += sell * qty;
+                });
                 const service = parseInt($('#est_service').val()) || 0;
                 $('#spare_subtotal').text(formatRp(spareTotal));
                 $('#est_total').text(formatRp(spareTotal + service));
@@ -614,22 +699,29 @@
                 spareIndex = 0;
 
                 let spareParts = data.spare_parts;
-                if (typeof spareParts === 'string') {
-                    try { spareParts = JSON.parse(spareParts); } catch { spareParts = []; }
-                }
+                if (typeof spareParts === 'string') { try { spareParts = JSON.parse(spareParts); } catch { spareParts = []; } }
                 if (!Array.isArray(spareParts)) spareParts = [];
 
                 if (spareParts.length) {
-                    spareParts.forEach(sp => addSpareRow(sp.name, sp.price));
+                    spareParts.forEach(sp => addSpareRow(sp.product_id, sp.qty ?? 1, sp.subtotal_sell ?? 0));
                 } else {
-                    addSpareRow();
+                    addSpareRow(); // baris kosong default
                 }
 
                 $('#est_service_display').val('');
                 $('#est_service').val(0);
+
+                // Isi service cost jika sudah pernah diestimasi
+                if (data.service_cost > 0) {
+                    $('#est_service_display').val(toRupiah(data.service_cost));
+                    $('#est_service').val(data.service_cost);
+                }
+
                 calcEstTotal();
                 $('#estimateModal').removeClass('hidden');
-            }
+            };
+
+            // ── Confirm Modal ─────────────────────────────────────────────────────
 
             window.openConfirmModal = function (data) {
                 $('#confirmForm').attr('action', `/services/${data.id}/confirm`);
@@ -638,189 +730,177 @@
                 $('#conf_service').text(formatRp(data.service_cost));
                 $('#conf_total').text(formatRp(data.total_cost));
                 $('#confirmModal').removeClass('hidden');
-            }
+            };
 
             $('input[name="decision"]').on('change', function () {
-                if ($(this).val() === 'approved') {
-                    $('#technicianSection').show();
-                } else {
-                    $('#technicianSection').hide();
-                }
+                $('#technicianSection').toggle($(this).val() === 'approved');
             });
 
+            // ── Detail Modal ──────────────────────────────────────────────────────
+
             window.openDetailModal = function (data) {
-                if (typeof data.spare_parts === 'string') {
-                    try { data.spare_parts = JSON.parse(data.spare_parts); } catch { data.spare_parts = []; }
-                }
+                if (typeof data.spare_parts === 'string') { try { data.spare_parts = JSON.parse(data.spare_parts); } catch { data.spare_parts = []; } }
                 if (!Array.isArray(data.spare_parts)) data.spare_parts = [];
 
                 $('#detail_number').text(data.service_number);
 
+                // Sparepart rows — tampilkan qty, harga jual, subtotal
                 let spareList = '';
                 if (data.spare_parts.length) {
-                    spareList = data.spare_parts.map((sp, i) => `
-                                                                                                            <div class="detail-row border-b border-slate-100 last:border-0 py-2">
-                                                                                                                <span class="detail-label">${i + 1}. ${sp.name}</span>
-                                                                                                                <span class="detail-value">${formatRp(sp.price)}</span>
-                                                                                                            </div>
-                                                                                                        `).join('');
+                    const rows = data.spare_parts.map((sp, i) => `
+                                                    <div class="detail-row border-b border-slate-100 last:border-0 py-2">
+                                                        <div class="detail-label">
+                                                            <span class="text-slate-500">${i + 1}. ${sp.name}</span>
+                                                            <span class="ml-1 text-slate-400">×${sp.qty ?? 1}</span>
+                                                        </div>
+                                                        <span class="detail-value">${formatRp(sp.subtotal_sell ?? sp.price_sell * (sp.qty ?? 1))}</span>
+                                                    </div>
+                                                `).join('');
+                    spareList = rows;
                 } else {
                     spareList = `<p class="text-slate-400 text-xs italic">Tidak ada sparepart</p>`;
                 }
 
                 const techs = data.technicians?.length
                     ? data.technicians.map(t => `
-                                                                                                            <div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-                                                                                                                <div class="flex items-center gap-2">
-                                                                                                                    <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                                                                                                                        ${t.employee.full_name.charAt(0)}
-                                                                                                                    </div>
-                                                                                                                    <span class="font-medium text-slate-700">${t.employee.full_name}</span>
-                                                                                                                </div>
-                                                                                                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">${formatRp(t.fee_share)}</span>
-                                                                                                            </div>
-                                                                                                        `).join('')
+                                                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
+                                                        <div class="flex items-center gap-2">
+                                                            <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                                                ${t.employee.full_name.charAt(0)}
+                                                            </div>
+                                                            <span class="font-medium text-slate-700">${t.employee.full_name}</span>
+                                                        </div>
+                                                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">${formatRp(t.fee_share)}</span>
+                                                    </div>
+                                                `).join('')
                     : '<p class="text-slate-400 text-xs italic">Belum ada teknisi</p>';
 
                 const statusColors = {
-                    pending: 'bg-slate-100 text-slate-600',
-                    estimated: 'bg-yellow-100 text-yellow-700',
-                    in_progress: 'bg-indigo-100 text-indigo-700',
-                    done: 'bg-green-100 text-green-700',
-                    taken: 'bg-emerald-100 text-emerald-700',
-                    rejected: 'bg-red-100 text-red-600',
+                    pending: 'bg-slate-100 text-slate-600', estimated: 'bg-yellow-100 text-yellow-700',
+                    in_progress: 'bg-indigo-100 text-indigo-700', done: 'bg-green-100 text-green-700',
+                    taken: 'bg-emerald-100 text-emerald-700', rejected: 'bg-red-100 text-red-600',
                 };
                 const statusLabels = {
-                    pending: 'Menunggu Estimasi',
-                    estimated: 'Estimasi Diberikan',
-                    in_progress: 'Sedang Dikerjakan',
-                    done: 'Selesai',
-                    taken: 'Sudah Diambil',
-                    rejected: 'Dibatalkan',
+                    pending: 'Menunggu Estimasi', estimated: 'Estimasi Diberikan',
+                    in_progress: 'Sedang Dikerjakan', done: 'Selesai',
+                    taken: 'Sudah Diambil', rejected: 'Dibatalkan',
                 };
                 const statusBadge = `<span class="px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[data.status] ?? 'bg-slate-100 text-slate-600'}">${statusLabels[data.status] ?? data.status}</span>`;
 
+                // Profit info — hanya tampil jika sudah ada data HPP
+                const profitSection = (data.spare_part_hpp > 0) ? `
+                                                <div class="detail-section">
+                                                    <div class="detail-section-title"><i class="fa-solid fa-chart-line text-slate-400"></i> Kalkulasi Profit</div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Harga Jual Sparepart</span>
+                                                        <span class="detail-value">${formatRp(data.spare_part_cost)}</span>
+                                                    </div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">HPP Sparepart</span>
+                                                        <span class="detail-value text-slate-400">${formatRp(data.spare_part_hpp)}</span>
+                                                    </div>
+                                                    <div class="detail-row border-t border-slate-200 pt-2">
+                                                        <span class="detail-label font-semibold text-green-600">Profit Sparepart</span>
+                                                        <span class="detail-value text-green-600 font-bold">${formatRp(data.spare_part_cost - data.spare_part_hpp)}</span>
+                                                    </div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Biaya Jasa</span>
+                                                        <span class="detail-value">${formatRp(data.service_cost)}</span>
+                                                    </div>
+                                                    <div class="text-xs text-slate-400 mt-1 italic">*Fee teknisi dipotong dari biaya jasa saat penggajian dirilis</div>
+                                                </div>
+                                            ` : '';
+
                 $('#detailBody').html(`
-                                                                                                        <div class="detail-section">
-                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-user text-slate-400"></i> Informasi Konsumen</div>
-                                                                                                            <div class="detail-row">
-                                                                                                                <span class="detail-label">Nama</span>
-                                                                                                                <span class="detail-value font-semibold">${data.customer_name}</span>
-                                                                                                            </div>
-                                                                                                            <div class="detail-row">
-                                                                                                                <span class="detail-label">No. Telepon</span>
-                                                                                                                <span class="detail-value">${data.customer_phone ?? '-'}</span>
-                                                                                                            </div>
-                                                                                                            <div class="detail-row">
-                                                                                                                <span class="detail-label">Status</span>
-                                                                                                                <span class="detail-value">${statusBadge}</span>
-                                                                                                            </div>
-                                                                                                        </div>
+                                                <div class="detail-section">
+                                                    <div class="detail-section-title"><i class="fa-solid fa-user text-slate-400"></i> Informasi Konsumen</div>
+                                                    <div class="detail-row"><span class="detail-label">Nama</span><span class="detail-value font-semibold">${data.customer_name}</span></div>
+                                                    <div class="detail-row"><span class="detail-label">No. Telepon</span><span class="detail-value">${data.customer_phone ?? '-'}</span></div>
+                                                    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value">${statusBadge}</span></div>
+                                                </div>
 
-                                                                                                        <div class="detail-section">
-                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-laptop text-slate-400"></i> Perangkat</div>
-                                                                                                            <div class="detail-row">
-                                                                                                                <span class="detail-label">Brand / Jenis</span>
-                                                                                                                <span class="detail-value">${((data.device_brand ?? '') + ' ' + (data.device_type ?? '')).trim() || '-'}</span>
-                                                                                                            </div>
-                                                                                                            ${data.device_sn ? `<div class="detail-row">
-                                                                                                                <span class="detail-label">Serial Number</span>
-                                                                                                                <span class="detail-value font-mono text-xs">${data.device_sn}</span>
-                                                                                                            </div>` : ''}
-                                                                                                            <div class="detail-row border-t border-slate-100 pt-2 mt-1">
-                                                                                                                <span class="detail-label">Keluhan</span>
-                                                                                                                <span class="detail-value text-slate-600 text-right max-w-xs">${data.complaint}</span>
-                                                                                                            </div>
-                                                                                                            ${data.notes ? `<div class="detail-row">
-                                                                                                                <span class="detail-label">Catatan</span>
-                                                                                                                <span class="detail-value text-slate-500 text-right max-w-xs">${data.notes}</span>
-                                                                                                            </div>` : ''}
-                                                                                                        </div>
+                                                <div class="detail-section">
+                                                    <div class="detail-section-title"><i class="fa-solid fa-laptop text-slate-400"></i> Perangkat</div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Brand / Jenis</span>
+                                                        <span class="detail-value">${((data.device_brand ?? '') + ' ' + (data.device_type ?? '')).trim() || '-'}</span>
+                                                    </div>
+                                                    ${data.device_sn ? `<div class="detail-row"><span class="detail-label">Serial Number</span><span class="detail-value font-mono text-xs">${data.device_sn}</span></div>` : ''}
+                                                    <div class="detail-row border-t border-slate-100 pt-2 mt-1">
+                                                        <span class="detail-label">Keluhan</span>
+                                                        <span class="detail-value text-slate-600 text-right max-w-xs">${data.complaint}</span>
+                                                    </div>
+                                                    ${data.notes ? `<div class="detail-row"><span class="detail-label">Catatan</span><span class="detail-value text-slate-500 text-right max-w-xs">${data.notes}</span></div>` : ''}
+                                                </div>
 
-                                                                                                        <div class="detail-section">
-                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-receipt text-slate-400"></i> Rincian Biaya</div>
-                                                                                                            <div class="mb-2">
-                                                                                                                <div class="text-xs text-slate-400 mb-1.5 font-semibold">Sparepart</div>
-                                                                                                                ${spareList}
-                                                                                                            </div>
-                                                                                                            ${data.technician_notes ? `<div class="detail-row border-t border-slate-200 pt-2">
-                                                                                                                <span class="detail-label">Catatan Teknisi</span>
-                                                                                                                <span class="detail-value text-slate-500 text-right max-w-xs italic">${data.technician_notes}</span>
-                                                                                                            </div>` : ''}
-                                                                                                            <div class="detail-row border-t border-slate-200 pt-2">
-                                                                                                                <span class="detail-label">Harga Jasa</span>
-                                                                                                                <span class="detail-value">${formatRp(data.service_cost)}</span>
-                                                                                                            </div>
-                                                                                                            <div class="flex justify-between items-center mt-2 bg-indigo-600 text-white rounded-xl px-4 py-2.5">
-                                                                                                                <span class="font-bold text-sm">Total Biaya</span>
-                                                                                                                <span class="font-bold text-base">${formatRp(data.total_cost)}</span>
-                                                                                                            </div>
-                                                                                                        </div>
+                                                <div class="detail-section">
+                                                    <div class="detail-section-title"><i class="fa-solid fa-receipt text-slate-400"></i> Rincian Biaya</div>
+                                                    <div class="mb-2">
+                                                        <div class="text-xs text-slate-400 mb-1.5 font-semibold">Sparepart</div>
+                                                        ${spareList}
+                                                    </div>
+                                                    ${data.technician_notes ? `
+                                                        <div class="detail-row border-t border-slate-200 pt-2">
+                                                            <span class="detail-label">Catatan Teknisi</span>
+                                                            <span class="detail-value text-slate-500 text-right max-w-xs italic">${data.technician_notes}</span>
+                                                        </div>` : ''}
+                                                    <div class="detail-row border-t border-slate-200 pt-2">
+                                                        <span class="detail-label">Biaya Jasa</span>
+                                                        <span class="detail-value">${formatRp(data.service_cost)}</span>
+                                                    </div>
+                                                    <div class="flex justify-between items-center mt-2 bg-indigo-600 text-white rounded-xl px-4 py-2.5">
+                                                        <span class="font-bold text-sm">Total Biaya</span>
+                                                        <span class="font-bold text-base">${formatRp(data.total_cost)}</span>
+                                                    </div>
+                                                </div>
 
-                                                                                                        <div class="detail-section">
-                                                                                                            <div class="detail-section-title"><i class="fa-solid fa-wrench text-slate-400"></i> Teknisi</div>
-                                                                                                            ${techs}
-                                                                                                        </div>
-                                                                                                    `);
+                                                ${profitSection}
+
+                                                <div class="detail-section">
+                                                    <div class="detail-section-title"><i class="fa-solid fa-wrench text-slate-400"></i> Teknisi</div>
+                                                    ${techs}
+                                                </div>
+                                            `);
 
                 $('#detailModal').removeClass('hidden');
-            }
+            };
+
+            // ── Action Buttons ────────────────────────────────────────────────────
 
             window.markDone = function (id) {
                 Swal.fire({
-                    title: 'Tandai Selesai?',
-                    text: 'Service akan ditandai selesai dan siap diambil.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#16a34a',
-                    cancelButtonText: 'Batal',
-                    confirmButtonText: 'Ya, Selesai'
-                }).then(result => {
-                    if (result.isConfirmed) submitPost(`/services/${id}/done`);
-                });
-            }
+                    title: 'Tandai Selesai?', text: 'Service akan ditandai selesai dan siap diambil.',
+                    icon: 'question', showCancelButton: true,
+                    confirmButtonColor: '#16a34a', cancelButtonText: 'Batal', confirmButtonText: 'Ya, Selesai'
+                }).then(r => { if (r.isConfirmed) submitPost(`/services/${id}/done`); });
+            };
 
             window.markTaken = function (id) {
                 Swal.fire({
-                    title: 'Barang Sudah Diambil?',
-                    text: 'Status akan berubah menjadi Sudah Diambil.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0d9488',
-                    cancelButtonText: 'Batal',
-                    confirmButtonText: 'Ya, Diambil'
-                }).then(result => {
-                    if (result.isConfirmed) submitPost(`/services/${id}/taken`);
-                });
-            }
+                    title: 'Barang Sudah Diambil?', text: 'Status akan berubah menjadi Sudah Diambil. Pendapatan akan dicatat ke kas.',
+                    icon: 'question', showCancelButton: true,
+                    confirmButtonColor: '#0d9488', cancelButtonText: 'Batal', confirmButtonText: 'Ya, Diambil'
+                }).then(r => { if (r.isConfirmed) submitPost(`/services/${id}/taken`); });
+            };
 
             window.deleteService = function (id) {
                 Swal.fire({
-                    title: 'Hapus Service?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc2626',
-                    cancelButtonText: 'Batal',
-                    confirmButtonText: 'Ya, Hapus'
-                }).then(result => {
-                    if (result.isConfirmed) {
+                    title: 'Hapus Service?', icon: 'warning', showCancelButton: true,
+                    confirmButtonColor: '#dc2626', cancelButtonText: 'Batal', confirmButtonText: 'Ya, Hapus'
+                }).then(r => {
+                    if (r.isConfirmed) {
                         const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/services/${id}`;
-                        form.innerHTML = `
-                                                                                                                <input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">
-                                                                                                                <input type="hidden" name="_method" value="DELETE">
-                                                                                                            `;
+                        form.method = 'POST'; form.action = `/services/${id}`;
+                        form.innerHTML = `<input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}"><input type="hidden" name="_method" value="DELETE">`;
                         document.body.appendChild(form);
                         form.submit();
                     }
                 });
-            }
+            };
 
             function submitPost(url) {
                 const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = url;
+                form.method = 'POST'; form.action = url;
                 form.innerHTML = `<input type="hidden" name="_token" value="${$('meta[name=csrf-token]').attr('content')}">`;
                 document.body.appendChild(form);
                 form.submit();

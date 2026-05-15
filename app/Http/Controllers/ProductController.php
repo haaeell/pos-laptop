@@ -82,24 +82,27 @@ class ProductController extends Controller
             'stock.min' => 'Stok minimal 0'
         ]);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
-        }
-
         $data['stock'] = in_array($data['status'], ['available', 'bonus'])
             ? (int) ($data['stock'] ?? 0)
             : 0;
 
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('products', 'public');
+        }
+
         $product = Product::create($data);
 
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $img) {
-                $path = $img->store('products', 'public');
+            $imageData = collect($request->file('images'))
+                ->map(fn($img) => [
+                    'product_id' => $product->id,
+                    'image' => $img->store('products', 'public'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+                ->toArray();
 
-                $product->images()->create([
-                    'image' => $path
-                ]);
-            }
+            ProductImage::insert($imageData);
         }
 
         return redirect()->back()->with('success', 'Produk berhasil ditambahkan');

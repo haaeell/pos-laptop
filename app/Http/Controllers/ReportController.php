@@ -36,7 +36,10 @@ class ReportController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $totalSales = $sales->sum('grand_total') - $sales->sum('fee_sales');
+        $feeSales = Sale::whereBetween('created_at', [$from, $to])
+            ->whereHas('salesPerson', fn($q) => $q->whereNull('employee_id'))
+            ->sum('fee_sales');
+        $totalSales = $sales->sum('grand_total') - $feeSales;
         $totalProfit = $sales->sum('benefit');
         $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
@@ -47,7 +50,7 @@ class ReportController extends Controller
             $q->whereNull('deleted_at');
         })->whereBetween('tanggal_bayar', [$from, $to])->sum('total_bayar');
 
-        $totalGajiKaryawan = Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_basic_salary');
+        $totalGajiKaryawan = Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_amount');
         $totalFeeSales = Sale::whereBetween('created_at', [$from, $to])->sum('fee_sales');
         $totalPurchaseServices = Service::whereNotNull('done_at')
             ->whereBetween('done_at', [$from, $to])
@@ -56,6 +59,20 @@ class ReportController extends Controller
         $totalJasaService = Service::whereNotNull('done_at')
             ->whereBetween('done_at', [$from, $to])
             ->sum('service_cost');
+
+        $totalServices = Service::whereNotNull('done_at')
+            ->whereBetween('done_at', [$from, $to])
+            ->sum('total_cost');
+
+        $sparePartHpp =  Service::whereNotNull('done_at')
+            ->whereBetween('done_at', [$from, $to])
+            ->sum('spare_part_hpp');
+
+        $sparePartCost =  Service::whereNotNull('done_at')
+            ->whereBetween('done_at', [$from, $to])
+            ->sum('spare_part_cost');
+
+        $profitService = $sparePartCost - $sparePartHpp;
 
         return view('reports.index', compact(
             'sales',
@@ -71,21 +88,37 @@ class ReportController extends Controller
             'totalGajiKaryawan',
             'totalFeeSales',
             'totalPurchaseServices',
-            'totalJasaService'
+            'totalJasaService',
+            'totalServices',
+            'profitService'
         ));
     }
     public function pdf(Request $request)
     {
         $from = Carbon::parse($request->from)->startOfDay();
-        $to = Carbon::parse($request->to)->endOfDay();
+        $to   = Carbon::parse($request->to)->endOfDay();
 
         $sales = Sale::whereBetween('created_at', [$from, $to])->orderBy('created_at')->get();
 
-        $totalSales = $sales->sum('grand_total') - $sales->sum('fee_sales');
-        $totalProfit = $sales->sum('benefit');
-        $bonusLoss = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
+        $feeSales = Sale::whereBetween('created_at', [$from, $to])
+            ->whereHas('salesPerson', fn($q) => $q->whereNull('employee_id'))
+            ->sum('fee_sales');
 
-        $totalExpenses = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
+        $totalSales           = $sales->sum('grand_total') - $feeSales;
+        $totalProfit          = $sales->sum('benefit');
+        $totalFeeSales        = $sales->sum('fee_sales');
+        $bonusLoss            = SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit');
+        $totalExpenses        = Expense::whereBetween('entry_date', [$from, $to])->sum('amount');
+        $totalAsset           = Product::where('status', 'available')->sum('purchase_price');
+        $totalPenambahanModal = Modal::whereBetween('tanggal_pencairan', [$from, $to])->sum('nominal_pencairan');
+        $totalCicilan         = ModalCicilan::whereHas('modal', fn($q) => $q->whereNull('deleted_at'))
+            ->whereBetween('tanggal_bayar', [$from, $to])->sum('total_bayar');
+        $totalGajiKaryawan    = Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_amount');
+        $totalJasaService     = Service::whereNotNull('done_at')->whereBetween('done_at', [$from, $to])->sum('service_cost');
+        $totalServices        = Service::whereNotNull('done_at')->whereBetween('done_at', [$from, $to])->sum('total_cost');
+        $sparePartHpp         = Service::whereNotNull('done_at')->whereBetween('done_at', [$from, $to])->sum('spare_part_hpp');
+        $sparePartCost        = Service::whereNotNull('done_at')->whereBetween('done_at', [$from, $to])->sum('spare_part_cost');
+        $profitService        = $sparePartCost - $sparePartHpp;
 
         $pdf = Pdf::loadView('reports.pdf', compact(
             'sales',
@@ -93,11 +126,19 @@ class ReportController extends Controller
             'to',
             'totalSales',
             'totalProfit',
+            'totalFeeSales',
             'bonusLoss',
-            'totalExpenses'
+            'totalExpenses',
+            'totalAsset',
+            'totalPenambahanModal',
+            'totalCicilan',
+            'totalGajiKaryawan',
+            'totalJasaService',
+            'totalServices',
+            'profitService',
         ))->setPaper('a4', 'portrait');
 
-        return $pdf->stream('laporan-penjualan.pdf');
+        return $pdf->stream('laporan-keuangan.pdf');
     }
 
     public function excel(Request $request)

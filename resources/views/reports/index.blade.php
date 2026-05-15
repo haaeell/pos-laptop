@@ -196,10 +196,10 @@
                 class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pembelian Sparepart <span
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profit Service <span
                                 class="text-[9px] text-slate-400 lowercase italic">(Service)</span></p>
                         <h3 class="text-xl font-bold text-slate-800 mt-2">
-                            Rp{{ number_format($totalPurchaseServices, 0, ',', '.') }}</h3>
+                            Rp{{ number_format($profitService, 0, ',', '.') }}</h3>
                     </div>
                 </div>
                 <div class="absolute bottom-0 left-0 h-1 w-full bg-slate-400"></div>
@@ -213,7 +213,7 @@
             </div>
             <div class="text-3xl font-black">
                 Rp
-                {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal - $totalCicilan - $totalGajiKaryawan - $totalPurchaseServices, 0, ',', '.') }}
+                {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
             </div>
         </div>
 

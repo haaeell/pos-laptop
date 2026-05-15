@@ -16,10 +16,11 @@ class Service extends Model
         'complaint',
         'notes',
         'technician_notes',
-        'spare_parts',       // JSON: [{ name, price }, ...]
-        'spare_part_cost',   // total agregat dari spare_parts
-        'service_cost',
-        'total_cost',
+        'spare_parts',
+        'spare_part_cost',  // total harga jual seluruh sparepart
+        'spare_part_hpp',   // total HPP seluruh sparepart
+        'service_cost',     // biaya jasa
+        'total_cost',       // spare_part_cost + service_cost
         'status',
         'estimated_done',
         'done_at',
@@ -28,11 +29,10 @@ class Service extends Model
     ];
 
     protected $casts = [
-        'spare_parts' => 'array',   // otomatis encode/decode JSON
+        'spare_parts' => 'array',
         'done_at'     => 'datetime',
         'taken_at'    => 'datetime',
     ];
-
     public function technicians()
     {
         return $this->hasMany(ServiceTechnician::class);
@@ -42,6 +42,23 @@ class Service extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function getSparePartProfitAttribute(): int
+    {
+        return (int) ($this->spare_part_cost - $this->spare_part_hpp);
+    }
+
+    public function getRevenueBreakdownAttribute(): array
+    {
+        return [
+            'spare_part_revenue' => (int) $this->spare_part_cost,
+            'spare_part_hpp'     => (int) $this->spare_part_hpp,
+            'spare_part_profit'  => $this->spare_part_profit,
+            'service_cost'       => (int) $this->service_cost,
+            'total_in'           => (int) $this->total_cost,
+        ];
+    }
+
 
     public static function generateServiceNumber(): string
     {
