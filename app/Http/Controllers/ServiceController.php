@@ -68,25 +68,30 @@ class ServiceController extends Controller
     public function estimate(Request $request, $id)
     {
         $request->validate([
-            'spare_parts'           => 'nullable|array',
-            'spare_parts.*.product_id' => 'required_with:spare_parts|exists:products,id',
-            'spare_parts.*.qty'        => 'required_with:spare_parts|integer|min:1',
-            'service_cost'          => 'required|numeric|min:0',
-            'technician_notes'      => 'nullable|string',
-            'estimated_done'        => 'nullable|date',
+            'spare_parts'               => 'nullable|array',
+            'spare_parts.*.product_id'  => 'nullable|exists:products,id',
+            'spare_parts.*.qty'         => 'nullable|integer|min:1',
+            'service_cost'              => 'required|numeric|min:0',
+            'technician_notes'          => 'nullable|string',
+            'estimated_done'            => 'nullable|date',
         ]);
 
         $service = Service::findOrFail($id);
 
-        $spareParts   = [];
-        $totalSell    = 0;
-        $totalHpp     = 0;
+        $spareParts = [];
+        $totalSell  = 0;
+        $totalHpp   = 0;
 
         foreach ($request->spare_parts ?? [] as $item) {
+
+            if (empty($item['product_id']) || empty($item['qty'])) {
+                continue;
+            }
+
             $product = Product::findOrFail($item['product_id']);
             $qty     = (int) $item['qty'];
 
-            $subtotalSell = (int) ($product->selling_price  * $qty);
+            $subtotalSell = (int) ($product->selling_price * $qty);
             $subtotalHpp  = (int) ($product->purchase_price * $qty);
 
             $spareParts[] = [
@@ -119,7 +124,6 @@ class ServiceController extends Controller
 
         return redirect()->back()->with('success', 'Estimasi biaya berhasil disimpan');
     }
-
     public function confirm(Request $request, $id)
     {
         $request->validate([
