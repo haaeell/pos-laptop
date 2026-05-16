@@ -179,6 +179,30 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
 
         DB::transaction(function () use ($service) {
+
+            $spareParts = $service->spare_parts ?? [];
+            if (is_string($spareParts)) {
+                $spareParts = json_decode($spareParts, true) ?? [];
+            }
+
+            foreach ($spareParts as $sp) {
+                if (empty($sp['product_id']) || empty($sp['qty'])) continue;
+
+                $product = Product::find($sp['product_id']);
+                if (!$product) continue;
+
+                $qty = (int) $sp['qty'];
+
+                if ($product->stock > $qty) {
+                    $product->decrement('stock', $qty);
+                } else {
+                    $product->update([
+                        'status' => 'sold',
+                        'stock'  => 0,
+                    ]);
+                }
+            }
+
             $service->update([
                 'status'   => 'taken',
                 'taken_at' => now(),
