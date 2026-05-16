@@ -89,7 +89,9 @@ class ExpenseController extends Controller
         $to       = $request->to;
 
         $pdf = Pdf::loadView('master.expenses.pdf', compact('expenses', 'total', 'from', 'to'))
-            ->setPaper('a4', 'portrait');
+            ->setPaper('a4', 'portrait')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
 
         return $pdf->stream('laporan-pengeluaran.pdf');
     }

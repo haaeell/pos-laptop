@@ -170,6 +170,18 @@
                     return;
                 }
 
+                // Reset state sebelum hit ulang
+                payrollData = [];
+                $('#payrollTableBody').html(`
+                <tr>
+                    <td colspan="8" class="px-4 py-6 text-center text-slate-400">
+                        <i class="fa-solid fa-spinner fa-spin mr-2"></i> Menghitung...
+                    </td>
+                </tr>
+            `);
+                $('#calculationResult').removeClass('hidden');
+                $('#totalPayroll').text('Menghitung...');
+
                 try {
                     const response = await $.ajax({
                         url: '/payrolls/calculate',
@@ -188,10 +200,16 @@
                         periodLabel = response.period_label;
 
                         displayPayrollData(response.data, response.total_payroll, response.period_label);
-                        $('#calculationResult').removeClass('hidden');
                     }
                 } catch (error) {
-                    Swal.fire('Error', 'Gagal menghitung gaji', 'error');
+                    $('#payrollTableBody').html(`
+                    <tr>
+                        <td colspan="8" class="px-4 py-6 text-center text-red-400">
+                            <i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal menghitung gaji. Coba lagi.
+                        </td>
+                    </tr>
+                `);
+                    $('#totalPayroll').text('Rp 0');
                 }
             }
 
@@ -200,21 +218,21 @@
 
                 data.forEach(emp => {
                     html += `
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-xs">${emp.employee_number}</td>
-                                        <td class="px-4 py-3 font-medium">${emp.full_name}</td>
-                                        <td class="px-4 py-3">${emp.position}</td>
-                                        <td class="px-4 py-3 text-right">${formatRupiah(emp.basic_salary)}</td>
-                                        <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.sales_bonus)}</td>
-                                        <td class="px-4 py-3 text-right text-blue-600">${formatRupiah(emp.technician_fee)}</td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">
-                                                ${emp.total_transactions}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(emp.net_salary)}</td>
-                                    </tr>
-                                `;
+                                            <tr class="hover:bg-slate-50">
+                                                <td class="px-4 py-3 font-mono text-xs">${emp.employee_number}</td>
+                                                <td class="px-4 py-3 font-medium">${emp.full_name}</td>
+                                                <td class="px-4 py-3">${emp.position}</td>
+                                                <td class="px-4 py-3 text-right">${formatRupiah(emp.basic_salary)}</td>
+                                                <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.sales_bonus)}</td>
+                                                <td class="px-4 py-3 text-right text-blue-600">${formatRupiah(emp.technician_fee)}</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">
+                                                        ${emp.total_transactions}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(emp.net_salary)}</td>
+                                            </tr>
+                                        `;
                 });
 
                 $('#payrollTableBody').html(html);

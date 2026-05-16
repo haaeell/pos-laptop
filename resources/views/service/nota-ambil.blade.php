@@ -362,10 +362,12 @@
                         <td class="text-center">{{ $row++ }}</td>
                         <td class="text-left">
                             <strong>Sparepart</strong><br>
-                            <small style="color:#6b7280;">{{ $sp['name'] }}</small>
+                            <small style="color:#6b7280;">
+                                {{ $sp['name'] }} × {{ $sp['qty'] ?? 1 }}
+                            </small>
                         </td>
                         <td class="text-right" style="color:#059669; font-weight:700;">
-                            Rp {{ number_format($sp['price'], 0, ',', '.') }}
+                            Rp {{ number_format($sp['subtotal_sell'] ?? 0, 0, ',', '.') }}
                         </td>
                     </tr>
                 @endforeach

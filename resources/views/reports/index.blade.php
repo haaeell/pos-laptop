@@ -193,7 +193,7 @@
 
             <!-- Sparepart -->
             <div
-                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-violet-500 shadow-sm group hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profit Service <span
@@ -207,26 +207,82 @@
         </div>
 
         {{-- CALCULATION BOX --}}
-        <div class="bg-indigo-900 rounded-2xl p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <p class="text-indigo-200 text-sm font-medium">Jumlah Saldo</p>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+
+            <div class="px-5 py-4 border-b border-slate-100">
+                <p class="text-sm font-semibold text-slate-500">Jumlah Saldo</p>
             </div>
-            <div class="text-3xl font-black">
-                Rp
-                {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
+
+            <div class="divide-y divide-slate-100">
+
+                @php
+                    $rows = [
+                        ['label' => 'Total Penjualan', 'value' => $totalSales, 'plus' => true],
+                        ['label' => 'Penambahan Modal', 'value' => $totalPenambahanModal, 'plus' => true],
+                        ['label' => 'Total Services', 'value' => $totalServices, 'plus' => true],
+                        ['label' => 'Total Pengeluaran', 'value' => $totalExpenses, 'plus' => false],
+                        ['label' => 'Cicilan Modal', 'value' => $totalCicilan, 'plus' => false],
+                        ['label' => 'Gaji Karyawan', 'value' => $totalGajiKaryawan, 'plus' => false],
+                    ];
+                @endphp
+
+                @foreach ($rows as $row)
+                    <div class="flex items-center justify-between px-5 py-3 {{ $loop->even ? 'bg-slate-50' : '' }}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-1.5 h-1.5 rounded-full {{ $row['plus'] ? 'bg-emerald-600' : 'bg-red-600' }}"></div>
+                            <span class="text-sm text-slate-700">{{ $row['label'] }}</span>
+                        </div>
+                        <span class="text-sm font-medium {{ $row['plus'] ? 'text-emerald-700' : 'text-red-600' }}">
+                            {{ $row['plus'] ? '+' : '−' }} Rp {{ number_format($row['value'], 0, ',', '.') }}
+                        </span>
+                    </div>
+                @endforeach
+
             </div>
+
+            <div class="flex items-center justify-between px-5 py-4 border-t border-slate-200 bg-indigo-900">
+                <span class="text-sm font-medium text-indigo-200">Jumlah Saldo</span>
+                <span class="text-2xl font-bold text-white">
+                    Rp
+                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
+                </span>
+            </div>
+
         </div>
 
         {{-- TOTAL ASET --}}
-        <div class="bg-yellow-900 rounded-2xl p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <p class="text-indigo-200 text-sm font-medium">Total Asset</p>
-                <p class="text-xs text-indigo-300 italic">Nominal Asset</p>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
+
+            <div class="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-amber-900 opacity-[0.06]"></div>
+            <div class="absolute -bottom-12 right-10 w-24 h-24 rounded-full bg-amber-800 opacity-[0.05]"></div>
+
+            <div class="flex justify-between items-start gap-4 relative">
+                <div>
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <i class="fa-solid fa-building-columns text-amber-800 text-sm"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Asset</span>
+                    </div>
+                    <p class="text-xs text-slate-400 italic">Nominal keseluruhan aset produk tersedia</p>
+                </div>
+
+                <div class="text-right shrink-0">
+                    <p class="text-[11px] text-slate-400 mb-0.5">Rp</p>
+                    <p class="text-2xl font-semibold text-slate-800">{{ number_format($totalAsset, 0, ',', '.') }}</p>
+                </div>
             </div>
-            <div class="text-3xl font-black">
-                Rp {{ number_format($totalAsset, 0, ',', '.') }}
+
+            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <span class="text-xs text-slate-500">Dihitung dari produk berstatus
+                    <span class="font-medium text-slate-700">Tersedia</span>,
+                    stok lebih dari 1 dikalikan jumlah stok
+                </span>
             </div>
+
         </div>
+
         {{-- TABLE PENJUALAN --}}
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
