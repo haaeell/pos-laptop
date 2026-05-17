@@ -74,6 +74,7 @@ class ServiceController extends Controller
             'service_cost'              => 'required|numeric|min:0',
             'technician_notes'          => 'nullable|string',
             'estimated_done'            => 'nullable|date',
+            'store_fee'                 => 'nullable|numeric|min:0',
         ]);
 
         $service = Service::findOrFail($id);
@@ -109,13 +110,16 @@ class ServiceController extends Controller
         }
 
         $serviceCost = (int) $request->service_cost;
-        $totalCost   = $totalSell + $serviceCost;
+        $storeFee    = (int) $request->store_fee ?? 0;
+
+        $totalCost = $totalSell + $serviceCost + $storeFee;
 
         $service->update([
             'spare_parts'      => $spareParts,
             'spare_part_cost'  => $totalSell,
             'spare_part_hpp'   => $totalHpp,
             'service_cost'     => $serviceCost,
+            'store_fee'        => $storeFee,
             'total_cost'       => $totalCost,
             'technician_notes' => $request->technician_notes,
             'estimated_done'   => $request->estimated_done,

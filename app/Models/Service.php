@@ -26,6 +26,7 @@ class Service extends Model
         'done_at',
         'taken_at',
         'created_by',
+        'store_fee',
     ];
 
     protected $casts = [

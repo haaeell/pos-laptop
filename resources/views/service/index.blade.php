@@ -269,6 +269,15 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="field-label">Fee Toko (Rp)</label>
+                        <div class="relative mt-1">
+                            <input type="text" id="est_store_fee_display" class="field-input pl-9" placeholder="0"
+                                oninput="onStoreFeeInput(this)">
+                            <input type="hidden" name="store_fee" id="est_store_fee" value="0">
+                        </div>
+                    </div>
+
                     {{-- ── Total ── --}}
                     <div
                         class="bg-yellow-50 rounded-xl px-4 py-3 flex justify-between items-center border border-yellow-200">
@@ -606,39 +615,39 @@
 
                 const options = SPARE_PRODUCTS.map(p =>
                     `<option value="${p.id}"
-                                                    data-sell="${p.selling_price}"
-                                                    data-hpp="${p.purchase_price}"
-                                                    data-stock="${p.stock}"
-                                                    ${p.id == productId ? 'selected' : ''}>
-                                                    ${p.name} (stok: ${p.stock})
-                                                </option>`
+                                                                                                                    data-sell="${p.selling_price}"
+                                                                                                                    data-hpp="${p.purchase_price}"
+                                                                                                                    data-stock="${p.stock}"
+                                                                                                                    ${p.id == productId ? 'selected' : ''}>
+                                                                                                                    ${p.name} (stok: ${p.stock})
+                                                                                                                </option>`
                 ).join('');
 
                 const row = $(`
-                                                <div class="spare-row grid grid-cols-12 gap-2 items-center" data-index="${i}">
-                                                    <div class="col-span-6">
-                                                        <select name="spare_parts[${i}][product_id]"
-                                                            class="field-input spare-select text-sm py-2 spare-product-select">
-                                                            <option value="">— Pilih Produk —</option>
-                                                            ${options}
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-span-2">
-                                                        <input type="number" name="spare_parts[${i}][qty]"
-                                                            min="1" value="${qty}"
-                                                            class="field-input text-sm py-2 text-center spare-qty">
-                                                    </div>
-                                                    <div class="col-span-3 text-right">
-                                                        <span class="spare-subtotal text-sm font-semibold text-slate-700">${subtotalSell > 0 ? formatRp(subtotalSell) : '-'}</span>
-                                                    </div>
-                                                    <div class="col-span-1 flex justify-center">
-                                                        <button type="button" onclick="removeSpareRow(this)"
-                                                            class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition">
-                                                            <i class="fa-solid fa-times text-xs"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            `);
+                                                                                                                <div class="spare-row grid grid-cols-12 gap-2 items-center" data-index="${i}">
+                                                                                                                    <div class="col-span-6">
+                                                                                                                        <select name="spare_parts[${i}][product_id]"
+                                                                                                                            class="field-input spare-select text-sm py-2 spare-product-select">
+                                                                                                                            <option value="">— Pilih Produk —</option>
+                                                                                                                            ${options}
+                                                                                                                        </select>
+                                                                                                                    </div>
+                                                                                                                    <div class="col-span-2">
+                                                                                                                        <input type="number" name="spare_parts[${i}][qty]"
+                                                                                                                            min="1" value="${qty}"
+                                                                                                                            class="field-input text-sm py-2 text-center spare-qty">
+                                                                                                                    </div>
+                                                                                                                    <div class="col-span-3 text-right">
+                                                                                                                        <span class="spare-subtotal text-sm font-semibold text-slate-700">${subtotalSell > 0 ? formatRp(subtotalSell) : '-'}</span>
+                                                                                                                    </div>
+                                                                                                                    <div class="col-span-1 flex justify-center">
+                                                                                                                        <button type="button" onclick="removeSpareRow(this)"
+                                                                                                                            class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition">
+                                                                                                                            <i class="fa-solid fa-times text-xs"></i>
+                                                                                                                        </button>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            `);
 
                 // Update subtotal realtime saat produk/qty berubah
                 row.find('.spare-product-select, .spare-qty').on('change input', function () {
@@ -647,6 +656,13 @@
                 });
 
                 $('#spareRows').append(row);
+                calcEstTotal();
+            }
+
+            function onStoreFeeInput(el) {
+                const raw = toRaw(el.value);
+                el.value = raw > 0 ? toRupiah(raw) : '';
+                $('#est_store_fee').val(raw);
                 calcEstTotal();
             }
 
@@ -689,8 +705,10 @@
                     spareTotal += sell * qty;
                 });
                 const service = parseInt($('#est_service').val()) || 0;
+                const storeFee = parseInt($('#est_store_fee').val()) || 0;
+
                 $('#spare_subtotal').text(formatRp(spareTotal));
-                $('#est_total').text(formatRp(spareTotal + service));
+                $('#est_total').text(formatRp(spareTotal + service + storeFee));
             }
 
             window.openEstimateModal = function (data) {
@@ -715,6 +733,17 @@
                 if (data.service_cost > 0) {
                     $('#est_service_display').val(toRupiah(data.service_cost));
                     $('#est_service').val(data.service_cost);
+                } else {
+                    $('#est_service_display').val('');
+                    $('#est_service').val(0);
+                }
+
+                if (data.store_fee > 0) {
+                    $('#est_store_fee_display').val(toRupiah(data.store_fee));
+                    $('#est_store_fee').val(data.store_fee);
+                } else {
+                    $('#est_store_fee_display').val('');
+                    $('#est_store_fee').val(0);
                 }
 
                 calcEstTotal();
@@ -748,14 +777,14 @@
                 let spareList = '';
                 if (data.spare_parts.length) {
                     const rows = data.spare_parts.map((sp, i) => `
-                                                    <div class="detail-row border-b border-slate-100 last:border-0 py-2">
-                                                        <div class="detail-label">
-                                                            <span class="text-slate-500">${i + 1}. ${sp.name}</span>
-                                                            <span class="ml-1 text-slate-400">×${sp.qty ?? 1}</span>
-                                                        </div>
-                                                        <span class="detail-value">${formatRp(sp.subtotal_sell ?? sp.price_sell * (sp.qty ?? 1))}</span>
-                                                    </div>
-                                                `).join('');
+                                                                                                                    <div class="detail-row border-b border-slate-100 last:border-0 py-2">
+                                                                                                                        <div class="detail-label">
+                                                                                                                            <span class="text-slate-500">${i + 1}. ${sp.name}</span>
+                                                                                                                            <span class="ml-1 text-slate-400">×${sp.qty ?? 1}</span>
+                                                                                                                        </div>
+                                                                                                                        <span class="detail-value">${formatRp(sp.subtotal_sell ?? sp.price_sell * (sp.qty ?? 1))}</span>
+                                                                                                                    </div>
+                                                                                                                `).join('');
                     spareList = rows;
                 } else {
                     spareList = `<p class="text-slate-400 text-xs italic">Tidak ada sparepart</p>`;
@@ -763,16 +792,16 @@
 
                 const techs = data.technicians?.length
                     ? data.technicians.map(t => `
-                                                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-                                                        <div class="flex items-center gap-2">
-                                                            <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                                                                ${t.employee.full_name.charAt(0)}
-                                                            </div>
-                                                            <span class="font-medium text-slate-700">${t.employee.full_name}</span>
-                                                        </div>
-                                                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">${formatRp(t.fee_share)}</span>
-                                                    </div>
-                                                `).join('')
+                                                                                                                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
+                                                                                                                        <div class="flex items-center gap-2">
+                                                                                                                            <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                                                                                                                ${t.employee.full_name.charAt(0)}
+                                                                                                                            </div>
+                                                                                                                            <span class="font-medium text-slate-700">${t.employee.full_name}</span>
+                                                                                                                        </div>
+                                                                                                                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">${formatRp(t.fee_share)}</span>
+                                                                                                                    </div>
+                                                                                                                `).join('')
                     : '<p class="text-slate-400 text-xs italic">Belum ada teknisi</p>';
 
                 const statusColors = {
@@ -789,78 +818,86 @@
 
                 // Profit info — hanya tampil jika sudah ada data HPP
                 const profitSection = (data.spare_part_hpp > 0) ? `
-                                                <div class="detail-section">
-                                                    <div class="detail-section-title"><i class="fa-solid fa-chart-line text-slate-400"></i> Kalkulasi Profit</div>
-                                                    <div class="detail-row">
-                                                        <span class="detail-label">Harga Jual Sparepart</span>
-                                                        <span class="detail-value">${formatRp(data.spare_part_cost)}</span>
-                                                    </div>
-                                                    <div class="detail-row">
-                                                        <span class="detail-label">HPP Sparepart</span>
-                                                        <span class="detail-value text-slate-400">${formatRp(data.spare_part_hpp)}</span>
-                                                    </div>
-                                                    <div class="detail-row border-t border-slate-200 pt-2">
-                                                        <span class="detail-label font-semibold text-green-600">Profit Sparepart</span>
-                                                        <span class="detail-value text-green-600 font-bold">${formatRp(data.spare_part_cost - data.spare_part_hpp)}</span>
-                                                    </div>
-                                                    <div class="detail-row">
-                                                        <span class="detail-label">Biaya Jasa</span>
-                                                        <span class="detail-value">${formatRp(data.service_cost)}</span>
-                                                    </div>
-                                                    <div class="text-xs text-slate-400 mt-1 italic">*Fee teknisi dipotong dari biaya jasa saat penggajian dirilis</div>
-                                                </div>
-                                            ` : '';
+                                                                                                                <div class="detail-section">
+                                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-chart-line text-slate-400"></i> Kalkulasi Profit</div>
+                                                                                                                    <div class="detail-row">
+                                                                                                                        <span class="detail-label">Harga Jual Sparepart</span>
+                                                                                                                        <span class="detail-value">${formatRp(data.spare_part_cost)}</span>
+                                                                                                                    </div>
+                                                                                                                    <div class="detail-row">
+                                                                                                                        <span class="detail-label">HPP Sparepart</span>
+                                                                                                                        <span class="detail-value text-slate-400">${formatRp(data.spare_part_hpp)}</span>
+                                                                                                                    </div>
+                                                                                                                    <div class="detail-row border-t border-slate-200 pt-2">
+                                                                                                                        <span class="detail-label font-semibold text-green-600">Profit Sparepart</span>
+                                                                                                                        <span class="detail-value text-green-600 font-bold">${formatRp(data.spare_part_cost - data.spare_part_hpp)}</span>
+                                                                                                                    </div>
+                                                                                                                    <div class="detail-row">
+                                                                                                                        <span class="detail-label">Biaya Jasa</span>
+                                                                                                                        <span class="detail-value">${formatRp(data.service_cost)}</span>
+                                                                                                                    </div>
+                                                                                                                    <div class="detail-row">
+                                                                                                                        <span class="detail-label">Fee Toko</span>
+                                                                                                                        <span class="detail-value">${formatRp(data.store_fee ?? 0)}</span>
+                                                                                                                    </div>
+                                                                                                                    <div class="text-xs text-slate-400 mt-1 italic">*Fee teknisi dipotong dari biaya jasa saat penggajian dirilis</div>
+                                                                                                                </div>
+                                                                                                            ` : '';
 
                 $('#detailBody').html(`
-                                                <div class="detail-section">
-                                                    <div class="detail-section-title"><i class="fa-solid fa-user text-slate-400"></i> Informasi Konsumen</div>
-                                                    <div class="detail-row"><span class="detail-label">Nama</span><span class="detail-value font-semibold">${data.customer_name}</span></div>
-                                                    <div class="detail-row"><span class="detail-label">No. Telepon</span><span class="detail-value">${data.customer_phone ?? '-'}</span></div>
-                                                    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value">${statusBadge}</span></div>
-                                                </div>
+                                                                                                                <div class="detail-section">
+                                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-user text-slate-400"></i> Informasi Konsumen</div>
+                                                                                                                    <div class="detail-row"><span class="detail-label">Nama</span><span class="detail-value font-semibold">${data.customer_name}</span></div>
+                                                                                                                    <div class="detail-row"><span class="detail-label">No. Telepon</span><span class="detail-value">${data.customer_phone ?? '-'}</span></div>
+                                                                                                                    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value">${statusBadge}</span></div>
+                                                                                                                </div>
 
-                                                <div class="detail-section">
-                                                    <div class="detail-section-title"><i class="fa-solid fa-laptop text-slate-400"></i> Perangkat</div>
-                                                    <div class="detail-row">
-                                                        <span class="detail-label">Brand / Jenis</span>
-                                                        <span class="detail-value">${((data.device_brand ?? '') + ' ' + (data.device_type ?? '')).trim() || '-'}</span>
-                                                    </div>
-                                                    ${data.device_sn ? `<div class="detail-row"><span class="detail-label">Serial Number</span><span class="detail-value font-mono text-xs">${data.device_sn}</span></div>` : ''}
-                                                    <div class="detail-row border-t border-slate-100 pt-2 mt-1">
-                                                        <span class="detail-label">Keluhan</span>
-                                                        <span class="detail-value text-slate-600 text-right max-w-xs">${data.complaint}</span>
-                                                    </div>
-                                                    ${data.notes ? `<div class="detail-row"><span class="detail-label">Catatan</span><span class="detail-value text-slate-500 text-right max-w-xs">${data.notes}</span></div>` : ''}
-                                                </div>
+                                                                                                                <div class="detail-section">
+                                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-laptop text-slate-400"></i> Perangkat</div>
+                                                                                                                    <div class="detail-row">
+                                                                                                                        <span class="detail-label">Brand / Jenis</span>
+                                                                                                                        <span class="detail-value">${((data.device_brand ?? '') + ' ' + (data.device_type ?? '')).trim() || '-'}</span>
+                                                                                                                    </div>
+                                                                                                                    ${data.device_sn ? `<div class="detail-row"><span class="detail-label">Serial Number</span><span class="detail-value font-mono text-xs">${data.device_sn}</span></div>` : ''}
+                                                                                                                    <div class="detail-row border-t border-slate-100 pt-2 mt-1">
+                                                                                                                        <span class="detail-label">Keluhan</span>
+                                                                                                                        <span class="detail-value text-slate-600 text-right max-w-xs">${data.complaint}</span>
+                                                                                                                    </div>
+                                                                                                                    ${data.notes ? `<div class="detail-row"><span class="detail-label">Catatan</span><span class="detail-value text-slate-500 text-right max-w-xs">${data.notes}</span></div>` : ''}
+                                                                                                                </div>
 
-                                                <div class="detail-section">
-                                                    <div class="detail-section-title"><i class="fa-solid fa-receipt text-slate-400"></i> Rincian Biaya</div>
-                                                    <div class="mb-2">
-                                                        <div class="text-xs text-slate-400 mb-1.5 font-semibold">Sparepart</div>
-                                                        ${spareList}
-                                                    </div>
-                                                    ${data.technician_notes ? `
-                                                        <div class="detail-row border-t border-slate-200 pt-2">
-                                                            <span class="detail-label">Catatan Teknisi</span>
-                                                            <span class="detail-value text-slate-500 text-right max-w-xs italic">${data.technician_notes}</span>
-                                                        </div>` : ''}
-                                                    <div class="detail-row border-t border-slate-200 pt-2">
-                                                        <span class="detail-label">Biaya Jasa</span>
-                                                        <span class="detail-value">${formatRp(data.service_cost)}</span>
-                                                    </div>
-                                                    <div class="flex justify-between items-center mt-2 bg-indigo-600 text-white rounded-xl px-4 py-2.5">
-                                                        <span class="font-bold text-sm">Total Biaya</span>
-                                                        <span class="font-bold text-base">${formatRp(data.total_cost)}</span>
-                                                    </div>
-                                                </div>
+                                                                                                                <div class="detail-section">
+                                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-receipt text-slate-400"></i> Rincian Biaya</div>
+                                                                                                                    <div class="mb-2">
+                                                                                                                        <div class="text-xs text-slate-400 mb-1.5 font-semibold">Sparepart</div>
+                                                                                                                        ${spareList}
+                                                                                                                    </div>
+                                                                                                                    <div class="detail-row">
+                                                                                                                        <span class="detail-label">Fee Toko</span>
+                                                                                                                        <span class="detail-value">${formatRp(data.store_fee ?? 0)}</span>
+                                                                                                                    </div>
+                                                                                                                    ${data.technician_notes ? `
+                                                                                                                        <div class="detail-row border-t border-slate-200 pt-2">
+                                                                                                                            <span class="detail-label">Catatan Teknisi</span>
+                                                                                                                            <span class="detail-value text-slate-500 text-right max-w-xs italic">${data.technician_notes}</span>
+                                                                                                                        </div>` : ''}
+                                                                                                                    <div class="detail-row border-t border-slate-200 pt-2">
+                                                                                                                        <span class="detail-label">Biaya Jasa</span>
+                                                                                                                        <span class="detail-value">${formatRp(data.service_cost)}</span>
+                                                                                                                    </div>
+                                                                                                                    <div class="flex justify-between items-center mt-2 bg-indigo-600 text-white rounded-xl px-4 py-2.5">
+                                                                                                                        <span class="font-bold text-sm">Total Biaya</span>
+                                                                                                                        <span class="font-bold text-base">${formatRp(data.total_cost)}</span>
+                                                                                                                    </div>
+                                                                                                                </div>
 
-                                                ${profitSection}
+                                                                                                                ${profitSection}
 
-                                                <div class="detail-section">
-                                                    <div class="detail-section-title"><i class="fa-solid fa-wrench text-slate-400"></i> Teknisi</div>
-                                                    ${techs}
-                                                </div>
-                                            `);
+                                                                                                                <div class="detail-section">
+                                                                                                                    <div class="detail-section-title"><i class="fa-solid fa-wrench text-slate-400"></i> Teknisi</div>
+                                                                                                                    ${techs}
+                                                                                                                </div>
+                                                                                                            `);
 
                 $('#detailModal').removeClass('hidden');
             };

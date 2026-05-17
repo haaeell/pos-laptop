@@ -22,7 +22,7 @@ class ReportController extends Controller
 
     public function __construct()
     {
-        $this->cutoff = Carbon::create(2025, 6, 1)->startOfMonth();
+        $this->cutoff = Carbon::create(2026, 5, 13)->startOfMonth();
     }
 
     public function index(Request $request)
@@ -46,6 +46,7 @@ class ReportController extends Controller
 
         $sparePartHpp  = $this->serviceSum($from, $to, 'spare_part_hpp');
         $sparePartCost = $this->serviceSum($from, $to, 'spare_part_cost');
+        $storeFee      = $this->serviceSum($from, $to, 'store_fee');
 
         return [
             'totalSales'           => $totalSales,
@@ -60,7 +61,7 @@ class ReportController extends Controller
             'totalPurchaseServices' => $sparePartCost,
             'totalJasaService'     => $this->serviceSum($from, $to, 'service_cost'),
             'totalServices'        => $this->serviceSum($from, $to, 'total_cost'),
-            'profitService'        => $sparePartCost - $sparePartHpp,
+            'profitService'        => $sparePartCost - $sparePartHpp + $storeFee,
         ];
     }
 
