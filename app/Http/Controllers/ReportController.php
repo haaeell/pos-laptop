@@ -59,7 +59,10 @@ class ReportController extends Controller
             'totalCicilan'         => ModalCicilan::whereHas('modal', fn($q) => $q->whereNull('deleted_at'))->whereBetween('tanggal_bayar', [$from, $to])->sum('total_bayar'),
             'totalGajiKaryawan'    => Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_amount'),
             'totalPurchaseServices' => $sparePartCost,
-            'totalJasaService'     => $this->serviceSum($from, $to, 'service_cost'),
+            'totalJasaService' => Service::whereNotNull('done_at')
+                ->whereBetween('done_at', [$from, $to])
+                ->selectRaw('SUM(service_cost - COALESCE(store_fee, 0)) as total')
+                ->value('total') ?? 0,
             'totalServices'        => $this->serviceSum($from, $to, 'total_cost'),
             'profitService'        => $sparePartCost - $sparePartHpp + $storeFee,
         ];

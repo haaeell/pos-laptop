@@ -74,7 +74,6 @@ class ServiceController extends Controller
             'service_cost'              => 'required|numeric|min:0',
             'technician_notes'          => 'nullable|string',
             'estimated_done'            => 'nullable|date',
-            'store_fee'                 => 'nullable|numeric|min:0',
         ]);
 
         $service = Service::findOrFail($id);
@@ -110,16 +109,14 @@ class ServiceController extends Controller
         }
 
         $serviceCost = (int) $request->service_cost;
-        $storeFee    = (int) $request->store_fee ?? 0;
 
-        $totalCost = $totalSell + $serviceCost + $storeFee;
+        $totalCost = $totalSell + $serviceCost;
 
         $service->update([
             'spare_parts'      => $spareParts,
             'spare_part_cost'  => $totalSell,
             'spare_part_hpp'   => $totalHpp,
             'service_cost'     => $serviceCost,
-            'store_fee'        => $storeFee,
             'total_cost'       => $totalCost,
             'technician_notes' => $request->technician_notes,
             'estimated_done'   => $request->estimated_done,
@@ -132,6 +129,9 @@ class ServiceController extends Controller
     {
         $request->validate([
             'decision'       => 'required|in:approved,rejected',
+
+            'store_fee'      => 'nullable|numeric|min:0',
+
             'employee_ids'   => 'required_if:decision,approved|array',
             'employee_ids.*' => 'exists:employees,id',
         ]);
@@ -139,15 +139,26 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
 
         DB::transaction(function () use ($request, $service) {
+
             if ($request->decision === 'approved') {
-                $techCount  = count($request->employee_ids);
+
+                $storeFee = (int) ($request->store_fee ?? 0);
+
+                $technicianPool = max(
+                    $service->service_cost - $storeFee,
+                    0
+                );
+
+                $techCount = count($request->employee_ids);
+
                 $feePerTech = $techCount > 0
-                    ? round($service->service_cost / $techCount, 2)
+                    ? round($technicianPool / $techCount, 2)
                     : 0;
 
                 $service->technicians()->delete();
 
                 foreach ($request->employee_ids as $empId) {
+
                     ServiceTechnician::create([
                         'service_id'  => $service->id,
                         'employee_id' => $empId,
@@ -155,9 +166,15 @@ class ServiceController extends Controller
                     ]);
                 }
 
-                $service->update(['status' => 'in_progress']);
+                $service->update([
+                    'store_fee' => $storeFee,
+                    'status'    => 'in_progress',
+                ]);
             } else {
-                $service->update(['status' => 'rejected']);
+
+                $service->update([
+                    'status' => 'rejected'
+                ]);
             }
         });
 
