@@ -20,6 +20,10 @@
             </div>
 
             <div class="flex gap-2">
+                <a href="{{ route('products.export-pdf', request()->query()) }}" target="_blank"
+                    class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Export PDF
+                </a>
                 <button onclick="printAllBarcodes()"
                     class="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
                     <i class="fa-solid fa-print"></i> Cetak Semua
@@ -121,7 +125,7 @@
             </div>
 
             <form action="{{ route('products.index') }}" method="GET"
-                class="grid grid-cols-1 md:grid-cols-7 gap-5 items-end">
+                class="grid grid-cols-1 md:grid-cols-8 gap-5 items-end">
 
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Kategori</label>
@@ -183,6 +187,15 @@
                     </select>
                 </div>
 
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Tampil Katalog</label>
+                    <select name="catalog_status" class="select2-filter w-full">
+                        <option value="">Semua</option>
+                        <option value="active" {{ request('catalog_status') == 'active' ? 'selected' : '' }}>Tampil</option>
+                        <option value="inactive" {{ request('catalog_status') == 'inactive' ? 'selected' : '' }}>Sembunyikan</option>
+                    </select>
+                </div>
+
                 <div class="space-y-1 md:col-span-2">
                     <label class="text-[11px] font-bold text-slate-500 uppercase ml-1">Scan Barcode</label>
                     <div class="relative">
@@ -223,6 +236,7 @@
                         <th>Brand</th>
                         <th>Harga Jual</th>
                         <th>Status</th>
+                        <th>Katalog</th>
                         <th width="15%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -259,6 +273,12 @@
                                     class="px-2 py-1 text-xs rounded-full
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
                                     {{ $product->status === 'sold' ? 'Terjual' : ($product->status === 'bonus' ? 'Bonus' : 'Tersedia') }}
+                                </span>
+                            </td>
+                            <td class="text-nowrap">
+                                <span
+                                    class="px-2 py-1 text-xs rounded-full {{ $product->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' }}">
+                                    {{ $product->is_active ? 'Tampil' : 'Disembunyikan' }}
                                 </span>
                             </td>
 
@@ -467,6 +487,20 @@
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="0">
                         </div>
+                    </div>
+
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="text-xs font-semibold text-slate-600 mb-2 block">Tampilan Katalog</label>
+                        <label
+                            class="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition">
+                            <input type="checkbox" name="is_active" id="productIsActive" value="1" checked
+                                class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="block">
+                                <span class="block text-sm font-semibold text-slate-700">Tampilkan produk di katalog</span>
+                                <span class="block text-xs text-slate-500">Nonaktifkan jika produk ini tidak ingin muncul
+                                    di katalog publik.</span>
+                            </span>
+                        </label>
                     </div>
 
                 </div>
@@ -718,6 +752,8 @@
                     document.getElementById('deletedImages').value = '';
                     document.getElementById('productForm').reset();
                     document.getElementById('status').value = 'available';
+                    document.getElementById('productIsActive').checked = true;
+                    descriptionEditor.setData('');
                     toggleStockInput();
                     modal.removeClass('hidden')
                     form.attr('action', '/products')
@@ -748,6 +784,7 @@
                     $('#purchasePrice').val(data.purchase_price)
                     $('#sellingPrice').val(data.selling_price)
                     $('#status').val(data.status)
+                    $('#productIsActive').prop('checked', !!data.is_active)
                     if (data.image) {
                         $('#imagePreview').attr('src', `/storage/${data.image}`).removeClass('hidden');
                         $('#imageIcon').addClass('hidden');

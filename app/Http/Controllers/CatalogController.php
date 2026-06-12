@@ -24,7 +24,8 @@ class CatalogController extends Controller
     public function data(Request $request)
     {
         $query = Product::with(['category', 'brand', 'images'])
-            ->where('status', 'available');
+            ->where('status', 'available')
+            ->where('is_active', true);
 
         if ($request->search) {
             $query->where(function ($q) use ($request) {

@@ -120,6 +120,7 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     // Produk
     Route::prefix('products')->controller(ProductController::class)->group(function () {
         Route::get('/template', 'template')->name('products.template');
+        Route::get('/export-pdf', 'exportPdf')->name('products.export-pdf');
         Route::post('/import', 'import')->name('products.import');
         Route::get('/', 'index')->name('products.index');
         Route::post('/', 'store');

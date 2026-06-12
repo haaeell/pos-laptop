@@ -17,6 +17,7 @@ class Product extends Model
         'condition',
         'purchase_price',
         'selling_price',
+        'is_active',
         'status',
         'notes',
         'image',
@@ -27,6 +28,7 @@ class Product extends Model
     protected $casts = [
         'purchase_price' => 'decimal:2',
         'selling_price'  => 'decimal:2',
+        'is_active'      => 'boolean',
     ];
 
     /* ================= RELATIONS ================= */

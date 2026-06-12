@@ -8,9 +8,11 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\ProductImage;
+use App\Models\Contact;
+use App\Models\Setting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
@@ -38,6 +40,10 @@ class ProductController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('catalog_status')) {
+            $query->where('is_active', $request->catalog_status === 'active');
+        }
+
         if ($request->filled('barcode_search')) {
             $query->where('product_code', 'like', "%{$request->barcode_search}%");
         }
@@ -62,7 +68,8 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'description' => 'nullable',
             'status' => 'required|in:available,sold,bonus',
-            'stock' => 'nullable|integer|min:0'
+            'stock' => 'nullable|integer|min:0',
+            'is_active' => 'nullable|boolean',
         ], [
             'product_code.required' => 'Kode produk harus diisi',
             'product_code.unique' => 'Kode produk sudah digunakan',
@@ -85,6 +92,7 @@ class ProductController extends Controller
         $data['stock'] = in_array($data['status'], ['available', 'bonus'])
             ? (int) ($data['stock'] ?? 0)
             : 0;
+        $data['is_active'] = $request->boolean('is_active', true);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
@@ -121,7 +129,8 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'description' => 'nullable',
             'status' => 'required|in:available,sold,bonus',
-            'stock' => 'nullable|integer|min:0'
+            'stock' => 'nullable|integer|min:0',
+            'is_active' => 'nullable|boolean',
         ], [
             'name.required' => 'Nama produk harus diisi',
             'category_id.required' => 'Kategori harus diisi',
@@ -143,6 +152,7 @@ class ProductController extends Controller
         $data['stock'] = in_array($data['status'], ['available', 'bonus'])
             ? (int) ($data['stock'] ?? 0)
             : 0;
+        $data['is_active'] = $request->boolean('is_active');
 
         if ($request->filled('deleted_images')) {
             $ids = explode(',', $request->deleted_images);
@@ -215,5 +225,63 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ada masalah saat import: ' . $e->getMessage());
         }
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = Product::with(['category', 'brand'])->latest();
+
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        if ($request->filled('brand')) {
+            $query->where('brand_id', $request->brand);
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('selling_price', '>=', $request->min_price);
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('selling_price', '<=', $request->max_price);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('catalog_status')) {
+            $query->where('is_active', $request->catalog_status === 'active');
+        }
+
+        if ($request->filled('barcode_search')) {
+            $query->where('product_code', 'like', "%{$request->barcode_search}%");
+        }
+
+        $products = $query->get();
+        $contacts = Contact::where('is_active', true)->get();
+        $settings = Setting::pluck('value', 'key');
+
+        $pdf = Pdf::loadView('master.products.pdf', [
+            'products' => $products,
+            'contacts' => $contacts,
+            'settings' => $settings,
+            'filters' => [
+                'category' => $request->filled('category')
+                    ? Category::find($request->category)?->name
+                    : null,
+                'brand' => $request->filled('brand')
+                    ? Brand::find($request->brand)?->name
+                    : null,
+                'min_price' => $request->min_price,
+                'max_price' => $request->max_price,
+                'status' => $request->status,
+                'catalog_status' => $request->catalog_status,
+                'barcode_search' => $request->barcode_search,
+            ],
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('data-produk.pdf');
     }
 }
