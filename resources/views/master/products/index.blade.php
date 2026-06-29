@@ -357,6 +357,7 @@
                                 <input type="file" name="image" id="productImage" accept="image/*"
                                     onchange="previewProductImage(this)"
                                     class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                <p class="text-[11px] text-slate-400 mt-1">JPG/PNG maksimal 2MB</p>
                             </div>
                         </div>
                     </div>
@@ -381,7 +382,7 @@
                                 Klik atau seret foto ke sini
                             </p>
                             <p class="text-[11px] text-slate-400 mt-1">
-                                Bisa upload banyak foto (JPG, PNG)
+                                Bisa upload banyak foto (JPG, PNG, maksimal 2MB per foto)
                             </p>
                         </div>
 
@@ -591,6 +592,19 @@
                 });
 
             let deletedImageIds = [];
+            const MAX_PRODUCT_IMAGE_SIZE = 2 * 1024 * 1024;
+
+            function isOverProductImageLimit(file) {
+                return file.size > MAX_PRODUCT_IMAGE_SIZE;
+            }
+
+            function showProductImageSizeError(fileName = 'Gambar') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File terlalu besar',
+                    text: `${fileName} melebihi batas maksimal 2MB.`,
+                });
+            }
 
             function renderExistingGallery(images) {
                 galleryPreview.innerHTML = '';
@@ -633,6 +647,10 @@
             function handleGalleryFiles(files) {
                 [...files].forEach(file => {
                     if (!file.type.startsWith('image/')) return;
+                    if (isOverProductImageLimit(file)) {
+                        showProductImageSizeError(file.name);
+                        return;
+                    }
 
                     galleryFiles.push(file);
 
@@ -860,6 +878,12 @@
                     const icon = document.getElementById('imageIcon');
 
                     if (input.files && input.files[0]) {
+                        if (isOverProductImageLimit(input.files[0])) {
+                            showProductImageSizeError(input.files[0].name);
+                            input.value = '';
+                            return;
+                        }
+
                         const reader = new FileReader();
 
                         reader.onload = function (e) {
