@@ -58,9 +58,9 @@ Route::prefix('akun')->name('customer.')->group(function () {
     Route::middleware('auth:customers')->group(function () {
         Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
         Route::get('/pesanan', [CustomerOrderController::class, 'index'])->name('orders.index');
+        Route::post('/pesanan/ulasan', [CustomerReviewController::class, 'store'])->name('reviews.store');
         Route::get('/pesanan/{orderNumber}', [CustomerOrderController::class, 'show'])->name('orders.show');
         Route::post('/pesanan/{orderNumber}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
-        Route::post('/pesanan/ulasan', [CustomerReviewController::class, 'store'])->name('reviews.store');
 
         Route::prefix('alamat')->name('addresses.')->controller(AddressController::class)->group(function () {
             Route::get('/', 'index')->name('index');

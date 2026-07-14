@@ -474,7 +474,7 @@
             showLoading();
 
             try {
-                const res = await fetch('{{ route('customer.reviews.store') }}', {
+                const res = await fetch('{{ route('customer.reviews.store', [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -488,7 +488,11 @@
                     }),
                 });
 
-                const data = await res.json();
+                const data = await res.json().catch(() => ({
+                    message: res.status === 419
+                        ? 'Sesi login berakhir. Silakan refresh halaman lalu coba lagi.'
+                        : 'Server mengembalikan response tidak valid.',
+                }));
                 hideLoading();
 
                 if (!res.ok) {
