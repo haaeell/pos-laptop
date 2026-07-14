@@ -13,6 +13,11 @@ class BiteshipWebhookController extends Controller
     public function handle(Request $request)
     {
         $payload = $request->all();
+
+        if (empty($payload)) {
+            return response()->json(['message' => 'OK']);
+        }
+
         $biteshipOrderId = $payload['order_id'] ?? null;
 
         if (!$biteshipOrderId) {
