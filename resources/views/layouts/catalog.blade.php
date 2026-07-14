@@ -1208,9 +1208,13 @@
                 void this.offsetWidth;
                 this.classList.add('tap');
 
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Focus must happen synchronously in the click handler (no setTimeout/await
+                // before it) or iOS Safari won't pop the keyboard up.
                 const globalSearch = document.getElementById('global-search');
-                setTimeout(() => globalSearch && globalSearch.focus(), 300);
+                if (globalSearch) {
+                    globalSearch.focus();
+                    globalSearch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             });
         }
 
@@ -1335,7 +1339,7 @@
         async function fetchSuggestions(term) {
             if (!searchDdSuggestions) return;
 
-            searchDdSuggestions.innerHTML = `<div class="search-dd-empty">Mencari...</div>`;
+            searchDdSuggestions.innerHTML = `<div class="search-dd-empty">${term ? 'Mencari...' : 'Memuat rekomendasi...'}</div>`;
 
             try {
                 const res = await fetch(`/data/catalog?search=${encodeURIComponent(term)}&page=1`);
@@ -1343,13 +1347,17 @@
                 const items = (data.data || []).slice(0, 5);
 
                 if (!items.length) {
-                    searchDdSuggestions.innerHTML = `<div class="search-dd-empty">Produk "${escapeHtml(term)}" tidak ditemukan.</div>`;
+                    searchDdSuggestions.innerHTML = term
+                        ? `<div class="search-dd-empty">Produk "${escapeHtml(term)}" tidak ditemukan.</div>`
+                        : `<div class="search-dd-empty">Belum ada produk untuk direkomendasikan.</div>`;
                     return;
                 }
 
+                const heading = term ? 'Rekomendasi Produk' : 'Produk Populer';
+
                 searchDdSuggestions.innerHTML = `
                     <div class="search-dd-heading" style="padding:6px 14px 0;">
-                        <span><i class="fa-solid fa-bolt"></i> Rekomendasi Produk</span>
+                        <span><i class="fa-solid fa-bolt"></i> ${heading}</span>
                     </div>
                     ${items.map(p => `
                         <a class="search-dd-item" href="/produk/${p.id}">
@@ -1362,12 +1370,14 @@
                             </div>
                         </a>
                     `).join('')}
-                    <div class="search-dd-footer">
-                        <a href="{{ url('/') }}?search=${encodeURIComponent(term)}" class="search-dd-viewall"
-                            data-term="${escapeHtml(term)}" style="font-size:12px;font-weight:700;color:var(--primary);">
-                            Lihat semua hasil untuk "${escapeHtml(term)}" →
-                        </a>
-                    </div>
+                    ${term ? `
+                        <div class="search-dd-footer">
+                            <a href="{{ url('/') }}?search=${encodeURIComponent(term)}" class="search-dd-viewall"
+                                data-term="${escapeHtml(term)}" style="font-size:12px;font-weight:700;color:var(--primary);">
+                                Lihat semua hasil untuk "${escapeHtml(term)}" →
+                            </a>
+                        </div>
+                    ` : ''}
                 `;
 
                 const viewAllLink = searchDdSuggestions.querySelector('.search-dd-viewall');
@@ -1382,7 +1392,7 @@
             searchDropdown.classList.add('open');
             if (!searchInput.value.trim()) {
                 renderHistory();
-                if (searchDdSuggestions) searchDdSuggestions.innerHTML = '';
+                fetchSuggestions('');
             }
         }
 
@@ -1399,7 +1409,7 @@
 
                 if (!val) {
                     renderHistory();
-                    if (searchDdSuggestions) searchDdSuggestions.innerHTML = '';
+                    fetchSuggestions('');
                     return;
                 }
 
@@ -1408,7 +1418,9 @@
             });
 
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-wrap')) closeSearchDropdown();
+                if (!e.target.closest('.search-wrap') && !e.target.closest('#bottomNavSearch')) {
+                    closeSearchDropdown();
+                }
             });
 
             document.addEventListener('keydown', (e) => {
