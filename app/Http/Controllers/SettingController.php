@@ -12,9 +12,10 @@ class SettingController extends Controller
     public function index(BiteshipService $biteship)
     {
         $settings = Setting::pluck('value', 'key');
+        $midtransNotificationUrl = url('/midtrans/notification');
         $biteshipWebhookUrl = $biteship->webhookUrl();
 
-        return view('setting.index', compact('settings', 'biteshipWebhookUrl'));
+        return view('setting.index', compact('settings', 'midtransNotificationUrl', 'biteshipWebhookUrl'));
     }
 
     public function update(Request $request)

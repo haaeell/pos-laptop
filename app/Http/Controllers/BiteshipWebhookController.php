@@ -5,19 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\ShipmentTrackingHistory;
-use App\Services\BiteshipService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class BiteshipWebhookController extends Controller
 {
-    public function handle(Request $request, string $token, BiteshipService $biteship)
+    public function handle(Request $request)
     {
-        if (!hash_equals($biteship->webhookToken(), $token)) {
-            Log::warning('Biteship webhook: invalid token');
-            abort(403, 'Invalid token');
-        }
-
         $payload = $request->all();
         $biteshipOrderId = $payload['order_id'] ?? null;
 

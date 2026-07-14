@@ -101,7 +101,7 @@ Route::middleware('auth:customers')->group(function () {
 Route::post('/midtrans/notification', [MidtransNotificationController::class, 'handle'])->name('midtrans.notification');
 
 // ================= BITESHIP WEBHOOK =================
-Route::post('/biteship/webhook/{token}', [BiteshipWebhookController::class, 'handle'])->name('biteship.webhook');
+Route::post('/biteship/webhook', [BiteshipWebhookController::class, 'handle'])->name('biteship.webhook');
 
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 

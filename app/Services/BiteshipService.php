@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 
 class BiteshipService
 {
@@ -28,25 +27,9 @@ class BiteshipService
         ])->baseUrl(self::BASE_URL);
     }
 
-    /**
-     * Auto-generates and persists the webhook secret token the first time
-     * it's needed, so Settings always has one to display/reuse.
-     */
-    public function webhookToken(): string
-    {
-        $token = Setting::get('biteship_webhook_token');
-
-        if (!$token) {
-            $token = Str::random(40);
-            Setting::updateOrCreate(['key' => 'biteship_webhook_token'], ['value' => $token]);
-        }
-
-        return $token;
-    }
-
     public function webhookUrl(): string
     {
-        return url('/biteship/webhook/' . $this->webhookToken());
+        return url('/biteship/webhook');
     }
 
     /**

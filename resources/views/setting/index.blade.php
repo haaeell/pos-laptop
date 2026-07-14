@@ -170,6 +170,15 @@
                         class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                     Mode Produksi (nonaktifkan untuk mode Sandbox/Testing)
                 </label>
+
+                <div class="mt-4 p-3 bg-slate-50 rounded-xl border">
+                    <label class="text-xs font-semibold uppercase text-slate-600">Notification URL Midtrans</label>
+                    <p class="text-xs text-slate-500 mb-1.5">
+                        Salin URL ini ke dashboard Midtrans pada menu Settings &rarr; Payment Notification URL.
+                    </p>
+                    <input type="text" readonly value="{{ $midtransNotificationUrl }}" onclick="this.select()"
+                        class="w-full px-3 py-2 rounded-lg border bg-white text-xs font-mono text-slate-600">
+                </div>
             </div>
 
             <!-- ================= BITESHIP ================= -->
