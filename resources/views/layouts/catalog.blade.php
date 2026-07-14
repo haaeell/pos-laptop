@@ -5,12 +5,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description"
-        content="@yield('meta_description', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' - Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas.')">
-    <title>@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' | Laptop, Aksesoris & Service')</title>
+    @php
+        $seoDescription = trim($__env->yieldContent('meta_description')) ?: (($navSettings['nama_toko'] ?? 'Barokah Computer') . ' - Toko komputer Subang terpercaya. Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas di Subang.');
+        $seoKeywords = $navSettings['meta_keywords'] ?? 'Barokah Computer Subang, toko komputer Subang, jual laptop Subang, service laptop Subang, komputer Subang, aksesoris komputer Subang';
+        $seoImage = $navSettings['og_image'] ?? asset('storage/' . ($navSettings['logo'] ?? 'logo.jpeg'));
+    @endphp
+    <meta name="description" content="{{ $seoDescription }}">
+    <meta name="keywords" content="{{ $seoKeywords }}">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="{{ $navSettings['nama_toko'] ?? 'Barokah Computer' }}">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <title>@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' | Toko Komputer Subang - Laptop, Aksesoris & Service')</title>
 
-    <link rel="icon" type="image/jpeg" href="{{ asset('storage/' . ($navSettings['logo'] ?? 'logo.jpeg')) }}">
-    <link rel="apple-touch-icon" href="{{ asset('storage/' . ($navSettings['logo'] ?? 'logo.jpeg')) }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $navSettings['nama_toko'] ?? 'Barokah Computer' }}">
+    <meta property="og:title" content="@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' | Toko Komputer Subang')">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_image', $seoImage)">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer'))">
+    <meta name="twitter:description" content="{{ $seoDescription }}">
+    <meta name="twitter:image" content="@yield('og_image', $seoImage)">
+
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('storage/' . ($navSettings['favicon_512'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('storage/' . ($navSettings['favicon_48'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('storage/' . ($navSettings['favicon_32'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
+    <link rel="apple-touch-icon" href="{{ asset('storage/' . ($navSettings['favicon_512'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -275,6 +296,10 @@
 
         @media(max-width:640px) {
             .header-account span.acc-name {
+                display: none;
+            }
+
+            .search-wrap {
                 display: none;
             }
         }
@@ -913,13 +938,41 @@
             }
 
             .header-main {
-                grid-template-columns: 40px 1fr auto;
-                gap: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
                 padding: 12px 0;
             }
 
+            .brand {
+                flex: 1;
+                min-width: 0;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .brand-mark {
+                width: 32px;
+                height: 32px;
+                border-radius: 9px;
+            }
+
             .brand-text {
-                display: none;
+                display: block;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            .brand-text strong {
+                font-size: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .header-right {
+                flex-shrink: 0;
             }
 
             .search-bar {
@@ -1139,6 +1192,142 @@
             }
         }
 
+        /* ---- Mobile full-screen search popup ---- */
+        .mobile-search-overlay {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+
+        .mobile-search-overlay.open {
+            display: flex;
+        }
+
+        .mobile-search-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .mobile-search-input-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .mobile-search-input-wrap input {
+            border: 0;
+            background: none;
+            outline: none;
+            flex: 1;
+            font-size: 13.5px;
+            color: var(--text);
+        }
+
+        .mobile-search-header button {
+            border: 0;
+            background: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .mobile-search-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* ---- Profile bottom sheet (mobile) ---- */
+        .profile-sheet-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(16, 24, 40, .5);
+            z-index: 200;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .profile-sheet-overlay.open {
+            display: flex;
+        }
+
+        .profile-sheet {
+            background: #fff;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            padding: 10px 8px calc(14px + env(safe-area-inset-bottom));
+            animation: sheetSlideUp .22s ease-out;
+        }
+
+        @keyframes sheetSlideUp {
+            from {
+                transform: translateY(24px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .profile-sheet-handle {
+            width: 42px;
+            height: 4px;
+            background: var(--line);
+            border-radius: 999px;
+            margin: 6px auto 14px;
+        }
+
+        .profile-sheet-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px 14px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 8px;
+        }
+
+        .profile-sheet a,
+        .profile-sheet button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            border-radius: 12px;
+            width: 100%;
+            text-align: left;
+            border: 0;
+            background: none;
+        }
+
+        .profile-sheet a i,
+        .profile-sheet button i {
+            width: 18px;
+            color: var(--primary);
+        }
+
+        .profile-sheet a:hover,
+        .profile-sheet button:hover {
+            background: var(--bg);
+        }
+
         /* ---- Shared AJAX loading overlay ---- */
         .app-loading-overlay {
             position: fixed;
@@ -1190,7 +1379,6 @@
                 <div class="brand-mark"><img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaToko }}"></div>
                 <div class="brand-text">
                     <strong>{{ $namaToko }}</strong>
-                    <span><i class="fa-solid fa-location-dot"></i> {{ $alamat }}</span>
                 </div>
             </a>
 
@@ -1277,7 +1465,7 @@
             </a>
             <a href="{{ route('catalog.listing') }}" class="bottom-nav-item {{ request()->is('produk*') ? 'active' : '' }}">
                 <i class="fa-solid fa-grip"></i>
-                <span>Kategori</span>
+                <span>Produk</span>
             </a>
         </div>
 
@@ -1287,19 +1475,54 @@
         </a>
 
         <div class="bottom-nav-side">
-            <a href="{{ route('pages.service') }}" class="bottom-nav-item {{ request()->is('service') ? 'active' : '' }}">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-                <span>Service</span>
+            <a href="{{ route('pages.articles') }}" class="bottom-nav-item {{ request()->is('artikel*') ? 'active' : '' }}">
+                <i class="fa-solid fa-newspaper"></i>
+                <span>Artikel</span>
             </a>
-            @if($navContacts->count())
-                <button type="button" class="bottom-nav-item" id="bottomNavChat"
-                    style="background:none;border:0;">
-                    <i class="fa-brands fa-whatsapp"></i>
-                    <span>Chat</span>
-                </button>
-            @endif
+            <button type="button" class="bottom-nav-item" id="bottomNavProfile" style="background:none;border:0;">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </button>
         </div>
     </nav>
+
+    <div class="mobile-search-overlay" id="mobileSearchOverlay">
+        <div class="mobile-search-header">
+            <div class="mobile-search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" id="mobile-search-input" placeholder="Cari nama produk atau kode..." autocomplete="off">
+            </div>
+            <button type="button" id="mobileSearchClose" aria-label="Tutup">Batal</button>
+        </div>
+        <div class="mobile-search-body">
+            <div id="mobileSearchDdHistory"></div>
+            <div id="mobileSearchDdSuggestions"></div>
+        </div>
+    </div>
+
+    <div class="profile-sheet-overlay" id="profileSheetOverlay">
+        <div class="profile-sheet">
+            <div class="profile-sheet-handle"></div>
+            @auth('customers')
+                <div class="profile-sheet-user">
+                    <span class="header-account-avatar">{{ strtoupper(substr(Auth::guard('customers')->user()->name, 0, 1)) }}</span>
+                    <strong>{{ Auth::guard('customers')->user()->name }}</strong>
+                </div>
+                <a href="{{ route('customer.profile.edit') }}"><i class="fa-solid fa-user"></i> Profil Saya</a>
+                <a href="{{ route('customer.orders.index') }}"><i class="fa-solid fa-box"></i> Pesanan Saya</a>
+                <a href="{{ route('customer.addresses.index') }}"><i class="fa-solid fa-location-dot"></i> Alamat Saya</a>
+                <a href="{{ route('customer.favorites.index') }}"><i class="fa-solid fa-heart"></i> Favorit Saya</a>
+                <a href="{{ route('pages.service') }}"><i class="fa-solid fa-screwdriver-wrench"></i> Service</a>
+                <form method="POST" action="{{ route('customer.logout') }}">
+                    @csrf
+                    <button type="submit"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+                </form>
+            @else
+                <a href="{{ route('pages.service') }}"><i class="fa-solid fa-screwdriver-wrench"></i> Service</a>
+                <a href="{{ route('customer.login') }}"><i class="fa-solid fa-right-to-bracket"></i> Masuk / Daftar</a>
+            @endauth
+        </div>
+    </div>
 
     <div class="app-loading-overlay" id="appLoadingOverlay">
         <div class="app-loading-spinner"></div>
@@ -1410,20 +1633,71 @@
         });
 
         const bottomNavSearch = document.getElementById('bottomNavSearch');
+        const mobileSearchOverlay = document.getElementById('mobileSearchOverlay');
+        const mobileSearchInput = document.getElementById('mobile-search-input');
+        const mobileSearchDdHistory = document.getElementById('mobileSearchDdHistory');
+        const mobileSearchDdSuggestions = document.getElementById('mobileSearchDdSuggestions');
+        const mobileSearchClose = document.getElementById('mobileSearchClose');
+
+        function openMobileSearch() {
+            if (!mobileSearchOverlay) return;
+            mobileSearchOverlay.classList.add('open');
+            renderHistory(mobileSearchDdHistory, mobileSearchInput);
+            fetchSuggestions(mobileSearchInput.value.trim(), mobileSearchDdSuggestions);
+            // Focus must happen synchronously in the click handler (no setTimeout/await
+            // before it) or iOS Safari won't pop the keyboard up.
+            mobileSearchInput.focus();
+        }
+
+        function closeMobileSearch() {
+            if (mobileSearchOverlay) mobileSearchOverlay.classList.remove('open');
+        }
+
         if (bottomNavSearch) {
             bottomNavSearch.addEventListener('click', function (e) {
                 e.preventDefault();
                 this.classList.remove('tap');
                 void this.offsetWidth;
                 this.classList.add('tap');
+                openMobileSearch();
+            });
+        }
 
-                // Focus must happen synchronously in the click handler (no setTimeout/await
-                // before it) or iOS Safari won't pop the keyboard up.
-                const globalSearch = document.getElementById('global-search');
-                if (globalSearch) {
-                    globalSearch.focus();
-                    globalSearch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (mobileSearchClose) mobileSearchClose.addEventListener('click', closeMobileSearch);
+
+        if (mobileSearchInput) {
+            let mobileSuggestTimeout = null;
+            mobileSearchInput.addEventListener('input', function () {
+                clearTimeout(mobileSuggestTimeout);
+                const val = this.value.trim();
+
+                if (!val) {
+                    renderHistory(mobileSearchDdHistory, mobileSearchInput);
+                    fetchSuggestions('', mobileSearchDdSuggestions);
+                    return;
                 }
+
+                mobileSearchDdHistory.innerHTML = '';
+                mobileSuggestTimeout = setTimeout(() => fetchSuggestions(val, mobileSearchDdSuggestions), 300);
+            });
+
+            mobileSearchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitSearch(this.value.trim());
+                }
+            });
+        }
+
+        // ===== Profile bottom sheet (mobile) =====
+        const bottomNavProfile = document.getElementById('bottomNavProfile');
+        const profileSheetOverlay = document.getElementById('profileSheetOverlay');
+
+        if (bottomNavProfile && profileSheetOverlay) {
+            bottomNavProfile.addEventListener('click', () => profileSheetOverlay.classList.add('open'));
+
+            profileSheetOverlay.addEventListener('click', (e) => {
+                if (e.target === profileSheetOverlay) profileSheetOverlay.classList.remove('open');
             });
         }
 
@@ -1505,19 +1779,19 @@
             renderHistory();
         }
 
-        function renderHistory() {
-            if (!searchDdHistory) return;
+        function renderHistory(historyEl = searchDdHistory, inputEl = searchInput) {
+            if (!historyEl) return;
             const history = getSearchHistory();
 
             if (!history.length) {
-                searchDdHistory.innerHTML = '';
+                historyEl.innerHTML = '';
                 return;
             }
 
-            searchDdHistory.innerHTML = `
+            historyEl.innerHTML = `
                 <div class="search-dd-heading">
                     <span><i class="fa-solid fa-clock-rotate-left"></i> Pencarian Terakhir</span>
-                    <button type="button" class="search-dd-clear" id="searchDdClearBtn">Hapus Semua</button>
+                    <button type="button" class="search-dd-clear" data-clear-history>Hapus Semua</button>
                 </div>
                 <div class="search-dd-history">
                     ${history.map(term => `
@@ -1529,23 +1803,24 @@
                 </div>
             `;
 
-            searchDdHistory.querySelectorAll('.search-dd-chip').forEach(chip => {
+            historyEl.querySelectorAll('.search-dd-chip').forEach(chip => {
                 chip.addEventListener('click', (e) => {
                     if (e.target.closest('button[data-remove]')) return;
-                    searchInput.value = chip.dataset.term;
+                    inputEl.value = chip.dataset.term;
                     submitSearch(chip.dataset.term);
                 });
             });
 
-            searchDdHistory.querySelectorAll('button[data-remove]').forEach(btn => {
+            historyEl.querySelectorAll('button[data-remove]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     removeSearchHistoryItem(btn.dataset.remove);
+                    renderHistory(historyEl, inputEl);
                 });
             });
 
-            const clearBtn = document.getElementById('searchDdClearBtn');
-            if (clearBtn) clearBtn.addEventListener('click', clearSearchHistory);
+            const clearBtn = historyEl.querySelector('[data-clear-history]');
+            if (clearBtn) clearBtn.addEventListener('click', () => { clearSearchHistory(); renderHistory(historyEl, inputEl); });
         }
 
         function submitSearch(term) {
@@ -1560,10 +1835,10 @@
         }
 
         let suggestTimeout = null;
-        async function fetchSuggestions(term) {
-            if (!searchDdSuggestions) return;
+        async function fetchSuggestions(term, suggestEl = searchDdSuggestions) {
+            if (!suggestEl) return;
 
-            searchDdSuggestions.innerHTML = `<div class="search-dd-empty">${term ? 'Mencari...' : 'Memuat rekomendasi...'}</div>`;
+            suggestEl.innerHTML = `<div class="search-dd-empty">${term ? 'Mencari...' : 'Memuat rekomendasi...'}</div>`;
 
             try {
                 const res = await fetch(`/data/catalog?search=${encodeURIComponent(term)}&page=1`);
@@ -1571,7 +1846,7 @@
                 const items = (data.data || []).slice(0, 5);
 
                 if (!items.length) {
-                    searchDdSuggestions.innerHTML = term
+                    suggestEl.innerHTML = term
                         ? `<div class="search-dd-empty">Produk "${escapeHtml(term)}" tidak ditemukan.</div>`
                         : `<div class="search-dd-empty">Belum ada produk untuk direkomendasikan.</div>`;
                     return;
@@ -1579,9 +1854,9 @@
 
                 const heading = term ? 'Rekomendasi Produk' : 'Produk Populer';
 
-                searchDdSuggestions.innerHTML = `
+                suggestEl.innerHTML = `
                     <div class="search-dd-heading" style="padding:6px 14px 0;">
-                        <span><i class="fa-solid fa-bolt"></i> ${heading}</span>
+                        <span><i class="fa-solid fa-fire"></i> ${heading}</span>
                     </div>
                     ${items.map(p => `
                         <a class="search-dd-item" href="/produk/${p.id}">
@@ -1604,10 +1879,10 @@
                     ` : ''}
                 `;
 
-                const viewAllLink = searchDdSuggestions.querySelector('.search-dd-viewall');
+                const viewAllLink = suggestEl.querySelector('.search-dd-viewall');
                 if (viewAllLink) viewAllLink.addEventListener('click', () => saveSearchHistory(viewAllLink.dataset.term));
             } catch (e) {
-                searchDdSuggestions.innerHTML = '';
+                suggestEl.innerHTML = '';
             }
         }
 

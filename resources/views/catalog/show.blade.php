@@ -1,7 +1,10 @@
 @extends('layouts.catalog')
 
-@section('title', $product->name . ' | ' . ($settings['nama_toko'] ?? 'Barokah Computer'))
-@section('meta_description', $product->name . ' - ' . ($settings['nama_toko'] ?? 'Barokah Computer'))
+@section('title', $product->name . ' | ' . ($settings['nama_toko'] ?? 'Barokah Computer') . ' Subang')
+@section('meta_description', $product->name . ' harga Rp ' . number_format($product->selling_price, 0, ',', '.') . ' - Jual ' . $product->name . ' di ' . ($settings['nama_toko'] ?? 'Barokah Computer') . ', toko komputer Subang. ' . \Illuminate\Support\Str::limit(strip_tags($product->description ?? ''), 100))
+@if ($product->image)
+    @section('og_image', asset('storage/' . $product->image))
+@endif
 
 @section('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
@@ -153,6 +156,104 @@
             font-size: 13px;
             color: var(--muted);
             margin-bottom: 18px;
+        }
+
+        .rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .rating-stars {
+            color: #F79009;
+            font-size: 13px;
+        }
+
+        .rating-stars .rating-star-empty {
+            color: #D0D5DD;
+        }
+
+        .rating-count {
+            color: var(--muted);
+        }
+
+        .reviews-section {
+            padding: 10px 0 30px;
+        }
+
+        .reviews-summary-card {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .reviews-summary-score {
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .reviews-summary-score strong {
+            font-size: 36px;
+            display: block;
+            color: var(--primary);
+        }
+
+        .reviews-summary-score .rating-stars {
+            font-size: 16px;
+        }
+
+        .reviews-summary-score span.count {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .review-item {
+            border-top: 1px solid var(--line);
+            padding: 16px 0;
+        }
+
+        .review-item:first-child {
+            border-top: 0;
+            padding-top: 0;
+        }
+
+        .review-item-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .review-item-name {
+            font-weight: 700;
+            font-size: 13.5px;
+        }
+
+        .review-item-date {
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+
+        .review-item .rating-stars {
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .review-item p {
+            font-size: 13px;
+            color: #475467;
+        }
+
+        .reviews-empty {
+            color: var(--muted);
+            font-size: 13px;
         }
 
         .product-price {
@@ -353,6 +454,11 @@
             .product-price {
                 font-size: 26px;
             }
+
+            .reviews-summary-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
 
         @media(max-width:480px) {
@@ -419,6 +525,17 @@
 
                     <h1 class="product-title">{{ $product->name }}</h1>
                     <p class="product-code">Kode Produk: {{ $product->product_code }}</p>
+                    @if ($product->reviewsCount() > 0)
+                        <div class="rating-summary">
+                            <span class="rating-stars">
+                                @for ($s = 1; $s <= 5; $s++)
+                                    <i class="fa-solid fa-star{{ $s > round($product->averageRating()) ? ' rating-star-empty' : '' }}"></i>
+                                @endfor
+                            </span>
+                            <strong>{{ number_format($product->averageRating(), 1) }}</strong>
+                            <span class="rating-count">({{ $product->reviewsCount() }} ulasan)</span>
+                        </div>
+                    @endif
                     @if ($product->strike_price && $product->strike_price > $product->selling_price)
                         <div style="text-decoration:line-through;color:#98A2B3;font-size:14px;font-weight:600;">
                             Rp {{ number_format($product->strike_price, 0, ',', '.') }}
@@ -460,7 +577,7 @@
                         @elseif (auth('customers')->check())
                             <a href="{{ route('checkout.create', ['product_id' => $product->id, 'qty' => 1]) }}"
                                 class="btn btn-buy-now">
-                                <i class="fa-solid fa-bolt"></i> Beli Sekarang
+                                <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
                             </a>
                             <form action="{{ route('cart.add') }}" method="POST" style="flex:1;min-width:180px;">
                                 @csrf
@@ -472,7 +589,7 @@
                         @else
                             <a href="{{ route('customer.login', ['redirect' => url()->current()]) }}"
                                 class="btn btn-buy-now">
-                                <i class="fa-solid fa-bolt"></i> Beli Sekarang
+                                <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
                             </a>
                             <a href="{{ route('customer.login', ['redirect' => url()->current()]) }}"
                                 class="btn btn-add-cart">
@@ -510,6 +627,48 @@
         </div>
     </section>
 
+    <section class="reviews-section">
+        <div class="container">
+            <div class="section-head">
+                <h2>Ulasan Produk</h2>
+            </div>
+
+            @if ($product->reviewsCount() > 0)
+                <div class="reviews-summary-card">
+                    <div class="reviews-summary-score">
+                        <strong>{{ number_format($product->averageRating(), 1) }}</strong>
+                        <div class="rating-stars">
+                            @for ($s = 1; $s <= 5; $s++)
+                                <i class="fa-solid fa-star{{ $s > round($product->averageRating()) ? ' rating-star-empty' : '' }}"></i>
+                            @endfor
+                        </div>
+                        <span class="count">{{ $product->reviewsCount() }} ulasan</span>
+                    </div>
+                    <div style="flex:1;">
+                        @foreach ($product->reviews->take(10) as $review)
+                            <div class="review-item">
+                                <div class="review-item-head">
+                                    <span class="review-item-name">{{ $review->customer->name ?? 'Pelanggan' }}</span>
+                                    <span class="review-item-date">{{ $review->created_at->translatedFormat('d M Y') }}</span>
+                                </div>
+                                <div class="rating-stars">
+                                    @for ($s = 1; $s <= 5; $s++)
+                                        <i class="fa-solid fa-star{{ $s > $review->rating ? ' rating-star-empty' : '' }}"></i>
+                                    @endfor
+                                </div>
+                                @if ($review->comment)
+                                    <p>{{ $review->comment }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @else
+                <p class="reviews-empty">Belum ada ulasan untuk produk ini.</p>
+            @endif
+        </div>
+    </section>
+
     @if($related->count())
         <section class="related-section">
             <div class="container">
@@ -521,7 +680,7 @@
                         <a href="{{ route('catalog.show', $r->id) }}" class="product-card">
                             <div class="product-image">
                                 @if($r->image)
-                                    <img src="{{ asset('storage/' . $r->image) }}" alt="{{ $r->name }}">
+                                    <img src="{{ asset('storage/' . $r->image) }}" alt="{{ $r->name }}" loading="lazy" decoding="async">
                                 @else
                                     <i class="fa-solid fa-image" style="font-size:32px;color:#CBD5E1;"></i>
                                 @endif

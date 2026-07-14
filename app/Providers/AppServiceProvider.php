@@ -38,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
             'pages.service',
             'pages.about',
             'pages.articles',
+            'pages.article-show',
             'cart.index',
             'checkout.create',
             'checkout.pay',

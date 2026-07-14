@@ -20,11 +20,12 @@ class SettingController extends Controller
     public function update(Request $request)
     {
         $data = $request->except('_token');
+        $fileFields = ['logo', 'favicon_512', 'favicon_48', 'favicon_32'];
 
         foreach ($data as $key => $value) {
 
-            if ($key === 'logo' && $request->hasFile('logo')) {
-                $value = $request->file('logo')->store('settings', 'public');
+            if (in_array($key, $fileFields) && $request->hasFile($key)) {
+                $value = $request->file($key)->store('settings', 'public');
             }
 
             Setting::updateOrCreate(

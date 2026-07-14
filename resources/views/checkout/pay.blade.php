@@ -88,6 +88,21 @@
             border: 1px solid #FECDCA;
             color: #B42318;
         }
+
+        @media(max-width:480px) {
+            .pay-section {
+                padding: 24px 16px;
+            }
+
+            .pay-card {
+                padding: 26px 20px;
+                border-radius: 16px;
+            }
+
+            .pay-total {
+                font-size: 22px;
+            }
+        }
     </style>
 @endsection
 

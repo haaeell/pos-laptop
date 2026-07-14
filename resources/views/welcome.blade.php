@@ -1,7 +1,29 @@
 @extends('layouts.catalog')
 
-@section('title', ($settings['nama_toko'] ?? 'Barokah Computer') . ' | Laptop, Aksesoris & Service')
-@section('meta_description', ($settings['nama_toko'] ?? 'Barokah Computer') . ' - Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas.')
+@section('title', ($settings['nama_toko'] ?? 'Barokah Computer') . ' | Toko Komputer Subang - Laptop, Aksesoris & Service')
+@section('meta_description', ($settings['nama_toko'] ?? 'Barokah Computer') . ' - Toko komputer Subang terpercaya. Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas di Subang.')
+
+@push('scripts')
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "ElectronicsStore",
+            "name": "{{ $settings['nama_toko'] ?? 'Barokah Computer' }}",
+            "image": "{{ asset('storage/' . ($settings['logo'] ?? 'logo.jpeg')) }}",
+            "description": "{{ ($settings['nama_toko'] ?? 'Barokah Computer') . ' - Toko komputer Subang terpercaya. Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas di Subang.' }}",
+            "address": {
+                "@@type": "PostalAddress",
+                "streetAddress": "{{ $settings['alamat'] ?? '' }}",
+                "addressLocality": "Subang",
+                "addressRegion": "Jawa Barat",
+                "addressCountry": "ID"
+            },
+            "url": "{{ url('/') }}",
+            "telephone": "{{ optional($contacts->first())->phone }}",
+            "openingHours": "{{ $settings['jam_buka'] ?? '' }}"
+        }
+    </script>
+@endpush
 
 @section('styles')
     <style>
@@ -307,24 +329,21 @@
         }
 
         .skeleton {
-            background: #fff;
             border-radius: 16px;
             height: 260px;
             border: 1px solid var(--line);
-            animation: pulse 1.4s infinite;
+            background: linear-gradient(100deg, #F1F3F6 30%, #FAFBFC 50%, #F1F3F6 70%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s ease-in-out infinite;
         }
 
-        @keyframes pulse {
+        @keyframes shimmer {
             0% {
-                opacity: .6;
-            }
-
-            50% {
-                opacity: 1;
+                background-position: 200% 0;
             }
 
             100% {
-                opacity: .6;
+                background-position: -200% 0;
             }
         }
 
@@ -1061,7 +1080,7 @@
             const outOfStock = Number(p.stock) <= 0;
 
             const imageHtml = p.image
-                ? `<img src="/storage/${p.image}" alt="${p.name}">`
+                ? `<img src="/storage/${p.image}" alt="${p.name}" loading="lazy" decoding="async">`
                 : `<i class="fa-solid fa-image" style="font-size:36px;color:#CBD5E1;"></i>`;
 
             const cartBtn = outOfStock

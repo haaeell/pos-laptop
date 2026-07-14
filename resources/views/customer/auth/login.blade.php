@@ -88,6 +88,17 @@
             color: var(--primary);
             font-weight: 700;
         }
+
+        @media(max-width:480px) {
+            .auth-section {
+                padding: 24px 16px;
+            }
+
+            .auth-card {
+                padding: 26px 22px;
+                border-radius: 16px;
+            }
+        }
     </style>
 @endsection
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ArticleCategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CategoryController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\PenjualController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
@@ -26,6 +29,7 @@ use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\FavoriteController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
+use App\Http\Controllers\Customer\ReviewController as CustomerReviewController;
 use App\Http\Controllers\BiteshipWebhookController;
 use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +42,7 @@ Route::get('/produk/{id}', [CatalogController::class, 'show'])->name('catalog.sh
 Route::get('/service', [PageController::class, 'service'])->name('pages.service');
 Route::get('/tentang-kami', [PageController::class, 'about'])->name('pages.about');
 Route::get('/artikel', [PageController::class, 'articles'])->name('pages.articles');
+Route::get('/artikel/{slug}', [PageController::class, 'articleShow'])->name('pages.article-show');
 
 Auth::routes();
 
@@ -55,6 +60,7 @@ Route::prefix('akun')->name('customer.')->group(function () {
         Route::get('/pesanan', [CustomerOrderController::class, 'index'])->name('orders.index');
         Route::get('/pesanan/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
         Route::post('/pesanan/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
+        Route::post('/pesanan/ulasan', [CustomerReviewController::class, 'store'])->name('reviews.store');
 
         Route::prefix('alamat')->name('addresses.')->controller(AddressController::class)->group(function () {
             Route::get('/', 'index')->name('index');
@@ -211,6 +217,29 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
         Route::post('/', 'store');
         Route::put('/{id}', 'update');
         Route::delete('/{id}', 'destroy');
+    });
+
+    // Artikel
+    Route::prefix('articles')->controller(ArticleController::class)->group(function () {
+        Route::post('/upload-content-image', 'uploadContentImage')->name('articles.upload-content-image');
+        Route::get('/', 'index')->name('articles.index');
+        Route::post('/', 'store')->name('articles.store');
+        Route::put('/{id}', 'update')->name('articles.update');
+        Route::delete('/{id}', 'destroy')->name('articles.destroy');
+    });
+
+    // Kategori Artikel
+    Route::prefix('article-categories')->controller(ArticleCategoryController::class)->group(function () {
+        Route::get('/', 'index')->name('article-categories.index');
+        Route::post('/', 'store')->name('article-categories.store');
+        Route::put('/{id}', 'update')->name('article-categories.update');
+        Route::delete('/{id}', 'destroy')->name('article-categories.destroy');
+    });
+
+    // Ulasan Produk
+    Route::prefix('reviews')->controller(ReviewController::class)->group(function () {
+        Route::get('/', 'index')->name('reviews.index');
+        Route::delete('/{id}', 'destroy')->name('reviews.destroy');
     });
 
     // Modal / Hutang

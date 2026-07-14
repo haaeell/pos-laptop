@@ -78,6 +78,34 @@
             padding: 60px 0;
             color: var(--muted);
         }
+
+        @media(max-width:480px) {
+            .fav-section {
+                padding: 20px 0 40px;
+            }
+
+            .fav-section h1 {
+                font-size: 19px;
+            }
+
+            .fav-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .fav-card-body {
+                padding: 10px;
+            }
+
+            .fav-card-body h3 {
+                font-size: 12px;
+                min-height: 30px;
+            }
+
+            .fav-card-body .price {
+                font-size: 12.5px;
+            }
+        }
     </style>
 @endsection
 
@@ -101,7 +129,7 @@
                             <a href="{{ route('catalog.show', $product->id) }}">
                                 <div class="fav-card-image">
                                     @if ($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" loading="lazy" decoding="async">
                                     @else
                                         <i class="fa-solid fa-image" style="font-size:32px;color:#CBD5E1;"></i>
                                     @endif

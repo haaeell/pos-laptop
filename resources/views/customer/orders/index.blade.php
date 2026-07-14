@@ -115,6 +115,21 @@
             border-color: var(--primary);
             color: #fff;
         }
+
+        @media(max-width:480px) {
+            .orders-section {
+                padding: 20px 0 40px;
+            }
+
+            .orders-section h1 {
+                font-size: 19px;
+            }
+
+            .order-card {
+                padding: 13px 14px;
+                gap: 8px;
+            }
+        }
     </style>
 @endsection
 

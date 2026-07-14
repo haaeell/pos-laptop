@@ -92,6 +92,46 @@
                                              focus:ring-2 focus:ring-indigo-500/30">{{ $settings['deskripsi'] ?? '' }}</textarea>
             </div>
 
+            <!-- ================= SEO & FAVICON ================= -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-1">SEO &amp; Favicon</h3>
+                <p class="text-xs text-slate-500 mb-3">
+                    Kata kunci ini membantu toko Anda muncul di pencarian Google (mis. "toko komputer Subang").
+                </p>
+
+                <label class="text-xs font-semibold uppercase text-slate-600">Kata Kunci SEO (pisahkan dengan koma)</label>
+                <textarea name="meta_keywords" rows="2" placeholder="Barokah Computer Subang, toko komputer Subang, jual laptop Subang, service laptop Subang"
+                    class="w-full mt-1 mb-5 rounded-xl border px-4 py-3 text-sm
+                                             focus:ring-2 focus:ring-indigo-500/30">{{ $settings['meta_keywords'] ?? '' }}</textarea>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    @foreach ([
+                        'favicon_512' => 'Favicon 512x512',
+                        'favicon_48' => 'Favicon 48x48',
+                        'favicon_32' => 'Favicon 32x32',
+                    ] as $field => $label)
+                        <div>
+                            <label class="text-xs font-semibold uppercase text-slate-600">{{ $label }}</label>
+                            <div class="flex items-center gap-3 mt-1">
+                                <div class="w-14 h-14 rounded-lg border flex items-center justify-center bg-slate-50 overflow-hidden shrink-0">
+                                    @if(isset($settings[$field]))
+                                        <img src="{{ asset('storage/' . $settings[$field]) }}" class="w-full h-full object-contain">
+                                    @else
+                                        <i class="fa-solid fa-image text-slate-300"></i>
+                                    @endif
+                                </div>
+                                <input type="file" name="{{ $field }}" accept="image/png" class="block text-xs text-slate-600
+                                                  file:mr-2 file:py-1.5 file:px-3
+                                                  file:rounded-lg file:border-0
+                                                  file:bg-indigo-50 file:text-indigo-700
+                                                  hover:file:bg-indigo-100">
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="text-xs text-slate-500 mt-2">Format PNG, ukuran sesuai label. Jika kosong, pakai logo toko sebagai fallback.</p>
+            </div>
+
             <!-- ================= MIDTRANS ================= -->
             <div>
                 <h3 class="text-sm font-semibold text-slate-700 mb-1">Integrasi Pembayaran (Midtrans)</h3>

@@ -98,6 +98,15 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+
+            .auth-section {
+                padding: 24px 16px;
+            }
+
+            .auth-card {
+                padding: 26px 22px;
+                border-radius: 16px;
+            }
         }
     </style>
 @endsection

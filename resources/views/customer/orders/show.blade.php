@@ -117,6 +117,93 @@
             flex: 1;
         }
 
+        .review-btn {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            background: var(--primary-soft);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .review-done-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #B54708;
+            background: #FEF0C7;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-top: 4px;
+        }
+
+        .review-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(16, 24, 40, .5);
+            z-index: 150;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .review-modal-overlay.open {
+            display: flex;
+        }
+
+        .review-modal {
+            background: #fff;
+            border-radius: 18px;
+            width: min(420px, 100%);
+            padding: 24px;
+        }
+
+        .review-modal h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .review-modal p {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .review-star-row {
+            display: flex;
+            gap: 8px;
+            font-size: 30px;
+            color: #D0D5DD;
+            margin-bottom: 16px;
+            justify-content: center;
+        }
+
+        .review-star-row i.active {
+            color: #F79009;
+        }
+
+        .review-star-row span {
+            cursor: pointer;
+        }
+
+        .review-modal textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .review-modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
         .timeline {
             position: relative;
             padding-left: 24px;
@@ -226,7 +313,19 @@
                                         <i class="fa-solid fa-image"></i>
                                     @endif
                                 </div>
-                                <span class="order-item-name">{{ $item->product_name }} × {{ $item->qty }}</span>
+                                <span class="order-item-name">
+                                    {{ $item->product_name }} × {{ $item->qty }}
+                                    @if ($order->status === 'completed')
+                                        <br>
+                                        @if ($item->review)
+                                            <span class="review-done-badge"><i class="fa-solid fa-star"></i> Sudah diulas</span>
+                                        @else
+                                            <button type="button" class="review-btn" onclick='openReviewModal({{ $item->id }}, {{ json_encode($item->product_name) }})'>
+                                                <i class="fa-regular fa-star"></i> Beri Ulasan
+                                            </button>
+                                        @endif
+                                    @endif
+                                </span>
                                 <strong>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</strong>
                             </div>
                         @endforeach
@@ -315,10 +414,97 @@
             </div>
         </div>
     </section>
+
+    <div class="review-modal-overlay" id="reviewModalOverlay">
+        <div class="review-modal">
+            <h3>Beri Ulasan</h3>
+            <p id="reviewProductName"></p>
+            <div class="review-star-row" id="reviewStarRow">
+                @for ($s = 1; $s <= 5; $s++)
+                    <span data-star="{{ $s }}"><i class="fa-solid fa-star"></i></span>
+                @endfor
+            </div>
+            <textarea id="reviewComment" rows="3" placeholder="Bagaimana pengalaman Anda dengan produk ini? (opsional)"></textarea>
+            <div class="review-modal-actions">
+                <button type="button" class="btn btn-light" style="flex:1;" onclick="closeReviewModal()">Batal</button>
+                <button type="button" class="btn btn-primary" style="flex:1;" onclick="submitReview()">Kirim Ulasan</button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script>
+        // ===== Product review modal =====
+        let reviewOrderItemId = null;
+        let reviewRating = 0;
+
+        function openReviewModal(orderItemId, productName) {
+            reviewOrderItemId = orderItemId;
+            reviewRating = 0;
+            document.getElementById('reviewProductName').innerText = productName;
+            document.getElementById('reviewComment').value = '';
+            renderReviewStars();
+            document.getElementById('reviewModalOverlay').classList.add('open');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModalOverlay').classList.remove('open');
+        }
+
+        function renderReviewStars() {
+            document.querySelectorAll('#reviewStarRow span').forEach(el => {
+                el.querySelector('i').classList.toggle('active', Number(el.dataset.star) <= reviewRating);
+            });
+        }
+
+        document.querySelectorAll('#reviewStarRow span').forEach(el => {
+            el.addEventListener('click', function () {
+                reviewRating = Number(this.dataset.star);
+                renderReviewStars();
+            });
+        });
+
+        async function submitReview() {
+            if (!reviewRating) {
+                Swal.fire({ icon: 'warning', title: 'Pilih Rating', text: 'Mohon pilih rating bintang terlebih dahulu.' });
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const res = await fetch('{{ route('customer.reviews.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        order_item_id: reviewOrderItemId,
+                        rating: reviewRating,
+                        comment: document.getElementById('reviewComment').value,
+                    }),
+                });
+
+                const data = await res.json();
+                hideLoading();
+
+                if (!res.ok) {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message || 'Terjadi kesalahan.' });
+                    return;
+                }
+
+                closeReviewModal();
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false })
+                    .then(() => window.location.reload());
+            } catch (err) {
+                hideLoading();
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan jaringan.' });
+            }
+        }
+
         const CANCEL_REASONS = {
             'Salah pilih produk/ukuran': 'Salah pilih produk/ukuran',
             'Ingin ubah alamat pengiriman': 'Ingin ubah alamat pengiriman',

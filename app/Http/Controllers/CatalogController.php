@@ -30,6 +30,8 @@ class CatalogController extends Controller
         ]);
     }
 
+    const ALLOWED_PER_PAGE = [10, 20, 50, 100];
+
     public function data(Request $request)
     {
         $query = Product::with(['category', 'brand', 'images'])
@@ -51,23 +53,38 @@ class CatalogController extends Controller
             $query->where('brand_id', $request->brand);
         }
 
-        $products = $query->latest()->paginate(10);
+        if ($request->filled('min_price')) {
+            $query->where('selling_price', '>=', (float) $request->min_price);
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('selling_price', '<=', (float) $request->max_price);
+        }
+
+        if ($request->boolean('in_stock_only')) {
+            $query->where('stock', '>', 0);
+        }
+
+        // Out-of-stock products always sink to the bottom, regardless of
+        // sort order, so shoppers see purchasable products first.
+        $query->orderByRaw('CASE WHEN stock > 0 THEN 0 ELSE 1 END')->latest();
+
+        $perPageParam = $request->input('per_page', 10);
+
+        if ($perPageParam === 'all') {
+            $all = $query->get();
+
+            return response()->json([
+                'data' => $all->map(fn ($p) => $this->transformProduct($p)),
+                'meta' => ['current_page' => 1, 'last_page' => 1],
+            ]);
+        }
+
+        $perPage = in_array((int) $perPageParam, self::ALLOWED_PER_PAGE) ? (int) $perPageParam : 10;
+        $products = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $products->map(fn($p) => [
-                'id'        => $p->id,
-                'name'      => $p->name,
-                'code'      => $p->product_code,
-                'price'     => $p->selling_price,
-                'strike_price' => $p->strike_price,
-                'stock'     => $p->stock,
-                'condition' => $p->condition,
-                'category'  => $p->category->name,
-                'brand'     => $p->brand?->name,
-                'image'     => $p->image,
-                'images'    => $p->images,
-                'description' => $p->description,
-            ]),
+            'data' => $products->map(fn ($p) => $this->transformProduct($p)),
             'meta' => [
                 'current_page' => $products->currentPage(),
                 'last_page'    => $products->lastPage(),
@@ -75,9 +92,27 @@ class CatalogController extends Controller
         ]);
     }
 
+    protected function transformProduct(Product $p): array
+    {
+        return [
+            'id'        => $p->id,
+            'name'      => $p->name,
+            'code'      => $p->product_code,
+            'price'     => $p->selling_price,
+            'strike_price' => $p->strike_price,
+            'stock'     => $p->stock,
+            'condition' => $p->condition,
+            'category'  => $p->category->name,
+            'brand'     => $p->brand?->name,
+            'image'     => $p->image,
+            'images'    => $p->images,
+            'description' => $p->description,
+        ];
+    }
+
     public function show($id)
     {
-        $product = Product::with(['category', 'brand', 'images'])
+        $product = Product::with(['category', 'brand', 'images', 'reviews' => fn ($q) => $q->with('customer')->latest()])
             ->where('status', 'available')
             ->where('is_active', true)
             ->findOrFail($id);

@@ -66,11 +66,26 @@ class Product extends Model
         return $this->belongsToMany(Customer::class, 'product_favorites')->withTimestamps();
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
 
     /* ================= HELPERS ================= */
 
     public function isAvailable(): bool
     {
         return $this->status === 'available' && $this->stock > 0;
+    }
+
+    public function averageRating(): float
+    {
+        return round($this->reviews()->avg('rating') ?? 0, 1);
+    }
+
+    public function reviewsCount(): int
+    {
+        return $this->reviews()->count();
     }
 }

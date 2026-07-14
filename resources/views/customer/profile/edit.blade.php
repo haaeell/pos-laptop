@@ -56,6 +56,21 @@
             margin: 22px 0;
             padding-top: 6px;
         }
+
+        @media(max-width:480px) {
+            .profile-section {
+                padding: 20px 0 40px;
+            }
+
+            .profile-section h1 {
+                font-size: 19px;
+            }
+
+            .profile-card {
+                padding: 18px;
+                max-width: 100%;
+            }
+        }
     </style>
 @endsection
 

@@ -152,6 +152,18 @@
                         Produk
                     </a>
 
+                    <a href="/articles"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('article*') }}">
+                        <i class="fa-solid fa-newspaper w-5"></i>
+                        Artikel
+                    </a>
+
+                    <a href="/reviews"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('reviews*') }}">
+                        <i class="fa-solid fa-star w-5"></i>
+                        Ulasan Produk
+                    </a>
+
                     <a href="/penjuals"
                         class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('penjuals*') }}">
                         <i class="fa-solid fa-user w-5"></i>

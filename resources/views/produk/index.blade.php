@@ -15,7 +15,80 @@
         }
 
         .filter-row select {
-            min-width: 180px;
+            min-width: 160px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        .filter-group input[type="number"] {
+            width: 120px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        .filter-group select {
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            padding-bottom: 9px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filter-price-sep {
+            padding-bottom: 9px;
+            color: var(--muted);
+        }
+
+        #applyFilterBtn {
+            padding: 9px 20px;
+            font-size: 13px;
+        }
+
+        @media(max-width:640px) {
+            .filter-bar {
+                gap: 10px;
+            }
+
+            .filter-group input[type="number"] {
+                width: 100px;
+            }
         }
 
         .product-grid {
@@ -176,17 +249,17 @@
         }
 
         .skeleton {
-            background: #fff;
             border-radius: 16px;
             height: 260px;
             border: 1px solid var(--line);
-            animation: pulse 1.4s infinite;
+            background: linear-gradient(100deg, #F1F3F6 30%, #FAFBFC 50%, #F1F3F6 70%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s ease-in-out infinite;
         }
 
-        @keyframes pulse {
-            0% { opacity: .6; }
-            50% { opacity: 1; }
-            100% { opacity: .6; }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         @media(max-width:960px) {
@@ -216,7 +289,11 @@
                     <h1 style="font-size:24px;">Katalog Produk</h1>
                     <p>Pilihan produk terbaik untuk kebutuhan kerja, belajar, dan hiburan.</p>
                 </div>
-                <div class="filter-row">
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Merek</label>
                     <select id="brand">
                         <option value="">Semua Merek</option>
                         @foreach($brands as $brand)
@@ -224,6 +301,35 @@
                         @endforeach
                     </select>
                 </div>
+
+                <div class="filter-group">
+                    <label>Harga Min</label>
+                    <input type="number" id="minPrice" placeholder="0" min="0">
+                </div>
+                <span class="filter-price-sep">—</span>
+                <div class="filter-group">
+                    <label>Harga Max</label>
+                    <input type="number" id="maxPrice" placeholder="Tanpa batas" min="0">
+                </div>
+
+                <label class="filter-checkbox">
+                    <input type="checkbox" id="inStockOnly"> Hanya yang Tersedia
+                </label>
+
+                <div class="filter-group">
+                    <label>Tampilkan</label>
+                    <select id="perPage">
+                        <option value="10">10 Produk</option>
+                        <option value="20">20 Produk</option>
+                        <option value="50">50 Produk</option>
+                        <option value="100">100 Produk</option>
+                        <option value="all">Semua</option>
+                    </select>
+                </div>
+
+                <button type="button" id="applyFilterBtn" class="btn btn-primary">
+                    <i class="fa-solid fa-filter"></i> Terapkan
+                </button>
             </div>
 
             @if($categories->count())
@@ -260,6 +366,16 @@
                 loadProducts();
             });
 
+            document.getElementById('perPage').addEventListener('change', function () {
+                currentPage = 1;
+                loadProducts();
+            });
+
+            document.getElementById('applyFilterBtn').addEventListener('click', function () {
+                currentPage = 1;
+                loadProducts();
+            });
+
             const globalSearch = document.getElementById('global-search');
             if (globalSearch && globalSearch.value) {
                 searchEl.value = globalSearch.value;
@@ -272,6 +388,10 @@
         let activeCategory = '';
         const searchEl = { value: (new URLSearchParams(window.location.search)).get('search') || '' };
         const brandEl = document.getElementById('brand');
+        const minPriceEl = document.getElementById('minPrice');
+        const maxPriceEl = document.getElementById('maxPrice');
+        const inStockOnlyEl = document.getElementById('inStockOnly');
+        const perPageEl = document.getElementById('perPage');
         const container = document.getElementById('products-grid');
         const emptyEl = document.getElementById('empty');
 
@@ -283,13 +403,18 @@
         }
 
         async function loadProducts() {
-            container.innerHTML = skeleton();
+            const perPageVal = perPageEl.value;
+            container.innerHTML = skeleton(perPageVal === 'all' ? 12 : Math.min(Number(perPageVal) || 8, 12));
             emptyEl.style.display = 'none';
 
             const params = new URLSearchParams({
                 search: searchEl.value,
                 category: activeCategory,
                 brand: brandEl.value,
+                min_price: minPriceEl.value,
+                max_price: maxPriceEl.value,
+                in_stock_only: inStockOnlyEl.checked ? '1' : '',
+                per_page: perPageVal,
                 page: currentPage
             });
 
@@ -347,7 +472,7 @@
             const outOfStock = Number(p.stock) <= 0;
 
             const imageHtml = p.image
-                ? `<img src="/storage/${p.image}" alt="${p.name}">`
+                ? `<img src="/storage/${p.image}" alt="${p.name}" loading="lazy" decoding="async">`
                 : `<i class="fa-solid fa-image" style="font-size:36px;color:#CBD5E1;"></i>`;
 
             const cartBtn = outOfStock
@@ -422,8 +547,8 @@
             }).format(v);
         }
 
-        function skeleton() {
-            return Array(8).fill(`<div class="skeleton"></div>`).join('');
+        function skeleton(count = 8) {
+            return Array(count).fill(`<div class="skeleton"></div>`).join('');
         }
     </script>
 @endpush
