@@ -9,18 +9,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sales', function (Blueprint $table) {
-            $table->date('due_date')->nullable()->after('collateral_path');
+            if (!Schema::hasColumn('sales', 'due_date')) {
+                $table->date('due_date')->nullable()->after('collateral_path');
+            }
         });
 
-        Schema::create('sale_payments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('sale_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained();
-            $table->decimal('amount', 15, 2);
-            $table->date('paid_at');
-            $table->string('note')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('sale_payments')) {
+            Schema::create('sale_payments', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('sale_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_id')->constrained();
+                $table->decimal('amount', 15, 2);
+                $table->date('paid_at');
+                $table->string('note')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
@@ -28,7 +32,9 @@ return new class extends Migration
         Schema::dropIfExists('sale_payments');
 
         Schema::table('sales', function (Blueprint $table) {
-            $table->dropColumn('due_date');
+            if (Schema::hasColumn('sales', 'due_date')) {
+                $table->dropColumn('due_date');
+            }
         });
     }
 };

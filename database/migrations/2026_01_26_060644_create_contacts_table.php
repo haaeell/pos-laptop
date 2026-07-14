@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contacts', function (Blueprint $table) {
-            $table->id();
-            $table->string('label');          // WhatsApp 1, Admin, Sales, dll
-            $table->string('phone');          // 628xxxxxxxx
-            $table->string('whatsapp_text');  // teks chat
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('contacts')) {
+            Schema::create('contacts', function (Blueprint $table) {
+                $table->id();
+                $table->string('label');          // WhatsApp 1, Admin, Sales, dll
+                $table->string('phone');          // 628xxxxxxxx
+                $table->string('whatsapp_text');  // teks chat
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

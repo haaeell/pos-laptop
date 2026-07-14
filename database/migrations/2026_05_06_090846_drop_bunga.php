@@ -15,19 +15,27 @@ return new class extends Migration
     {
         // ── Tabel modals ─────────────────────────────────────────────
         Schema::table('modals', function (Blueprint $table) {
-            $table->dropColumn([
+            $drop = array_filter([
                 'bunga_persen',   // diganti oleh total_bunga (Rp) yang sudah ada
                 'jenis_bunga',    // flat / efektif / anuitas — tidak relevan lagi
                 'periode_bunga',  // bulanan / harian / dst — tidak relevan lagi
-            ]);
+            ], fn ($col) => Schema::hasColumn('modals', $col));
+
+            if ($drop) {
+                $table->dropColumn($drop);
+            }
         });
 
         // ── Tabel modal_cicilans ──────────────────────────────────────
         Schema::table('modal_cicilans', function (Blueprint $table) {
-            $table->dropColumn([
+            $drop = array_filter([
                 'nominal_pokok',  // detail pokok per cicilan — tidak ditampilkan lagi
                 'nominal_bunga',  // detail bunga per cicilan — tidak ditampilkan lagi
-            ]);
+            ], fn ($col) => Schema::hasColumn('modal_cicilans', $col));
+
+            if ($drop) {
+                $table->dropColumn($drop);
+            }
         });
     }
 
@@ -39,15 +47,25 @@ return new class extends Migration
     {
         // ── Tabel modals ─────────────────────────────────────────────
         Schema::table('modals', function (Blueprint $table) {
-            $table->decimal('bunga_persen', 10, 4)->default(0)->after('nominal_pencairan');
-            $table->enum('jenis_bunga', ['flat', 'efektif', 'anuitas'])->default('flat')->after('bunga_persen');
-            $table->enum('periode_bunga', ['harian', 'mingguan', 'bulanan', 'tahunan'])->default('bulanan')->after('jenis_bunga');
+            if (!Schema::hasColumn('modals', 'bunga_persen')) {
+                $table->decimal('bunga_persen', 10, 4)->default(0)->after('nominal_pencairan');
+            }
+            if (!Schema::hasColumn('modals', 'jenis_bunga')) {
+                $table->enum('jenis_bunga', ['flat', 'efektif', 'anuitas'])->default('flat')->after('bunga_persen');
+            }
+            if (!Schema::hasColumn('modals', 'periode_bunga')) {
+                $table->enum('periode_bunga', ['harian', 'mingguan', 'bulanan', 'tahunan'])->default('bulanan')->after('jenis_bunga');
+            }
         });
 
         // ── Tabel modal_cicilans ──────────────────────────────────────
         Schema::table('modal_cicilans', function (Blueprint $table) {
-            $table->decimal('nominal_pokok', 15, 2)->default(0)->after('tanggal_jatuh_tempo');
-            $table->decimal('nominal_bunga', 15, 2)->default(0)->after('nominal_pokok');
+            if (!Schema::hasColumn('modal_cicilans', 'nominal_pokok')) {
+                $table->decimal('nominal_pokok', 15, 2)->default(0)->after('tanggal_jatuh_tempo');
+            }
+            if (!Schema::hasColumn('modal_cicilans', 'nominal_bunga')) {
+                $table->decimal('nominal_bunga', 15, 2)->default(0)->after('nominal_pokok');
+            }
         });
     }
 };

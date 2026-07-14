@@ -12,12 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sales', function (Blueprint $table) {
-            $table->foreignId('sales_person_id')
-                ->nullable()
-                ->constrained('sales_peoples')
-                ->nullOnDelete();
+            if (!Schema::hasColumn('sales', 'sales_person_id')) {
+                $table->foreignId('sales_person_id')
+                    ->nullable()
+                    ->constrained('sales_peoples')
+                    ->nullOnDelete();
+            }
 
-            $table->decimal('fee_sales', 14, 2)->default(0);
+            if (!Schema::hasColumn('sales', 'fee_sales')) {
+                $table->decimal('fee_sales', 14, 2)->default(0);
+            }
         });
     }
 

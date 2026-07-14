@@ -10,14 +10,18 @@ return new class extends Migration
     {
         Schema::table('services', function (Blueprint $table) {
             // Simpan list sparepart sebagai JSON array: [{ "name": "...", "price": 0 }]
-            $table->json('spare_parts')->nullable()->after('technician_notes');
+            if (!Schema::hasColumn('services', 'spare_parts')) {
+                $table->json('spare_parts')->nullable()->after('technician_notes');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            $table->dropColumn('spare_parts');
+            if (Schema::hasColumn('services', 'spare_parts')) {
+                $table->dropColumn('spare_parts');
+            }
         });
     }
 };

@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('modals', function (Blueprint $table) {
+        if (!Schema::hasTable('modals')) {
+            Schema::create('modals', function (Blueprint $table) {
             $table->id();
             $table->string('kode_pinjaman')->unique();
             $table->string('nama_pemberi_pinjaman');
@@ -32,25 +33,28 @@ return new class extends Migration
             $table->enum('status', ['aktif', 'lunas', 'macet', 'restrukturisasi'])->default('aktif');
             $table->text('keterangan')->nullable();
             $table->boolean('sudah_dicairkan')->default(false);
-            $table->timestamps();
-            $table->softDeletes();
-        });
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
 
-        Schema::create('modal_cicilans', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('modal_id')->constrained('modals')->onDelete('cascade');
-            $table->integer('cicilan_ke');
-            $table->date('tanggal_jatuh_tempo');
-            $table->date('tanggal_bayar')->nullable();
-            $table->decimal('nominal_pokok', 18, 2);
-            $table->decimal('nominal_bunga', 18, 2);
-            $table->decimal('nominal_cicilan', 18, 2);      // pokok + bunga
-            $table->decimal('denda', 18, 2)->default(0);
-            $table->decimal('total_bayar', 18, 2)->default(0);
-            $table->enum('status', ['belum_bayar', 'sudah_bayar', 'terlambat', 'sebagian'])->default('belum_bayar');
-            $table->text('keterangan')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('modal_cicilans')) {
+            Schema::create('modal_cicilans', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('modal_id')->constrained('modals')->onDelete('cascade');
+                $table->integer('cicilan_ke');
+                $table->date('tanggal_jatuh_tempo');
+                $table->date('tanggal_bayar')->nullable();
+                $table->decimal('nominal_pokok', 18, 2);
+                $table->decimal('nominal_bunga', 18, 2);
+                $table->decimal('nominal_cicilan', 18, 2);      // pokok + bunga
+                $table->decimal('denda', 18, 2)->default(0);
+                $table->decimal('total_bayar', 18, 2)->default(0);
+                $table->enum('status', ['belum_bayar', 'sudah_bayar', 'terlambat', 'sebagian'])->default('belum_bayar');
+                $table->text('keterangan')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

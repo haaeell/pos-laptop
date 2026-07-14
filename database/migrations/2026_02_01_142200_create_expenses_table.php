@@ -8,17 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('expenses', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->decimal('amount', 15, 2);
-            $table->string('category')->nullable();
-            $table->date('entry_date');
-            $table->text('description')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        if (!Schema::hasTable('expenses')) {
+            Schema::create('expenses', function (Blueprint $table) {
+                $table->id();
+                $table->string('title');
+                $table->decimal('amount', 15, 2);
+                $table->string('category')->nullable();
+                $table->date('entry_date');
+                $table->text('description')->nullable();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
-            $table->timestamps();
-        });
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payrolls', function (Blueprint $table) {
-            $table->date('date_from')->nullable()->after('period_month');
-            $table->date('date_to')->nullable()->after('date_from');
+            if (!Schema::hasColumn('payrolls', 'date_from')) {
+                $table->date('date_from')->nullable()->after('period_month');
+            }
+            if (!Schema::hasColumn('payrolls', 'date_to')) {
+                $table->date('date_to')->nullable()->after('date_from');
+            }
         });
     }
 

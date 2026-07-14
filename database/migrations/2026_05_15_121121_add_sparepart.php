@@ -10,14 +10,18 @@ return new class extends Migration
     {
         Schema::table('services', function (Blueprint $table) {
             // Total HPP sparepart — untuk kalkulasi profit service
-            $table->unsignedBigInteger('spare_part_hpp')->default(0)->after('spare_part_cost');
+            if (!Schema::hasColumn('services', 'spare_part_hpp')) {
+                $table->unsignedBigInteger('spare_part_hpp')->default(0)->after('spare_part_cost');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            $table->dropColumn('spare_part_hpp');
+            if (Schema::hasColumn('services', 'spare_part_hpp')) {
+                $table->dropColumn('spare_part_hpp');
+            }
         });
     }
 };

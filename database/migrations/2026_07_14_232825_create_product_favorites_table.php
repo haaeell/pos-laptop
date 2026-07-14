@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_favorites', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
-            $table->unique(['customer_id', 'product_id']);
-        });
+        if (!Schema::hasTable('product_favorites')) {
+            Schema::create('product_favorites', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+                $table->timestamps();
+                $table->unique(['customer_id', 'product_id']);
+            });
+        }
     }
 
     /**

@@ -9,14 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sale_items', function (Blueprint $table) {
-            $table->unsignedInteger('qty')->default(1)->after('product_id');
+            if (!Schema::hasColumn('sale_items', 'qty')) {
+                $table->unsignedInteger('qty')->default(1)->after('product_id');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('sale_items', function (Blueprint $table) {
-            $table->dropColumn('qty');
+            if (Schema::hasColumn('sale_items', 'qty')) {
+                $table->dropColumn('qty');
+            }
         });
     }
 };

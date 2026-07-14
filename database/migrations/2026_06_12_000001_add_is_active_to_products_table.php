@@ -9,16 +9,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->boolean('is_active')
-                ->default(true)
-                ->after('selling_price');
+            if (!Schema::hasColumn('products', 'is_active')) {
+                $table->boolean('is_active')
+                    ->default(true)
+                    ->after('selling_price');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('is_active');
+            if (Schema::hasColumn('products', 'is_active')) {
+                $table->dropColumn('is_active');
+            }
         });
     }
 };
