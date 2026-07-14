@@ -1,388 +1,984 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.catalog')
 
-<head>
-    <meta charset="UTF-8">
-    <title>Barokah Computer | Daftar Produk</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@section('title', ($settings['nama_toko'] ?? 'Barokah Computer') . ' | Laptop, Aksesoris & Service')
+@section('meta_description', ($settings['nama_toko'] ?? 'Barokah Computer') . ' - Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas.')
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/jpeg" href="{{ asset('logo.jpeg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('logo.jpeg') }}">
-
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-
+@section('styles')
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        .hero {
+            padding: 24px 0 10px;
         }
 
-        .select2-container .select2-selection--single {
-            height: 42px;
-            border-radius: 0.75rem;
-            border: 1px solid #d1d5db;
-            padding: 6px 12px;
+        .hero-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 22px;
+            background: linear-gradient(110deg, #F8FBFF 0%, #EEF4FF 55%, #E6EFFF 100%);
+            display: grid;
+            grid-template-columns: 1.05fr .95fr;
+            min-height: 370px;
+            border: 1px solid #DCE7FA;
+        }
+
+        .hero-copy {
+            padding: 52px;
+            align-self: center;
+        }
+
+        .hero-copy h1 {
+            font-size: 44px;
+            line-height: 1.1;
+            letter-spacing: -1.6px;
+            max-width: 560px;
+            color: var(--text);
+        }
+
+        .hero-copy h1 span {
+            color: var(--primary);
+        }
+
+        .hero-card p {
+            color: var(--muted);
+            max-width: 530px;
+            font-size: 15px;
+            margin: 18px 0 24px;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        .hero-visual {
+            position: relative;
+            display: grid;
+            place-items: center;
+            padding: 26px;
+        }
+
+        .hero-visual:before {
+            content: "";
+            position: absolute;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .8);
+        }
+
+        .hero-visual img {
+            position: relative;
+            z-index: 2;
+            width: 390px;
+            border-radius: 16px;
+            filter: drop-shadow(0 26px 28px rgba(16, 24, 40, .22));
+        }
+
+        .promo-chip {
+            position: absolute;
+            z-index: 3;
+            right: 38px;
+            top: 48px;
+            background: #fff;
+            border: 1px solid var(--line);
+            padding: 12px 14px;
+            border-radius: 13px;
+            box-shadow: var(--shadow);
+            font-size: 12px;
+        }
+
+        .promo-chip strong {
+            color: var(--primary);
+            display: block;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            margin-top: 16px;
+            box-shadow: 0 8px 20px rgba(16, 24, 40, .04);
+        }
+
+        .benefit {
             display: flex;
             align-items: center;
+            gap: 12px;
+            padding: 18px 20px;
+            border-right: 1px solid var(--line);
         }
 
-        .select2-selection__rendered {
-            padding-left: 0 !important;
+        .benefit:last-child {
+            border-right: 0;
         }
 
-        .select2-selection__arrow {
-            height: 100%;
+        .benefit-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
         }
 
-        .select2-container--default .select2-selection--single:focus {
-            border-color: #2563eb;
-            outline: none;
+        .benefit strong {
+            display: block;
+            font-size: 13px;
         }
 
-        .modalThumbSwiper .swiper-slide {
-            width: 72px;
-            height: 72px;
-            opacity: 0.4;
-            border-radius: 8px;
+        .benefit span {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-row select {
+            min-width: 180px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .product-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 14px;
+            transition: .25s;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .product-image {
+            height: 170px;
+            border-radius: 12px;
+            background: #F6F8FB;
+            display: grid;
+            place-items: center;
             overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-card h3 {
+            font-size: 14px;
+            margin: 14px 0 6px;
+            min-height: 38px;
+        }
+
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .price {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .price strong {
+            color: var(--primary);
+            font-size: 15px;
+        }
+
+        .detail-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .detail-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 14px;
+        }
+
+        .category-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 18px 10px;
+            text-align: center;
+            transition: .2s;
             cursor: pointer;
         }
 
-        .modalThumbSwiper .swiper-slide-thumb-active {
-            opacity: 1;
-            border: 2px solid #f97316;
+        .category-card:hover {
+            border-color: #B6CDF6;
+            transform: translateY(-3px);
         }
 
-        .modalThumbSwiper {
-            box-sizing: border-box;
+        .category-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 15px;
+            background: var(--primary-soft);
+            display: grid;
+            place-items: center;
+            margin: 0 auto 10px;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .category-card span {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .pagination-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 0;
+            color: var(--muted);
+        }
+
+        .skeleton {
+            background: #fff;
+            border-radius: 16px;
+            height: 260px;
+            border: 1px solid var(--line);
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: .6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: .6;
+            }
+        }
+
+        .service-banner {
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            background: linear-gradient(100deg, #1257C5, #1E73EA);
+            border-radius: 22px;
+            overflow: hidden;
+            color: #fff;
+            min-height: 255px;
+        }
+
+        .service-copy {
+            padding: 42px;
+        }
+
+        .service-copy h2 {
+            font-size: 28px;
+            max-width: 520px;
+            line-height: 1.15;
+        }
+
+        .service-copy p {
+            margin: 14px 0 22px;
+            color: rgba(255, 255, 255, .82);
+            max-width: 560px;
+            font-size: 14px;
+        }
+
+        .service-points {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            margin-bottom: 24px;
+        }
+
+        .service-photo {
+            background: url('https://images.unsplash.com/photo-1588702547923-7093a6c3ba33?auto=format&fit=crop&w=1000&q=80') center/cover;
+            min-height: 255px;
+        }
+
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .why-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 22px;
+        }
+
+        .why-card .why-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: grid;
+            place-items: center;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .why-card h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .why-card p {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .brands {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 14px;
+            align-items: center;
+        }
+
+        .brand-chip {
+            height: 70px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: #475467;
+            font-weight: 800;
+            font-size: 15px;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .testimonial {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 22px;
+        }
+
+        .testimonial p {
+            font-size: 13px;
+            color: #475467;
+            margin-bottom: 18px;
+        }
+
+        .person {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--primary-soft);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .person strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .person span {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .contact-bar {
+            background: var(--primary);
+            color: #fff;
+            border-radius: 18px;
+            padding: 24px 28px;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr 1fr;
+            gap: 22px;
+        }
+
+        .contact-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .contact-item strong {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .contact-item span {
+            font-size: 11px;
+            color: rgba(255, 255, 255, .78);
+        }
+
+        @media(max-width:960px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .benefits {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .benefit:nth-child(2) {
+                border-right: 0;
+            }
+
+            .benefit:nth-child(-n+2) {
+                border-bottom: 1px solid var(--line);
+            }
+
+            .contact-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-card {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-copy {
+                padding: 38px;
+            }
+
+            .hero-copy h1 {
+                font-size: 36px;
+            }
+
+            .hero-visual {
+                min-height: 260px;
+            }
+
+            .service-banner {
+                grid-template-columns: 1fr;
+            }
+
+            .service-photo {
+                min-height: 180px;
+            }
+
+            .why-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .brands {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .testimonial-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width:640px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .hero-copy {
+                padding: 28px 22px;
+            }
+
+            .hero-copy h1 {
+                font-size: 30px;
+            }
+
+            .hero-card p {
+                font-size: 13px;
+            }
+
+            .hero-visual img {
+                width: 280px;
+            }
+
+            .promo-chip {
+                right: 18px;
+                top: 24px;
+            }
+
+            .benefits {
+                grid-template-columns: repeat(2, 1fr);
+                border-radius: 14px;
+                margin-top: 12px;
+            }
+
+            .benefit {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .benefit-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .benefit strong {
+                font-size: 11px;
+            }
+
+            .benefit span {
+                font-size: 10px;
+            }
+
+            /* Category: horizontal scroll chips, app style */
+            .category-grid {
+                display: flex;
+                overflow-x: auto;
+                gap: 12px;
+                padding-bottom: 4px;
+                scrollbar-width: none;
+            }
+
+            .category-grid::-webkit-scrollbar {
+                display: none;
+            }
+
+            .category-card {
+                flex: 0 0 auto;
+                width: 74px;
+                padding: 12px 6px;
+                border-radius: 16px;
+            }
+
+            .category-icon {
+                width: 46px;
+                height: 46px;
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+
+            .category-card span {
+                font-size: 10.5px;
+            }
+
+            .filter-row {
+                width: 100%;
+            }
+
+            .filter-row select {
+                width: 100%;
+            }
+
+            .product-card {
+                border-radius: 14px;
+                padding: 10px;
+            }
+
+            .product-image {
+                height: 128px;
+                border-radius: 10px;
+            }
+
+            .product-card h3 {
+                font-size: 12px;
+                margin: 10px 0 4px;
+                min-height: 32px;
+            }
+
+            .price strong {
+                font-size: 13px;
+            }
+
+            .detail-btn {
+                width: 30px;
+                height: 30px;
+            }
+
+            .service-banner {
+                border-radius: 16px;
+            }
+
+            .service-copy {
+                padding: 22px 18px;
+            }
+
+            .service-copy h2 {
+                font-size: 19px;
+            }
+
+            .service-copy p {
+                font-size: 12px;
+            }
+
+            .service-points {
+                gap: 10px;
+                font-size: 11px;
+                margin-bottom: 16px;
+            }
+
+            .why-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .why-card {
+                padding: 14px;
+                border-radius: 14px;
+            }
+
+            .why-card .why-icon {
+                width: 34px;
+                height: 34px;
+                margin-bottom: 10px;
+            }
+
+            .why-card h3 {
+                font-size: 12.5px;
+            }
+
+            .why-card p {
+                font-size: 11px;
+            }
+
+            .brands {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+
+            .brand-chip {
+                height: 56px;
+                font-size: 12px;
+                border-radius: 12px;
+            }
+
+            .testimonial {
+                border-radius: 14px;
+                padding: 16px;
+            }
+
+            .contact-bar {
+                border-radius: 14px;
+                padding: 18px;
+            }
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-50 text-gray-800">
-
-    <!-- ================= STORE HEADER ================= -->
-    <header class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
-            @php
-                $logo = $settings['logo'] ?? 'logo.jpeg';
-                $namaToko = $settings['nama_toko'] ?? 'Barokah Computer';
-                $alamat = $settings['alamat'] ?? 'Alamat toko belum diatur';
-                $jamBuka = $settings['jam_buka'] ?? '09.00 – 21.00';
-            @endphp
-            <div class="flex items-center gap-4">
-                <!-- LOGO -->
-                <div class="w-14">
-                    <img src="{{ asset('storage/' . $logo) }}" alt=" {{ asset($logo) }}"
-                        class="w-full h-full object-cover">
-                </div>
-
-                <!-- STORE INFO -->
-                <div>
-                    <h1 class="text-lg font-bold leading-tight">
-                        {{ $namaToko }}
-                    </h1>
-                    <p class="text-sm text-gray-500 flex items-center gap-2">
-                        <i class="fa-solid fa-location-dot text-indigo-600"></i>
-                        {{ $alamat }}
-                    </p>
-                </div>
-            </div>
-
-            <!-- RIGHT : CONTACT -->
-            <div class="flex items-center gap-3">
-                @foreach($contacts as $contact)
-                    <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
-                        target="_blank"
-                        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600
-                                                                                                                                                                                                                                                                                        text-white text-sm font-semibold transition">
-                        <i class="fa-brands fa-whatsapp"></i>
-                        {{ $contact->label }}
-                    </a>
-                @endforeach
-
-                <span class="hidden md:flex items-center gap-2 text-sm text-gray-500">
-                    <i class="fa-solid fa-clock text-indigo-600"></i>
-                    Buka {{ $jamBuka }}
-                </span>
-            </div>
-
-        </div>
-    </header>
-
-    <!-- ================= HERO ================= -->
-    <section class="relative">
-        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600"></div>
-        <div class="relative max-w-7xl mx-auto px-6 pb-24 py-12 text-white">
-            <p class=" text-indigo-100 max-w-xl text-lg">
-                {{ $settings['deskripsi'] ?? 'Deskripsi toko belum diatur' }}
-            </p>
-        </div>
-    </section>
-
-    <!-- ================= FILTER ================= -->
-    <section class="-mt-16 relative z-10">
-        <div class="max-w-7xl mx-auto px-6">
-            <div
-                class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl px-6 py-5 flex flex-col lg:flex-row gap-4 items-center">
-
-                <div class="relative flex-1 w-full">
-                    <input id="search" type="text" placeholder="Cari nama produk atau kode..." class="w-full h-14 pl-12 pr-4 rounded-2xl border border-gray-200
-                               focus:ring-2 focus:ring-indigo-500 transition">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-gray-400"></i>
-                </div>
-
-                <select id="category"
-                    class="h-14 px-6 rounded-2xl border border-gray-200 text-sm font-medium focus:ring-2 focus:ring-indigo-500">
-                    <option value="">Semua Kategori</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                    @endforeach
-                </select>
-
-                <select id="brand"
-                    class="h-14 px-6 rounded-2xl border border-gray-200 text-sm font-medium focus:ring-2 focus:ring-indigo-500">
-                    <option value="">Semua Merek</option>
-                    @foreach($brands as $brand)
-                        <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-    </section>
-
-    <!-- ================= CATALOG ================= -->
-    <section class="max-w-7xl mx-auto px-6 py-16">
-        <div id="products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4"></div>
-
-        <div id="empty" class="hidden text-center py-32 text-gray-400">
-            Produk tidak ditemukan.
-        </div>
-        <div id="pagination" class="flex justify-center gap-2 mt-12"></div>
-    </section>
-
-    <!-- ================= FOOTER ================= -->
-    <footer class="bg-slate-900 text-slate-300">
-        <div class="max-w-7xl mx-auto px-6 py-16">
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-
-                <!-- ===== STORE INFO ===== -->
-                <div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <img src="/logo.jpeg" class="w-12 h-12 rounded-xl bg-white p-1" alt="Barokah Computer">
-                        <div>
-                            <h3 class="text-lg font-bold text-white">
-                                {{ $namaToko }}
-                            </h3>
-
-                            <p class="text-sm leading-relaxed text-slate-400">
-                                {{ $settings['deskripsi'] ?? 'Laptop & elektronik berkualitas dengan harga terbaik.' }}
-                            </p>
+@section('content')
+    <main>
+        <section class="hero" id="home">
+            <div class="container">
+                <div class="hero-card">
+                    <div class="hero-copy">
+                        <div class="eyebrow">● {{ strtoupper($namaToko) }}</div>
+                        <h1>Laptop Terbaik untuk Produktivitas <span>Tanpa Batas</span></h1>
+                        <p>{{ $deskripsi }}</p>
+                        <div class="hero-actions">
+                            <a href="#products" class="btn btn-primary">Belanja Sekarang →</a>
+                            <a href="#service" class="btn btn-light">Lihat Layanan</a>
                         </div>
                     </div>
-
-                    <p class="text-sm leading-relaxed text-slate-400">
-                        Menyediakan laptop, aksesoris, dan perangkat elektronik berkualitas
-                        dengan harga terbaik dan pelayanan terpercaya.
-                    </p>
-
-                    <div class="mt-5 space-y-2 text-sm">
-                        <p class="flex items-start gap-2 text-sm mt-3">
-                            <i class="fa-solid fa-location-dot text-indigo-400 mt-1"></i>
-                            <span>{{ $alamat }}</span>
-                        </p>
-
-                        <p class="flex items-center gap-2 text-sm mt-2">
-                            <i class="fa-solid fa-clock text-indigo-400"></i>
-                            {{ $jamBuka }}
-                        </p>
+                    <div class="hero-visual">
+                        <div class="promo-chip"><strong>Cicilan 0%</strong>Hingga 12 bulan</div>
+                        <img alt="Laptop modern"
+                            src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=90" />
                     </div>
                 </div>
 
-                <!-- ===== CONTACT ===== -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Hubungi Kami</h4>
-                    <div class="space-y-3 text-sm">
+                <div class="benefits">
+                    <div class="benefit">
+                        <div class="benefit-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                        <div><strong>Pengiriman Cepat</strong><span>Aman dan terpercaya</span></div>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon"><i class="fa-solid fa-check"></i></div>
+                        <div><strong>Garansi Resmi</strong><span>Produk bergaransi</span></div>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon"><i class="fa-solid fa-star"></i></div>
+                        <div><strong>Produk Original</strong><span>100% berkualitas</span></div>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <div><strong>Buka {{ $jamBuka }}</strong><span>Konsultasi & service</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-
-                        @foreach($contacts as $contact)
-                            <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
-                                target="_blank" class="flex items-center gap-3 cursor-pointer hover:text-white transition">
-                                <i class="fa-brands fa-whatsapp text-green-400 text-lg"></i>
-                                {{ $contact->label }}
-                            </a>
+        @if($categories->count())
+            <section id="categories">
+                <div class="container">
+                    <div class="section-head">
+                        <div>
+                            <h2>Kategori Belanja</h2>
+                            <p>Temukan produk lebih cepat berdasarkan kebutuhan Anda.</p>
+                        </div>
+                    </div>
+                    <div class="category-grid">
+                        @foreach($categories as $cat)
+                            <div class="category-card" onclick="filterByCategory('{{ $cat->id }}')">
+                                <div class="category-icon"><i class="fa-solid fa-layer-group"></i></div>
+                                <span>{{ $cat->name }}</span>
+                            </div>
                         @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
 
-                        <a href="https://maps.app.goo.gl/VtWx59cyPptgUwtp6" target="_blank"
-                            class="flex items-center gap-3 hover:text-white transition">
-                            <i class="fa-solid fa-map-location-dot text-indigo-400 text-lg"></i>
-                            Buka di Google Maps
-                        </a>
+        <section id="products">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <h2>Katalog Produk</h2>
+                        <p>Pilihan produk terbaik untuk kebutuhan kerja, belajar, dan hiburan.</p>
+                    </div>
+                    <div class="filter-row">
+                        <select id="brand">
+                            <option value="">Semua Merek</option>
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
-                <!-- ===== GOOGLE MAPS ===== -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Lokasi Toko</h4>
+                <div id="products-grid" class="product-grid"></div>
+                <div id="empty" class="empty-state" style="display:none">Produk tidak ditemukan.</div>
+                <div id="pagination" class="pagination-row"></div>
+            </div>
+        </section>
 
-                    <div class="rounded-2xl overflow-hidden border border-slate-700">
-
-                        <div class="rounded-2xl overflow-hidden border shadow-sm">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d247.82443395730712!2d107.79983202293691!3d-6.369330654093672!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69470029254c6d%3A0x8b2d8f31b3c65028!2sBarokah%20Computer!5e0!3m2!1sid!2sid!4v1769418867952!5m2!1sid!2sid"
-                                width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"></iframe>
-
+        <section id="service">
+            <div class="container">
+                <div class="service-banner">
+                    <div class="service-copy">
+                        <h2>Service Laptop & Komputer Terpercaya</h2>
+                        <p>Perbaikan laptop, komputer, upgrade perangkat, instalasi sistem, dan pengecekan kerusakan
+                            oleh teknisi berpengalaman.</p>
+                        <div class="service-points">
+                            <span>✓ Diagnosa awal</span>
+                            <span>✓ Pengerjaan transparan</span>
+                            <span>✓ Garansi service</span>
                         </div>
+                        @if($contacts->count())
+                            <a class="btn btn-light"
+                                href="https://wa.me/{{ $contacts->first()->phone }}?text={{ urlencode('Halo, saya ingin booking service laptop/komputer.') }}"
+                                target="_blank">Booking Service</a>
+                        @endif
+                    </div>
+                    <div class="service-photo"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <h2>Kenapa Belanja di {{ $namaToko }}?</h2>
+                        <p>Pelayanan lengkap untuk pembelian maupun perbaikan perangkat.</p>
                     </div>
                 </div>
-
-            </div>
-
-            <!-- ===== COPYRIGHT ===== -->
-            <div class="border-t border-slate-800 mt-12 pt-6 text-center text-sm text-slate-500">
-                © {{ date('Y') }} <span class="text-white font-medium">Barokah Computer</span>. All rights reserved.
-            </div>
-
-        </div>
-    </footer>
-
-
-
-
-    <!-- ================= MODAL ================= -->
-    <div id="modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm
-       md:items-center md:justify-center
-       overflow-y-auto">
-
-        <!-- Modal Container -->
-        <div class="relative bg-white rounded-3xl w-full md:max-w-lg
-        mx-auto my-6 md:my-0
-        h-[90vh] flex flex-col shadow-xl overflow-hidden">
-
-            <!-- CLOSE -->
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-            <div class="bg-white rounded-t-3xl overflow-hidden shrink-0">
-
-
-                <div class="swiper modalMainSwiper h-64 md:h-72 bg-white">
-                    <div id="m-main-swiper" class="swiper-wrapper"></div>
-                </div>
-
-                <div class="swiper modalThumbSwiper h-24 px-3 py-3 bg-white shrink-0">
-
-                    <div id="m-thumb-swiper" class="swiper-wrapper"></div>
-                </div>
-
-            </div>
-
-            <div class="flex-1 overflow-y-auto">
-
-                <div class="p-6 space-y-4">
-
-                    <!-- INFO PRODUK -->
-                    <div class="space-y-2">
-                        <h2 id="m-name" class="text-xl font-bold text-slate-800"></h2>
-
-                        <p id="m-code" class="text-sm text-slate-500"></p>
-
-                        <div class="flex gap-2">
-                            <span id="m-category"
-                                class="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-600 font-semibold">
-                            </span>
-                            <span id="m-condition"
-                                class="px-3 py-1 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">
-                            </span>
-                        </div>
+                <div class="why-grid">
+                    <div class="why-card">
+                        <div class="why-icon"><i class="fa-solid fa-store"></i></div>
+                        <h3>Toko Terpercaya</h3>
+                        <p>Pelayanan langsung, jelas, dan berorientasi pada kebutuhan pelanggan.</p>
                     </div>
-
-                    <!-- DESKRIPSI -->
-                    <div id="m-desc" class="text-sm text-slate-600 leading-relaxed border-t pt-3">
+                    <div class="why-card">
+                        <div class="why-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                        <h3>Harga Kompetitif</h3>
+                        <p>Harga terbaik dengan pilihan produk sesuai kebutuhan dan anggaran.</p>
                     </div>
-
+                    <div class="why-card">
+                        <div class="why-icon"><i class="fa-solid fa-users"></i></div>
+                        <h3>Pilihan Lengkap</h3>
+                        <p>Laptop, aksesoris, komponen, perangkat elektronik, dan jasa service.</p>
+                    </div>
+                    <div class="why-card">
+                        <div class="why-icon"><i class="fa-solid fa-comments"></i></div>
+                        <h3>Respons Cepat</h3>
+                        <p>Konsultasi pembelian dan service dengan respons yang cepat.</p>
+                    </div>
                 </div>
-                <div class="border-t bg-white px-6 py-4 sticky bottom-0 rounded-b-xl">
+            </div>
+        </section>
 
-                    <div class="flex items-center justify-between gap-4">
-                        <!-- HARGA -->
+        @if($brands->count())
+            <section id="brands">
+                <div class="container">
+                    <div class="section-head">
                         <div>
-                            <p class="text-xs text-slate-400">Harga</p>
-                            <p id="m-price" class="text-2xl font-bold text-indigo-600"></p>
-                        </div>
-
-                        <!-- WHATSAPP BUTTONS -->
-                        <div id="wa-buttons" class="flex flex-col gap-2 min-w-[160px]">
+                            <h2>Brand Pilihan</h2>
+                            <p>Produk dari berbagai merek populer dan terpercaya.</p>
                         </div>
                     </div>
-
+                    <div class="brands">
+                        @foreach($brands as $brand)
+                            <div class="brand-chip">{{ $brand->name }}</div>
+                        @endforeach
+                    </div>
                 </div>
+            </section>
+        @endif
 
-
+        <section id="testimonials">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <h2>Testimoni Pelanggan</h2>
+                        <p>Contoh testimoni yang dapat diganti dengan ulasan asli pelanggan.</p>
+                    </div>
+                </div>
+                <div class="testimonial-grid">
+                    <div class="testimonial">
+                        <p>"Pelayanannya ramah, penjelasan produknya jelas, dan laptop sesuai kebutuhan saya."</p>
+                        <div class="person">
+                            <div class="avatar">RP</div>
+                            <div><strong>Rizky Pratama</strong><span>Pelanggan laptop</span></div>
+                        </div>
+                    </div>
+                    <div class="testimonial">
+                        <p>"Service cepat dan transparan. Kerusakan dijelaskan sebelum mulai dikerjakan."</p>
+                        <div class="person">
+                            <div class="avatar">SN</div>
+                            <div><strong>Siti Nurhaliza</strong><span>Pelanggan service</span></div>
+                        </div>
+                    </div>
+                    <div class="testimonial">
+                        <p>"Pilihan aksesoris cukup lengkap dan harganya masih masuk akal."</p>
+                        <div class="person">
+                            <div class="avatar">DK</div>
+                            <div><strong>Dedi Kurniawan</strong><span>Pelanggan aksesoris</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
 
+        <section id="contact">
+            <div class="container">
+                <div class="contact-bar">
+                    <div class="contact-item">
+                        <div><i class="fa-solid fa-location-dot"></i></div>
+                        <div><strong>Lokasi Toko</strong><span>{{ $alamat }}</span></div>
+                    </div>
+                    <div class="contact-item">
+                        <div><i class="fa-solid fa-clock"></i></div>
+                        <div><strong>Jam Operasional</strong><span>{{ $jamBuka }}</span></div>
+                    </div>
+                    <div class="contact-item">
+                        <div><i class="fa-brands fa-whatsapp"></i></div>
+                        <div><strong>WhatsApp</strong><span>
+                                @foreach($contacts as $contact)
+                                    {{ $contact->label }}@if(!$loop->last), @endif
+                                @endforeach
+                            </span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+@endsection
 
-    <!-- Select2 JS -->
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+@push('scripts')
     <script>
         $(document).ready(function () {
-            $('#category').select2({
-                placeholder: "Semua Kategori",
-                allowClear: true,
-            });
+            $('#brand').select2({ placeholder: "Semua Merek", allowClear: true });
 
-            $('#brand').select2({
-                placeholder: "Semua Merek",
-                allowClear: true,
-            });
-
-            $('#category, #brand').on('change', function () {
+            $('#brand').on('change', function () {
                 currentPage = 1;
                 loadProducts();
             });
 
-            $('#search').on('input', function () {
-                currentPage = 1;
-                debounceLoad();
-            });
+            const globalSearch = document.getElementById('global-search');
+            if (globalSearch && globalSearch.value) {
+                searchEl.value = globalSearch.value;
+            }
 
             loadProducts();
         });
+
         let timeout = null;
         let currentPage = 1;
-        const searchEl = document.getElementById('search');
-        const categoryEl = document.getElementById('category');
+        let activeCategory = '';
+        const searchEl = { value: (new URLSearchParams(window.location.search)).get('search') || '' };
         const brandEl = document.getElementById('brand');
-        const container = document.getElementById('products');
+        const container = document.getElementById('products-grid');
         const emptyEl = document.getElementById('empty');
 
-        function debounceLoad() {
-            clearTimeout(timeout);
-            timeout = setTimeout(loadProducts, 300);
+        function filterByCategory(id) {
+            activeCategory = id;
+            currentPage = 1;
+            loadProducts();
+            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
         }
 
         async function loadProducts() {
             container.innerHTML = skeleton();
-            emptyEl.classList.add('hidden');
+            emptyEl.style.display = 'none';
 
             const params = new URLSearchParams({
                 search: searchEl.value,
-                category: categoryEl.value,
+                category: activeCategory,
                 brand: brandEl.value,
                 page: currentPage
             });
@@ -393,7 +989,7 @@
             container.innerHTML = '';
 
             if (!resData.data.length) {
-                emptyEl.classList.remove('hidden');
+                emptyEl.style.display = 'block';
                 document.getElementById('pagination').innerHTML = '';
                 return;
             }
@@ -401,184 +997,60 @@
             resData.data.forEach(p => container.innerHTML += card(p));
             renderPagination(resData.meta);
         }
+
         function renderPagination(meta) {
             const pag = document.getElementById('pagination');
             pag.innerHTML = '';
-
             if (meta.last_page <= 1) return;
 
-            // Prev
             pag.innerHTML += `
         <button ${meta.current_page === 1 ? 'disabled' : ''}
             onclick="goPage(${meta.current_page - 1})"
-            class="px-4 py-2 rounded-lg text-sm font-medium
-            ${meta.current_page === 1
-                    ? 'text-gray-400'
-                    : 'bg-white border hover:bg-indigo-50'}">
+            class="btn-light" style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;${meta.current_page === 1 ? 'color:#ccc;' : ''}">
             ‹
-        </button>
-    `;
+        </button>`;
 
-            // Numbers
             for (let i = 1; i <= meta.last_page; i++) {
                 pag.innerHTML += `
             <button onclick="goPage(${i})"
-                class="px-4 py-2 rounded-lg text-sm font-semibold transition
-                ${i === meta.current_page
-                        ? 'bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600 text-white shadow'
-                        : 'bg-white border hover:bg-indigo-50'}">
+                style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);cursor:pointer;font-weight:700;
+                ${i === meta.current_page ? 'background:var(--primary);color:#fff;border-color:var(--primary);' : 'background:#fff;'}">
                 ${i}
-            </button>
-        `;
+            </button>`;
             }
 
-            // Next
             pag.innerHTML += `
         <button ${meta.current_page === meta.last_page ? 'disabled' : ''}
             onclick="goPage(${meta.current_page + 1})"
-            class="px-4 py-2 rounded-lg text-sm font-medium
-            ${meta.current_page === meta.last_page
-                    ? 'text-gray-400'
-                    : 'bg-white border hover:bg-indigo-50'}">
+            style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;${meta.current_page === meta.last_page ? 'color:#ccc;' : ''}">
             ›
-        </button>
-    `;
+        </button>`;
         }
 
         function goPage(page) {
             currentPage = page;
             loadProducts();
+            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
         }
-
 
         function card(p) {
             const imageHtml = p.image
-                ? `<img src="/storage/${p.image}" class="w-full h-full object-cover">`
-                : `<i class="fa-solid fa-image text-slate-300 text-4xl"></i>`;
+                ? `<img src="/storage/${p.image}" alt="${p.name}">`
+                : `<i class="fa-solid fa-image" style="font-size:36px;color:#CBD5E1;"></i>`;
             return `
-            <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-                 <div class="h-32 bg-gray-100 flex items-center justify-center">
-            ${imageHtml}
-        </div>
-
-                <div class="p-3">
-                    <h3 class="text-sm font-semibold line-clamp-2">${p.name}</h3>
-                    <p class="text-xs text-gray-500 mt-1">Kode: ${p.code}</p>
-
-                    <div class="mt-2 text-sm font-bold text-indigo-600">
-                        ${formatPrice(p.price)}
-                    </div>
-
-                    <button onclick='openModal(${JSON.stringify(p)})'
-                        class="mt-3 w-full text-xs py-2 rounded-lg bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-600 text-white hover:bg-indigo-700">
-                        <i class="fa-solid fa-eye mr-1"></i>Lihat Detail
-                    </button>
+            <article class="product-card">
+                <a href="/produk/${p.id}" style="display:block;">
+                    <div class="product-image">${imageHtml}</div>
+                    <h3>${p.name}</h3>
+                    <div class="meta"><span>Kode: ${p.code}</span></div>
+                </a>
+                <div class="price">
+                    <strong>${formatPrice(p.price)}</strong>
+                    <a href="/produk/${p.id}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Lihat detail">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
                 </div>
-            </div>`;
-        }
-
-        function openModal(p) {
-            document.getElementById('m-name').innerText = p.name;
-            document.getElementById('m-code').innerText = `Kode Produk: ${p.code}`;
-            document.getElementById('m-category').innerText = p.category;
-            document.getElementById('m-condition').innerText = p.condition === 'used' ? 'Bekas' : 'Baru';
-
-            document.getElementById('m-desc').innerHTML =
-                p.description
-                    ? p.description
-                    : `<span class="italic text-slate-400">Deskripsi produk belum tersedia.</span>`;
-
-            document.getElementById('m-price').innerText = formatPrice(p.price);
-
-            /* ================= SWIPER IMAGE (MAIN + THUMB) ================= */
-            const mainWrapper = document.getElementById('m-main-swiper');
-            const thumbWrapper = document.getElementById('m-thumb-swiper');
-
-            mainWrapper.innerHTML = '';
-            thumbWrapper.innerHTML = '';
-
-            // FOTO UTAMA (product.image)
-            if (p.image) {
-                mainWrapper.innerHTML += `
-        <div class="swiper-slide flex items-center justify-center bg-white">
-            <img src="/storage/${p.image}" class="max-h-full w-auto object-contain">
-        </div>
-    `;
-
-                thumbWrapper.innerHTML += `
-        <div class="swiper-slide">
-            <img src="/storage/${p.image}" class="w-full h-full object-cover">
-        </div>
-    `;
-            }
-
-            // FOTO TAMBAHAN (product.images)
-            if (p.images && p.images.length) {
-                p.images.forEach(img => {
-                    mainWrapper.innerHTML += `
-            <div class="swiper-slide flex items-center justify-center bg-white">
-                <img src="/storage/${img.image}" class="max-h-full w-auto object-contain">
-            </div>
-        `;
-
-                    thumbWrapper.innerHTML += `
-            <div class="swiper-slide">
-                <img src="/storage/${img.image}" class="w-full h-full object-cover">
-            </div>
-        `;
-                });
-            }
-
-            // DESTROY SWIPER LAMA
-            if (window.thumbSwiper) window.thumbSwiper.destroy(true, true);
-            if (window.mainSwiper) window.mainSwiper.destroy(true, true);
-
-            // INIT THUMB
-            window.thumbSwiper = new Swiper('.modalThumbSwiper', {
-                spaceBetween: 8,
-                slidesPerView: 'auto',
-                freeMode: true,
-                watchSlidesProgress: true,
-            });
-
-            // INIT MAIN
-            window.mainSwiper = new Swiper('.modalMainSwiper', {
-                spaceBetween: 10,
-                thumbs: {
-                    swiper: window.thumbSwiper,
-                },
-            });
-
-            /* ================= WHATSAPP ================= */
-            const contacts = @json($contacts);
-            const waContainer = document.getElementById('wa-buttons');
-            waContainer.innerHTML = '';
-
-            contacts.forEach(c => {
-                const text = encodeURIComponent(
-                    `${c.whatsapp_text}\n\nProduk: ${p.name}\nHarga: ${formatPrice(p.price)}`
-                );
-
-                waContainer.innerHTML += `
-            <a href="https://wa.me/${c.phone}?text=${text}"
-               target="_blank"
-               class="flex items-center justify-center gap-2
-                      bg-green-500 hover:bg-green-600
-                      text-white px-4 py-2 rounded-lg
-                      text-sm font-semibold shadow transition">
-                <i class="fa-brands fa-whatsapp"></i>
-                ${c.label}
-            </a>
-        `;
-            });
-
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal').classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.getElementById('modal').classList.remove('flex');
+            </article>`;
         }
 
         function formatPrice(v) {
@@ -590,16 +1062,8 @@
             }).format(v);
         }
 
-
         function skeleton() {
-            return Array(10).fill(`
-                <div class="animate-pulse bg-white rounded-xl h-56"></div>
-            `).join('');
+            return Array(8).fill(`<div class="skeleton"></div>`).join('');
         }
-
-        loadProducts();
     </script>
-
-</body>
-
-</html>
+@endpush

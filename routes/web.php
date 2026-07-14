@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CatalogController::class, 'index']);
 Route::get('/data/catalog', [CatalogController::class, 'data'])->name('catalog.data');
+Route::get('/produk/{id}', [CatalogController::class, 'show'])->name('catalog.show');
 
 Auth::routes();
 

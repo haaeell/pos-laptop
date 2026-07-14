@@ -63,4 +63,28 @@ class CatalogController extends Controller
             ]
         ]);
     }
+
+    public function show($id)
+    {
+        $product = Product::with(['category', 'brand', 'images'])
+            ->where('status', 'available')
+            ->where('is_active', true)
+            ->findOrFail($id);
+
+        $related = Product::with(['category', 'brand'])
+            ->where('status', 'available')
+            ->where('is_active', true)
+            ->where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->latest()
+            ->take(4)
+            ->get();
+
+        return view('catalog.show', [
+            'product'    => $product,
+            'related'    => $related,
+            'contacts'   => Contact::where('is_active', true)->get(),
+            'settings'   => Setting::pluck('value', 'key'),
+        ]);
+    }
 }
