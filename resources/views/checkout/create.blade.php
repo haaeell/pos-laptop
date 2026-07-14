@@ -12,6 +12,10 @@
             }
         }
 
+        #waFloat {
+            display: none !important;
+        }
+
         .checkout-section {
             padding: 24px 0 170px;
         }
