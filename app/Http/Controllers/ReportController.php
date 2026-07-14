@@ -6,6 +6,7 @@ use App\Exports\SalesExport;
 use App\Models\Expense;
 use App\Models\Modal;
 use App\Models\ModalCicilan;
+use App\Models\Order;
 use App\Models\Payroll;
 use App\Models\Product;
 use App\Models\Sale;
@@ -13,6 +14,7 @@ use App\Models\SaleBonus;
 use App\Models\Service;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -35,19 +37,27 @@ class ReportController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $metrics = $this->getMetrics($from, $to, $sales);
+        $onlineOrders = $this->onlineOrders($from, $to);
+        $transactions = $this->transactionRows($sales, $onlineOrders)->sortByDesc('date')->values();
+        $metrics = $this->getMetrics($from, $to, $sales, $onlineOrders);
+        $chartData = $this->chartData($from, $to, $transactions, $metrics);
 
-        return view('reports.index', array_merge(compact('sales', 'from', 'to'), $metrics));
+        return view('reports.index', array_merge(compact('sales', 'onlineOrders', 'transactions', 'chartData', 'from', 'to'), $metrics));
     }
-    private function getMetrics(Carbon $from, Carbon $to, $sales): array
-    {
-        $feeSales   = $this->calcFeeSales($from, $to, $sales);
-        $totalSales = $sales->sum('grand_total') - $feeSales;
 
-        $totalDiterima = $sales->sum('paid_amount') - $feeSales;
+    private function getMetrics(Carbon $from, Carbon $to, $sales, $onlineOrders = null): array
+    {
+        $onlineOrders ??= collect();
+        $feeSales   = $this->calcFeeSales($from, $to, $sales);
+        $totalOnlineSales = $onlineOrders->sum('grand_total');
+        $totalOnlineProfit = $this->onlineProfit($onlineOrders);
+        $totalOnlineShipping = $onlineOrders->sum('shipping_cost');
+        $totalSales = ($sales->sum('grand_total') - $feeSales) + $totalOnlineSales;
+
+        $totalDiterima = ($sales->sum('paid_amount') - $feeSales) + $totalOnlineSales;
         $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
 
-        $jumlahLunas    = $sales->where('payment_status', 'paid')->count();
+        $jumlahLunas    = $sales->where('payment_status', 'paid')->count() + $onlineOrders->count();
         $jumlahSebagian = $sales->where('payment_status', 'partial')->count();
         $jumlahHutang   = $sales->where('payment_status', 'unpaid')->count();
 
@@ -62,8 +72,12 @@ class ReportController extends Controller
             'jumlahLunas'          => $jumlahLunas,
             'jumlahSebagian'       => $jumlahSebagian,
             'jumlahHutang'         => $jumlahHutang,
+            'jumlahOnline'         => $onlineOrders->count(),
+            'totalOnlineSales'     => $totalOnlineSales,
+            'totalOnlineProfit'    => $totalOnlineProfit,
+            'totalOnlineShipping'  => $totalOnlineShipping,
             'totalFeeSales'        => $sales->sum('fee_sales'),
-            'totalProfit'          => $sales->sum('benefit'),
+            'totalProfit'          => $sales->sum('benefit') + $totalOnlineProfit,
             'bonusLoss'            => SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit'),
             'totalExpenses'        => Expense::whereBetween('entry_date', [$from, $to])->sum('amount'),
             'totalAsset'           => Product::where('status', 'available')->selectRaw('SUM(purchase_price * GREATEST(stock, 1)) as total')->value('total') ?? 0,
@@ -77,6 +91,94 @@ class ReportController extends Controller
                 ->value('total') ?? 0,
             'totalServices'        => $this->serviceSum($from, $to, 'total_cost'),
             'profitService'        => $sparePartCost - $sparePartHpp + $storeFee,
+        ];
+    }
+
+    private function onlineOrders(Carbon $from, Carbon $to)
+    {
+        return Order::with('items')
+            ->whereNotNull('paid_at')
+            ->whereBetween('paid_at', [$from, $to])
+            ->whereIn('status', ['paid', 'processing', 'shipped', 'completed'])
+            ->orderByDesc('paid_at')
+            ->get();
+    }
+
+    private function onlineProfit($onlineOrders): float|int
+    {
+        return $onlineOrders->sum(fn ($order) => $order->items->sum(function ($item) {
+            return ((float) $item->price - (float) $item->purchase_price) * (int) $item->qty;
+        }));
+    }
+
+    private function transactionRows($sales, $onlineOrders)
+    {
+        $offlineRows = $sales->map(fn ($sale) => (object) [
+            'invoice_number' => $sale->invoice_number,
+            'source' => 'Kasir',
+            'date' => $sale->created_at,
+            'grand_total' => (float) $sale->grand_total,
+            'benefit' => (float) $sale->benefit,
+            'payment_method' => $sale->payment_method,
+            'payment_status' => $sale->payment_status,
+            'remaining_amount' => $sale->remaining_amount,
+        ]);
+
+        $onlineRows = $onlineOrders->map(fn ($order) => (object) [
+            'invoice_number' => $order->order_number,
+            'source' => 'Online',
+            'date' => $order->paid_at ?? $order->created_at,
+            'grand_total' => (float) $order->grand_total,
+            'benefit' => (float) $order->items->sum(fn ($item) => ((float) $item->price - (float) $item->purchase_price) * (int) $item->qty),
+            'payment_method' => $order->midtrans_payment_type ?: 'midtrans',
+            'payment_status' => 'paid',
+            'remaining_amount' => 0,
+        ]);
+
+        return $offlineRows->concat($onlineRows);
+    }
+
+    private function chartData(Carbon $from, Carbon $to, $transactions, array $metrics): array
+    {
+        $days = collect(CarbonPeriod::create($from->copy()->startOfDay(), $to->copy()->startOfDay()))
+            ->map(fn (Carbon $date) => $date->format('Y-m-d'));
+
+        $dailyRows = $days->map(function (string $date) use ($transactions) {
+            $rows = $transactions->filter(fn ($row) => $row->date->format('Y-m-d') === $date);
+
+            return [
+                'label' => Carbon::parse($date)->format('d M'),
+                'kasir' => (float) $rows->where('source', 'Kasir')->sum('grand_total'),
+                'online' => (float) $rows->where('source', 'Online')->sum('grand_total'),
+                'profit' => (float) $rows->sum('benefit'),
+            ];
+        });
+
+        return [
+            'daily' => [
+                'labels' => $dailyRows->pluck('label')->values(),
+                'kasir' => $dailyRows->pluck('kasir')->values(),
+                'online' => $dailyRows->pluck('online')->values(),
+                'profit' => $dailyRows->pluck('profit')->values(),
+            ],
+            'sources' => [
+                'labels' => ['Kasir', 'Online'],
+                'values' => [
+                    (float) $transactions->where('source', 'Kasir')->sum('grand_total'),
+                    (float) $transactions->where('source', 'Online')->sum('grand_total'),
+                ],
+            ],
+            'cashflow' => [
+                'labels' => ['Kas Diterima', 'Services', 'Modal', 'Pengeluaran', 'Cicilan', 'Gaji'],
+                'values' => [
+                    (float) $metrics['totalDiterima'],
+                    (float) $metrics['totalServices'],
+                    (float) $metrics['totalPenambahanModal'],
+                    -1 * (float) $metrics['totalExpenses'],
+                    -1 * (float) $metrics['totalCicilan'],
+                    -1 * (float) $metrics['totalGajiKaryawan'],
+                ],
+            ],
         ];
     }
 
@@ -105,9 +207,11 @@ class ReportController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        $metrics = $this->getMetrics($from, $to, $sales);
+        $onlineOrders = $this->onlineOrders($from, $to);
+        $transactions = $this->transactionRows($sales, $onlineOrders)->sortBy('date')->values();
+        $metrics = $this->getMetrics($from, $to, $sales, $onlineOrders);
 
-        $pdf = Pdf::loadView('reports.pdf', array_merge(compact('sales', 'from', 'to'), $metrics))->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView('reports.pdf', array_merge(compact('sales', 'onlineOrders', 'transactions', 'from', 'to'), $metrics))->setPaper('a4', 'portrait');
 
         return $pdf->stream('laporan-keuangan.pdf');
     }

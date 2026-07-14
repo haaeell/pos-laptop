@@ -97,6 +97,28 @@
                 <div class="absolute bottom-0 left-0 h-1 w-full bg-indigo-500/50"></div>
             </div>
 
+            <!-- Penjualan Online -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Penjualan Online</p>
+                        <h3 class="text-xl font-bold text-blue-600 mt-2">Rp{{ number_format($totalOnlineSales, 0, ',', '.') }}
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            {{ $jumlahOnline }} order &middot; Profit Rp{{ number_format($totalOnlineProfit, 0, ',', '.') }}
+                        </p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Ongkir Rp{{ number_format($totalOnlineShipping, 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-blue-500"></div>
+            </div>
+
             <!-- Pengeluaran -->
             <div
                 class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
@@ -226,6 +248,70 @@
             </div>
         </div>
 
+        {{-- ANALYTICS CHARTS --}}
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Tren Penjualan Harian</h2>
+                        <p class="text-xs text-slate-400 mt-1">Perbandingan omzet kasir, online, dan profit per hari.</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="relative h-[320px]">
+                        <canvas id="dailySalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Sumber Penjualan</h2>
+                        <p class="text-xs text-slate-400 mt-1">Distribusi omzet dari kasir dan toko online.</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="relative h-[260px]">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-4 text-xs">
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <p class="text-slate-400">Kasir</p>
+                            <p class="font-bold text-slate-700 mt-1">Rp{{ number_format($chartData['sources']['values'][0] ?? 0, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="rounded-xl bg-blue-50 p-3">
+                            <p class="text-blue-400">Online</p>
+                            <p class="font-bold text-blue-700 mt-1">Rp{{ number_format($chartData['sources']['values'][1] ?? 0, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Arus Kas Periode</h2>
+                        <p class="text-xs text-slate-400 mt-1">Ringkasan kontribusi pemasukan dan pengurang saldo.</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="relative h-[300px]">
+                        <canvas id="cashflowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- CALCULATION BOX --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
 
@@ -321,6 +407,7 @@
                     <thead class="bg-white text-slate-500 border-b">
                         <tr>
                             <th class="px-6 py-4 font-semibold">Invoice</th>
+                            <th class="px-6 py-4 font-semibold text-center">Sumber</th>
                             <th class="px-6 py-4 font-semibold">Tanggal</th>
                             <th class="px-6 py-4 font-semibold text-right">Total</th>
                             <th class="px-6 py-4 font-semibold text-right">Profit</th>
@@ -329,10 +416,17 @@
                         </tr>
                     </thead>
                     <tbody class=" divide-y divide-slate-100">
-                        @foreach ($sales as $sale)
+                        @foreach ($transactions as $sale)
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="px-6 py-4 font-bold text-indigo-600">#{{ $sale->invoice_number }}</td>
-                                <td class="px-6 py-4 text-slate-600">{{ $sale->created_at->format('d/m/Y H:i') }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase {{ $sale->source === 'Online' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700' }}">
+                                        {{ $sale->source }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-600" data-order="{{ $sale->date->timestamp }}">
+                                    {{ $sale->date->format('d/m/Y H:i') }}
+                                </td>
                                 <td class="px-6 py-4 text-right font-bold">Rp
                                     {{ number_format($sale->grand_total, 0, ',', '.') }}
                                 </td>
@@ -380,11 +474,163 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        const reportChartData = @json($chartData);
+
+        function formatRupiahShort(value) {
+            return 'Rp' + new Intl.NumberFormat('id-ID', {
+                notation: 'compact',
+                maximumFractionDigits: 1,
+            }).format(value || 0);
+        }
+
+        function formatRupiah(value) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value || 0);
+        }
+
+        const sharedChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        color: '#475569',
+                        font: { family: 'Poppins' },
+                    },
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.dataset.label || context.label}: ${formatRupiah(context.parsed.y ?? context.parsed)}`,
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { family: 'Poppins', size: 11 } },
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#e2e8f0' },
+                    ticks: {
+                        color: '#64748b',
+                        font: { family: 'Poppins', size: 11 },
+                        callback: (value) => formatRupiahShort(value),
+                    },
+                },
+            },
+        };
+
+        new Chart(document.getElementById('dailySalesChart'), {
+            type: 'line',
+            data: {
+                labels: reportChartData.daily.labels,
+                datasets: [
+                    {
+                        label: 'Kasir',
+                        data: reportChartData.daily.kasir,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, .08)',
+                        tension: .35,
+                        fill: true,
+                        pointRadius: 3,
+                    },
+                    {
+                        label: 'Online',
+                        data: reportChartData.daily.online,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, .08)',
+                        tension: .35,
+                        fill: true,
+                        pointRadius: 3,
+                    },
+                    {
+                        label: 'Profit',
+                        data: reportChartData.daily.profit,
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, .08)',
+                        tension: .35,
+                        fill: true,
+                        pointRadius: 3,
+                    },
+                ],
+            },
+            options: sharedChartOptions,
+        });
+
+        new Chart(document.getElementById('sourceChart'), {
+            type: 'doughnut',
+            data: {
+                labels: reportChartData.sources.labels,
+                datasets: [{
+                    data: reportChartData.sources.values,
+                    backgroundColor: ['#4f46e5', '#2563eb'],
+                    borderColor: '#ffffff',
+                    borderWidth: 4,
+                    hoverOffset: 6,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '68%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            color: '#475569',
+                            font: { family: 'Poppins' },
+                        },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `${context.label}: ${formatRupiah(context.parsed)}`,
+                        },
+                    },
+                },
+            },
+        });
+
+        new Chart(document.getElementById('cashflowChart'), {
+            type: 'bar',
+            data: {
+                labels: reportChartData.cashflow.labels,
+                datasets: [{
+                    label: 'Nominal',
+                    data: reportChartData.cashflow.values,
+                    backgroundColor: reportChartData.cashflow.values.map((value) => value >= 0 ? '#10b981' : '#ef4444'),
+                    borderRadius: 8,
+                    maxBarThickness: 56,
+                }],
+            },
+            options: {
+                ...sharedChartOptions,
+                plugins: {
+                    ...sharedChartOptions.plugins,
+                    legend: { display: false },
+                },
+                scales: {
+                    ...sharedChartOptions.scales,
+                    y: {
+                        grid: { color: '#e2e8f0' },
+                        ticks: {
+                            color: '#64748b',
+                            font: { family: 'Poppins', size: 11 },
+                            callback: (value) => formatRupiahShort(value),
+                        },
+                    },
+                },
+            },
+        });
+
         $(document).ready(function () {
             $('#datatable').DataTable({
                 "pageLength": 10,
-                "order": [[1, "desc"]],
+                "order": [[2, "desc"]],
                 "language": {
                     "search": "Cari Invoice:",
                     "lengthMenu": "Tampilkan _MENU_ data"

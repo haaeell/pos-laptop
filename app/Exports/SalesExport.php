@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Sale;
 use App\Models\Expense;
+use App\Models\Order;
 use App\Models\SaleBonus;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -24,18 +25,33 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
             ->orderBy('created_at')
             ->get();
 
-        $totalSales    = $sales->sum('grand_total');
-        $totalProfit   = $sales->sum('benefit');
+        $onlineOrders = Order::with('items')
+            ->whereNotNull('paid_at')
+            ->whereBetween('paid_at', [$this->from, $this->to])
+            ->whereIn('status', ['paid', 'processing', 'shipped', 'completed'])
+            ->orderBy('paid_at')
+            ->get();
+
+        $transactions = $this->transactionRows($sales, $onlineOrders)->sortBy('date')->values();
+        $totalOnlineSales = $onlineOrders->sum('grand_total');
+        $totalOnlineProfit = $onlineOrders->sum(fn ($order) => $order->items->sum(fn ($item) => ((float) $item->price - (float) $item->purchase_price) * (int) $item->qty));
+
+        $totalSales    = $sales->sum('grand_total') + $totalOnlineSales;
+        $totalProfit   = $sales->sum('benefit') + $totalOnlineProfit;
         $bonusLoss     = SaleBonus::whereBetween('created_at', [$this->from, $this->to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$this->from, $this->to])->sum('amount');
 
-        $totalDiterima = $sales->sum('paid_amount');
+        $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales;
         $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
 
         return view('reports.excel', compact(
             'sales',
+            'onlineOrders',
+            'transactions',
             'totalSales',
             'totalProfit',
+            'totalOnlineSales',
+            'totalOnlineProfit',
             'bonusLoss',
             'totalExpenses',
             'totalDiterima',
@@ -45,17 +61,45 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
         ));
     }
 
+    private function transactionRows($sales, $onlineOrders)
+    {
+        $offlineRows = $sales->map(fn ($sale) => (object) [
+            'invoice_number' => $sale->invoice_number,
+            'source' => 'Kasir',
+            'date' => $sale->created_at,
+            'grand_total' => (float) $sale->grand_total,
+            'benefit' => (float) $sale->benefit,
+            'payment_method' => $sale->payment_method,
+            'payment_status' => $sale->payment_status,
+            'remaining_amount' => $sale->remaining_amount,
+        ]);
+
+        $onlineRows = $onlineOrders->map(fn ($order) => (object) [
+            'invoice_number' => $order->order_number,
+            'source' => 'Online',
+            'date' => $order->paid_at ?? $order->created_at,
+            'grand_total' => (float) $order->grand_total,
+            'benefit' => (float) $order->items->sum(fn ($item) => ((float) $item->price - (float) $item->purchase_price) * (int) $item->qty),
+            'payment_method' => $order->midtrans_payment_type ?: 'midtrans',
+            'payment_status' => 'paid',
+            'remaining_amount' => 0,
+        ]);
+
+        return $offlineRows->concat($onlineRows);
+    }
+
     public function columnWidths(): array
     {
         return [
             'A' => 6,   // #
             'B' => 20,  // Invoice
-            'C' => 22,  // Tanggal
-            'D' => 18,  // Grand Total
-            'E' => 16,  // Profit
-            'F' => 14,  // Pembayaran
-            'G' => 14,  // Status
-            'H' => 18,  // Sisa Tagihan
+            'C' => 12,  // Sumber
+            'D' => 22,  // Tanggal
+            'E' => 18,  // Grand Total
+            'F' => 16,  // Profit
+            'G' => 14,  // Pembayaran
+            'H' => 14,  // Status
+            'I' => 18,  // Sisa Tagihan
         ];
     }
 

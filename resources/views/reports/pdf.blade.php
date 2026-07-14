@@ -150,7 +150,8 @@
             <tr>
                 <th style="width:5%">#</th>
                 <th style="width:18%">Invoice</th>
-                <th style="width:18%">Tanggal</th>
+                <th style="width:10%">Sumber</th>
+                <th style="width:16%">Tanggal</th>
                 <th style="width:14%" class="text-right">Grand Total</th>
                 <th style="width:14%" class="text-right">Profit</th>
                 <th style="width:10%" class="text-center">Metode</th>
@@ -158,7 +159,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($sales as $i => $sale)
+            @foreach ($transactions as $i => $sale)
                 @php
                     $badgeClass = match ($sale->payment_status) {
                         'paid' => 'badge-paid',
@@ -174,7 +175,8 @@
                 <tr>
                     <td>{{ $i + 1 }}</td>
                     <td>{{ $sale->invoice_number }}</td>
-                    <td>{{ $sale->created_at->format('d M Y H:i') }}</td>
+                    <td><span class="badge">{{ $sale->source }}</span></td>
+                    <td>{{ $sale->date->format('d M Y H:i') }}</td>
                     <td class="text-right">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($sale->benefit, 0, ',', '.') }}</td>
                     <td class="text-center"><span class="badge">{{ $sale->payment_method }}</span></td>
@@ -194,6 +196,10 @@
             <tr>
                 <td class="label">Total Penjualan</td>
                 <td class="value">Rp {{ number_format($totalSales, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td class="label">Penjualan Online</td>
+                <td class="value">Rp {{ number_format($totalOnlineSales, 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <td class="label minus">Piutang / Belum Tertagih</td>
