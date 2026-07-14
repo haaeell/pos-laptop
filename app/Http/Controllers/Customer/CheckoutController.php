@@ -18,6 +18,7 @@ use App\Services\StockReservationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
@@ -287,14 +288,10 @@ class CheckoutController extends Controller
             try {
                 $order->update(['snap_token' => $midtrans->createSnapToken($order)]);
             } catch (\Throwable $e) {
-                report($e);
-                $message = 'Gagal menghubungi Midtrans: ' . $e->getMessage();
-
-                if ($request->wantsJson()) {
-                    return response()->json(['message' => $message, 'redirect' => route('checkout.pay', $order)], 422);
-                }
-
-                return redirect()->route('checkout.pay', $order)->with('error', $message);
+                Log::warning('Midtrans snap token failed after order created', [
+                    'order_number' => $order->order_number,
+                    'message' => $e->getMessage(),
+                ]);
             }
         }
 

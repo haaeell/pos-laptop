@@ -135,7 +135,10 @@
                         <i class="fa-solid fa-credit-card"></i> Bayar Sekarang
                     </button>
                 @else
-                    <p class="auth-alert">Terjadi kendala saat menghubungi Midtrans. Silakan coba lagi nanti.</p>
+                    <p class="auth-alert">
+                        Pesanan sudah dibuat, tetapi token pembayaran Midtrans belum berhasil dibuat. Silakan hubungi
+                        admin toko dan sebutkan nomor pesanan ini.
+                    </p>
                 @endif
             @endif
 
