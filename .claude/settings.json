@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan tinker '--execute= *)",
+      "Bash(node test4.mjs)",
+      "Bash(node test5.mjs)"
+    ]
+  }
+}

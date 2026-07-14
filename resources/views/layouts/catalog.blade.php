@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description"
         content="@yield('meta_description', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' - Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas.')">
     <title>@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' | Laptop, Aksesoris & Service')</title>
@@ -108,9 +109,15 @@
         .header-main {
             display: grid;
             grid-template-columns: 220px 1fr auto;
-            gap: 24px;
+            gap: 16px;
             align-items: center;
             padding: 18px 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .brand {
@@ -150,6 +157,126 @@
         .brand-text span {
             font-size: 11px;
             color: var(--muted);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-action-btn {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: #fff;
+            display: grid;
+            place-items: center;
+            color: var(--text);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .header-action-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            padding: 0 4px;
+        }
+
+        .header-account {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px 8px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: #fff;
+            font-size: 12.5px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .header-account-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .header-account-menu {
+            position: relative;
+        }
+
+        .header-account-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            box-shadow: 0 20px 44px rgba(16, 24, 40, .16);
+            width: 190px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
+            transition: opacity .18s ease, transform .18s ease;
+            z-index: 80;
+        }
+
+        .header-account-dropdown.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .header-account-dropdown a,
+        .header-account-dropdown button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 14px;
+            font-size: 13px;
+            width: 100%;
+            text-align: left;
+            border: 0;
+            background: none;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .header-account-dropdown a:hover,
+        .header-account-dropdown button:hover {
+            background: var(--bg);
+        }
+
+        @media(max-width:640px) {
+            .header-account span.acc-name {
+                display: none;
+            }
         }
 
         .search-bar {
@@ -1012,6 +1139,36 @@
             }
         }
 
+        /* ---- Shared AJAX loading overlay ---- */
+        .app-loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, .72);
+            backdrop-filter: blur(2px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app-loading-overlay.open {
+            display: flex;
+        }
+
+        .app-loading-spinner {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-soft);
+            border-top-color: var(--primary);
+            animation: appLoadingSpin .7s linear infinite;
+        }
+
+        @keyframes appLoadingSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 
     @yield('styles')
@@ -1049,16 +1206,63 @@
                 </div>
             </div>
 
-            <button class="mobile-toggle" id="mobileToggle" aria-label="Buka menu"><i
-                    class="fa-solid fa-bars"></i></button>
+            <div class="header-right">
+                <div class="header-actions">
+                    <a href="{{ route('cart.index') }}" class="header-action-btn" title="Keranjang">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        @auth('customers')
+                            @php $cartCount = \App\Models\CartItem::where('customer_id', Auth::guard('customers')->id())->sum('qty'); @endphp
+                            @if ($cartCount > 0)
+                                <span class="cart-badge">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+                            @endif
+                        @endauth
+                    </a>
+
+                    @auth('customers')
+                        <div class="header-account-menu" id="accountMenu">
+                            <button type="button" class="header-account" id="accountMenuBtn">
+                                <span class="header-account-avatar">{{ strtoupper(substr(Auth::guard('customers')->user()->name, 0, 1)) }}</span>
+                                <span class="acc-name">{{ \Illuminate\Support\Str::before(Auth::guard('customers')->user()->name, ' ') }}</span>
+                                <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                            </button>
+
+                            <div class="header-account-dropdown" id="accountDropdown">
+                                <a href="{{ route('customer.profile.edit') }}">
+                                    <i class="fa-solid fa-user"></i> Profil Saya
+                                </a>
+                                <a href="{{ route('customer.orders.index') }}">
+                                    <i class="fa-solid fa-box"></i> Pesanan Saya
+                                </a>
+                                <a href="{{ route('customer.addresses.index') }}">
+                                    <i class="fa-solid fa-location-dot"></i> Alamat Saya
+                                </a>
+                                <a href="{{ route('customer.favorites.index') }}">
+                                    <i class="fa-solid fa-heart"></i> Favorit Saya
+                                </a>
+                                <form method="POST" action="{{ route('customer.logout') }}">
+                                    @csrf
+                                    <button type="submit"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ route('customer.login') }}" class="header-action-btn" title="Masuk / Daftar">
+                            <i class="fa-solid fa-user"></i>
+                        </a>
+                    @endauth
+                </div>
+
+                <button class="mobile-toggle" id="mobileToggle" aria-label="Buka menu"><i
+                        class="fa-solid fa-bars"></i></button>
+            </div>
         </div>
         <nav class="nav" id="nav">
             <div class="container">
                 <a class="{{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Beranda</a>
-                <a href="{{ url('/#products') }}">Produk</a>
-                <a href="{{ url('/#service') }}">Service</a>
-                <a href="{{ url('/#about') }}">Tentang Kami</a>
-                <a href="{{ url('/#contact') }}">Kontak</a>
+                <a class="{{ request()->is('produk*') ? 'active' : '' }}" href="{{ route('catalog.listing') }}">Produk</a>
+                <a class="{{ request()->is('service') ? 'active' : '' }}" href="{{ route('pages.service') }}">Service</a>
+                <a class="{{ request()->is('artikel') ? 'active' : '' }}" href="{{ route('pages.articles') }}">Artikel</a>
+                <a class="{{ request()->is('tentang-kami') ? 'active' : '' }}" href="{{ route('pages.about') }}">Tentang Kami</a>
             </div>
         </nav>
     </header>
@@ -1067,11 +1271,11 @@
 
     <nav class="bottom-nav" id="bottomNav">
         <div class="bottom-nav-side">
-            <a href="{{ url('/') }}#home" class="bottom-nav-item {{ request()->is('/') ? 'active' : '' }}">
+            <a href="{{ url('/') }}" class="bottom-nav-item {{ request()->is('/') ? 'active' : '' }}">
                 <i class="fa-solid fa-house"></i>
                 <span>Beranda</span>
             </a>
-            <a href="{{ url('/') }}#products" class="bottom-nav-item">
+            <a href="{{ route('catalog.listing') }}" class="bottom-nav-item {{ request()->is('produk*') ? 'active' : '' }}">
                 <i class="fa-solid fa-grip"></i>
                 <span>Kategori</span>
             </a>
@@ -1083,7 +1287,7 @@
         </a>
 
         <div class="bottom-nav-side">
-            <a href="{{ url('/') }}#service" class="bottom-nav-item">
+            <a href="{{ route('pages.service') }}" class="bottom-nav-item {{ request()->is('service') ? 'active' : '' }}">
                 <i class="fa-solid fa-screwdriver-wrench"></i>
                 <span>Service</span>
             </a>
@@ -1096,6 +1300,10 @@
             @endif
         </div>
     </nav>
+
+    <div class="app-loading-overlay" id="appLoadingOverlay">
+        <div class="app-loading-spinner"></div>
+    </div>
 
     <div class="wa-float" id="waFloat">
         <div class="wa-popup" id="waPopup">
@@ -1176,6 +1384,7 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const navEl = document.getElementById('nav');
         const mobileToggleEl = document.getElementById('mobileToggle');
@@ -1215,6 +1424,21 @@
                     globalSearch.focus();
                     globalSearch.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
+            });
+        }
+
+        // ===== Account dropdown =====
+        const accountMenuBtn = document.getElementById('accountMenuBtn');
+        const accountDropdown = document.getElementById('accountDropdown');
+
+        if (accountMenuBtn && accountDropdown) {
+            accountMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                accountDropdown.classList.toggle('open');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#accountMenu')) accountDropdown.classList.remove('open');
             });
         }
 
@@ -1432,6 +1656,24 @@
             searchForm.addEventListener('submit', function () {
                 saveSearchHistory(searchInput.value);
             });
+        }
+
+        @if (session('success'))
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: @json(session('success')), confirmButtonColor: '#2563eb' });
+        @endif
+        @if (session('error'))
+            Swal.fire({ icon: 'error', title: 'Gagal', text: @json(session('error')), confirmButtonColor: '#2563eb' });
+        @endif
+        @if (session('info'))
+            Swal.fire({ icon: 'info', title: 'Info', text: @json(session('info')), confirmButtonColor: '#2563eb' });
+        @endif
+
+        function showLoading() {
+            document.getElementById('appLoadingOverlay').classList.add('open');
+        }
+
+        function hideLoading() {
+            document.getElementById('appLoadingOverlay').classList.remove('open');
         }
     </script>
 

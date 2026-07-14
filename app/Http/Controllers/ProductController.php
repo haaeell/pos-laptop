@@ -65,12 +65,14 @@ class ProductController extends Controller
             'brand_id' => 'nullable|exists:brands,id',
             'purchase_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
+            'strike_price' => 'nullable|numeric|gt:selling_price',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
             'description' => 'nullable',
             'status' => 'required|in:available,sold,bonus',
             'stock' => 'nullable|integer|min:0',
+            'weight' => 'nullable|integer|min:1',
             'is_active' => 'nullable|boolean',
         ], [
             'product_code.required' => 'Kode produk harus diisi',
@@ -83,6 +85,8 @@ class ProductController extends Controller
             'purchase_price.numeric' => 'Harga beli harus berupa angka',
             'selling_price.required' => 'Harga jual harus diisi',
             'selling_price.numeric' => 'Harga jual harus berupa angka',
+            'strike_price.numeric' => 'Harga coret harus berupa angka',
+            'strike_price.gt' => 'Harga coret harus lebih besar dari harga jual',
             'image.image' => 'File harus berupa gambar',
             'image.mimes' => 'Format file harus .jpg, .jpeg, atau .png',
             'image.max' => 'Ukuran file maksimal 2MB',
@@ -97,6 +101,7 @@ class ProductController extends Controller
         $data['stock'] = in_array($data['status'], ['available', 'bonus'])
             ? (int) ($data['stock'] ?? 0)
             : 0;
+        $data['weight'] = $data['weight'] ?? 1000;
         $data['is_active'] = $request->boolean('is_active', true);
 
         if ($request->hasFile('image')) {
@@ -131,12 +136,14 @@ class ProductController extends Controller
             'brand_id' => 'nullable|exists:brands,id',
             'purchase_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
+            'strike_price' => 'nullable|numeric|gt:selling_price',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
             'description' => 'nullable',
             'status' => 'required|in:available,sold,bonus',
             'stock' => 'nullable|integer|min:0',
+            'weight' => 'nullable|integer|min:1',
             'is_active' => 'nullable|boolean',
         ], [
             'name.required' => 'Nama produk harus diisi',
@@ -147,6 +154,8 @@ class ProductController extends Controller
             'purchase_price.numeric' => 'Harga beli harus berupa angka',
             'selling_price.required' => 'Harga jual harus diisi',
             'selling_price.numeric' => 'Harga jual harus berupa angka',
+            'strike_price.numeric' => 'Harga coret harus berupa angka',
+            'strike_price.gt' => 'Harga coret harus lebih besar dari harga jual',
             'image.image' => 'File harus berupa gambar',
             'image.mimes' => 'Format file harus .jpg, .jpeg, atau .png',
             'image.max' => 'Ukuran file maksimal 2MB',
@@ -214,6 +223,17 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Produk berhasil dihapus');
     }
 
+
+    public function uploadDescriptionImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        $path = $request->file('image')->store('description-images', 'public');
+
+        return response()->json(['url' => asset('storage/' . $path)]);
+    }
 
     public function template()
     {

@@ -182,12 +182,34 @@
             display: grid;
             place-items: center;
             overflow: hidden;
+            position: relative;
         }
 
         .product-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .product-card.out-of-stock {
+            filter: grayscale(1);
+            opacity: .65;
+        }
+
+        .out-of-stock-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-18deg);
+            border: 2.5px solid #98A2B3;
+            color: #667085;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 4px 16px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, .75);
         }
 
         .product-card h3 {
@@ -941,6 +963,8 @@
 
 @push('scripts')
     <script>
+        const isCustomerAuthed = @json(Auth::guard('customers')->check());
+
         $(document).ready(function () {
             $('#brand').select2({ placeholder: "Semua Merek", allowClear: true });
 
@@ -1034,24 +1058,74 @@
         }
 
         function card(p) {
+            const outOfStock = Number(p.stock) <= 0;
+
             const imageHtml = p.image
                 ? `<img src="/storage/${p.image}" alt="${p.name}">`
                 : `<i class="fa-solid fa-image" style="font-size:36px;color:#CBD5E1;"></i>`;
+
+            const cartBtn = outOfStock
+                ? `<button type="button" class="detail-btn" disabled style="display:flex;align-items:center;justify-content:center;opacity:.5;cursor:not-allowed;" aria-label="Stok habis"><i class="fa-solid fa-cart-plus"></i></button>`
+                : (isCustomerAuthed
+                    ? `<button type="button" class="detail-btn add-cart-btn" data-product-id="${p.id}" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></button>`
+                    : `<a href="/akun/login?redirect=${encodeURIComponent('/produk/' + p.id)}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></a>`);
+
+            const hasDiscount = p.strike_price && Number(p.strike_price) > Number(p.price);
+            const strikeHtml = hasDiscount
+                ? `<span style="text-decoration:line-through;color:#98A2B3;font-size:11.5px;font-weight:500;display:block;">${formatPrice(p.strike_price)}</span>`
+                : '';
+
             return `
-            <article class="product-card">
+            <article class="product-card ${outOfStock ? 'out-of-stock' : ''}">
                 <a href="/produk/${p.id}" style="display:block;">
-                    <div class="product-image">${imageHtml}</div>
+                    <div class="product-image">
+                        ${imageHtml}
+                        ${outOfStock ? '<span class="out-of-stock-badge">Habis</span>' : ''}
+                    </div>
                     <h3>${p.name}</h3>
                     <div class="meta"><span>Kode: ${p.code}</span></div>
                 </a>
                 <div class="price">
-                    <strong>${formatPrice(p.price)}</strong>
-                    <a href="/produk/${p.id}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Lihat detail">
-                        <i class="fa-solid fa-eye"></i>
-                    </a>
+                    <div>
+                        ${strikeHtml}
+                        <strong>${formatPrice(p.price)}</strong>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        ${cartBtn}
+                        <a href="/produk/${p.id}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Lihat detail">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                    </div>
                 </div>
             </article>`;
         }
+
+        $(document).on('click', '.add-cart-btn', function () {
+            const btn = $(this);
+            const productId = btn.data('product-id');
+            const token = document.querySelector('meta[name="csrf-token"]').content;
+
+            btn.prop('disabled', true);
+
+            fetch('/keranjang/tambah', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ product_id: productId, qty: 1 }),
+            })
+                .then(res => {
+                    if (res.ok) {
+                        btn.html('<i class="fa-solid fa-check"></i>');
+                        setTimeout(() => btn.html('<i class="fa-solid fa-cart-plus"></i>').prop('disabled', false), 1200);
+                    } else {
+                        btn.prop('disabled', false);
+                    }
+                })
+                .catch(() => btn.prop('disabled', false));
+        });
 
         function formatPrice(v) {
             return new Intl.NumberFormat('id-ID', {

@@ -23,7 +23,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer(['layouts.catalog', 'welcome', 'catalog.show'], function ($view) {
+        View::composer([
+            'layouts.catalog',
+            'welcome',
+            'catalog.show',
+            'customer.auth.login',
+            'customer.auth.register',
+            'customer.orders.index',
+            'customer.orders.show',
+            'customer.addresses.index',
+            'customer.profile.edit',
+            'customer.favorites.index',
+            'produk.index',
+            'pages.service',
+            'pages.about',
+            'pages.articles',
+            'cart.index',
+            'checkout.create',
+            'checkout.pay',
+        ], function ($view) {
             $settings = Setting::pluck('value', 'key');
 
             $view->with([

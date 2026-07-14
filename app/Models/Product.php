@@ -17,17 +17,20 @@ class Product extends Model
         'condition',
         'purchase_price',
         'selling_price',
+        'strike_price',
         'is_active',
         'status',
         'notes',
         'image',
         'description',
         'stock',
+        'weight',
     ];
 
     protected $casts = [
         'purchase_price' => 'decimal:2',
         'selling_price'  => 'decimal:2',
+        'strike_price'   => 'decimal:2',
         'is_active'      => 'boolean',
     ];
 
@@ -58,11 +61,16 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(Customer::class, 'product_favorites')->withTimestamps();
+    }
+
 
     /* ================= HELPERS ================= */
 
     public function isAvailable(): bool
     {
-        return $this->status === 'available';
+        return $this->status === 'available' && $this->stock > 0;
     }
 }

@@ -92,6 +92,106 @@
                                              focus:ring-2 focus:ring-indigo-500/30">{{ $settings['deskripsi'] ?? '' }}</textarea>
             </div>
 
+            <!-- ================= MIDTRANS ================= -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-1">Integrasi Pembayaran (Midtrans)</h3>
+                <p class="text-xs text-slate-500 mb-3">
+                    Ambil Server Key &amp; Client Key dari dashboard Midtrans Anda (Settings &rarr; Access Keys).
+                    Server Key bersifat rahasia dan tidak pernah dikirim ke browser pelanggan.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-slate-600">Server Key</label>
+                        <input type="password" name="midtrans_server_key"
+                            value="{{ $settings['midtrans_server_key'] ?? '' }}" placeholder="SB-Mid-server-xxxxx"
+                            autocomplete="off"
+                            class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-500/30">
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-slate-600">Client Key</label>
+                        <input type="text" name="midtrans_client_key"
+                            value="{{ $settings['midtrans_client_key'] ?? '' }}" placeholder="SB-Mid-client-xxxxx"
+                            autocomplete="off"
+                            class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-500/30">
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-2 mt-4 text-sm text-slate-700">
+                    <input type="hidden" name="midtrans_is_production" value="0">
+                    <input type="checkbox" name="midtrans_is_production" value="1"
+                        {{ ($settings['midtrans_is_production'] ?? '0') === '1' ? 'checked' : '' }}
+                        class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    Mode Produksi (nonaktifkan untuk mode Sandbox/Testing)
+                </label>
+            </div>
+
+            <!-- ================= BITESHIP ================= -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-1">Integrasi Pengiriman (Biteship)</h3>
+                <p class="text-xs text-slate-500 mb-3">
+                    Ambil API Key dari dashboard Biteship Anda (Pengaturan &rarr; Tambah Kunci API). Kunci dengan awalan
+                    <code>biteship_test.</code> untuk mode uji coba, <code>biteship_live.</code> untuk produksi.
+                </p>
+
+                <div class="mb-4">
+                    <label class="text-xs font-semibold uppercase text-slate-600">API Key</label>
+                    <input type="password" name="biteship_api_key" value="{{ $settings['biteship_api_key'] ?? '' }}"
+                        placeholder="biteship_test.xxxxx" autocomplete="off"
+                        class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-500/30">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-slate-600">Nama Kontak Pengirim</label>
+                        <input type="text" name="biteship_origin_contact_name"
+                            value="{{ $settings['biteship_origin_contact_name'] ?? '' }}"
+                            class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-500/30">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-slate-600">No. HP Kontak Pengirim</label>
+                        <input type="text" name="biteship_origin_contact_phone"
+                            value="{{ $settings['biteship_origin_contact_phone'] ?? '' }}"
+                            class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-500/30">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-xs font-semibold uppercase text-slate-600">Alamat Pengambilan (Pickup)</label>
+                    <textarea name="biteship_origin_address" rows="2" placeholder="Alamat lengkap toko untuk pickup kurir"
+                        class="w-full mt-1 rounded-xl border px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/30">{{ $settings['biteship_origin_address'] ?? '' }}</textarea>
+                </div>
+
+                <div class="mb-2 relative">
+                    <label class="text-xs font-semibold uppercase text-slate-600">Lokasi Asal (untuk Cek Ongkir)</label>
+                    <input type="text" id="biteshipAreaSearch" autocomplete="off"
+                        placeholder="Ketik nama kecamatan/kota, mis. Binong Subang"
+                        class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-500/30">
+                    <input type="hidden" name="biteship_origin_area_id" id="biteshipOriginAreaId"
+                        value="{{ $settings['biteship_origin_area_id'] ?? '' }}">
+                    <div id="biteshipAreaResults"
+                        class="absolute z-10 left-0 right-0 bg-white border rounded-xl shadow-lg mt-1 hidden max-h-56 overflow-y-auto">
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1.5">
+                        Lokasi tersimpan saat ini:
+                        <strong id="biteshipAreaCurrent">{{ $settings['biteship_origin_area_name'] ?? 'Belum diatur' }}</strong>
+                    </p>
+                    <input type="hidden" name="biteship_origin_area_name" id="biteshipOriginAreaName"
+                        value="{{ $settings['biteship_origin_area_name'] ?? '' }}">
+                </div>
+
+                <div class="mt-4 p-3 bg-slate-50 rounded-xl border">
+                    <label class="text-xs font-semibold uppercase text-slate-600">Webhook URL</label>
+                    <p class="text-xs text-slate-500 mb-1.5">
+                        Salin URL ini ke dashboard Biteship (Pengaturan &rarr; Webhook) agar update status pengiriman
+                        masuk otomatis.
+                    </p>
+                    <input type="text" readonly value="{{ $biteshipWebhookUrl }}" onclick="this.select()"
+                        class="w-full px-3 py-2 rounded-lg border bg-white text-xs font-mono text-slate-600">
+                </div>
+            </div>
+
             <!-- ================= ACTION ================= -->
             <div class="pt-4 flex justify-end">
                 <button class="px-6 py-2.5 bg-gradient-to-br from-indigo-600 to-blue-600
@@ -105,3 +205,62 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        let biteshipSearchTimeout = null;
+        const biteshipAreaSearch = document.getElementById('biteshipAreaSearch');
+        const biteshipAreaResults = document.getElementById('biteshipAreaResults');
+
+        biteshipAreaSearch.addEventListener('input', function () {
+            clearTimeout(biteshipSearchTimeout);
+            const q = this.value.trim();
+
+            if (q.length < 3) {
+                biteshipAreaResults.classList.add('hidden');
+                return;
+            }
+
+            biteshipSearchTimeout = setTimeout(async () => {
+                const res = await fetch('{{ route('settings.biteship.search-area') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ q }),
+                });
+                const data = await res.json();
+                const areas = data.areas || [];
+
+                if (!areas.length) {
+                    biteshipAreaResults.innerHTML = '<div class="px-4 py-2.5 text-xs text-slate-400">Tidak ditemukan</div>';
+                } else {
+                    biteshipAreaResults.innerHTML = areas.map(a => `
+                        <div class="px-4 py-2.5 text-xs hover:bg-indigo-50 cursor-pointer border-b last:border-0" data-id="${a.id}" data-name="${a.name}">
+                            ${a.name}
+                        </div>
+                    `).join('');
+                }
+                biteshipAreaResults.classList.remove('hidden');
+
+                biteshipAreaResults.querySelectorAll('[data-id]').forEach(el => {
+                    el.addEventListener('click', function () {
+                        document.getElementById('biteshipOriginAreaId').value = this.dataset.id;
+                        document.getElementById('biteshipOriginAreaName').value = this.dataset.name;
+                        document.getElementById('biteshipAreaCurrent').innerText = this.dataset.name;
+                        biteshipAreaSearch.value = this.dataset.name;
+                        biteshipAreaResults.classList.add('hidden');
+                    });
+                });
+            }, 350);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#biteshipAreaSearch') && !e.target.closest('#biteshipAreaResults')) {
+                biteshipAreaResults.classList.add('hidden');
+            }
+        });
+    </script>
+@endpush

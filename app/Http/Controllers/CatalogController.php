@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CatalogController extends Controller
 {
@@ -18,6 +19,14 @@ class CatalogController extends Controller
             'brands'     => Brand::orderBy('name')->get(),
             'contacts'   => Contact::where('is_active', true)->get(),
             'settings'   => Setting::pluck('value', 'key'),
+        ]);
+    }
+
+    public function listing()
+    {
+        return view('produk.index', [
+            'categories' => Category::orderBy('name')->get(),
+            'brands'     => Brand::orderBy('name')->get(),
         ]);
     }
 
@@ -50,6 +59,8 @@ class CatalogController extends Controller
                 'name'      => $p->name,
                 'code'      => $p->product_code,
                 'price'     => $p->selling_price,
+                'strike_price' => $p->strike_price,
+                'stock'     => $p->stock,
                 'condition' => $p->condition,
                 'category'  => $p->category->name,
                 'brand'     => $p->brand?->name,
@@ -80,11 +91,15 @@ class CatalogController extends Controller
             ->take(4)
             ->get();
 
+        $isFavorited = Auth::guard('customers')->check()
+            && $product->favoritedBy()->where('customer_id', Auth::guard('customers')->id())->exists();
+
         return view('catalog.show', [
             'product'    => $product,
             'related'    => $related,
             'contacts'   => Contact::where('is_active', true)->get(),
             'settings'   => Setting::pluck('value', 'key'),
+            'isFavorited' => $isFavorited,
         ]);
     }
 }

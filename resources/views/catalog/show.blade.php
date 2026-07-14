@@ -195,10 +195,40 @@
             line-height: 1.7;
         }
 
-        .cta-row {
+        .buy-row {
             display: flex;
             gap: 12px;
             margin-top: 26px;
+            flex-wrap: wrap;
+        }
+
+        .btn-buy-now {
+            background: var(--primary);
+            color: #fff;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .btn-buy-now:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-add-cart {
+            background: #fff;
+            border-color: var(--primary);
+            color: var(--primary);
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .btn-add-cart:hover {
+            background: var(--primary-soft);
+        }
+
+        .cta-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
             flex-wrap: wrap;
         }
 
@@ -211,6 +241,25 @@
 
         .btn-wa:hover {
             background: #0e9c5a;
+        }
+
+        .btn-share, .btn-favorite {
+            flex: 1;
+            min-width: 150px;
+            background: #fff;
+            border: 1px solid var(--line);
+            color: var(--text, #1D2939);
+            cursor: pointer;
+        }
+
+        .btn-favorite.active {
+            border-color: #E11D48;
+            color: #E11D48;
+            background: #FEF2F4;
+        }
+
+        .btn-favorite.active i {
+            font-weight: 900;
         }
 
         .trust-row {
@@ -370,6 +419,11 @@
 
                     <h1 class="product-title">{{ $product->name }}</h1>
                     <p class="product-code">Kode Produk: {{ $product->product_code }}</p>
+                    @if ($product->strike_price && $product->strike_price > $product->selling_price)
+                        <div style="text-decoration:line-through;color:#98A2B3;font-size:14px;font-weight:600;">
+                            Rp {{ number_format($product->strike_price, 0, ',', '.') }}
+                        </div>
+                    @endif
                     <div class="product-price">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</div>
 
                     <div class="spec-row">
@@ -384,6 +438,10 @@
                         <span>Kondisi</span>
                         <span>{{ $product->condition === 'used' ? 'Bekas' : 'Baru' }}</span>
                     </div>
+                    <div class="spec-row">
+                        <span>Stok</span>
+                        <span>{{ $product->stock > 0 ? $product->stock . ' unit' : 'Habis' }}</span>
+                    </div>
 
                     <div class="info-divider"></div>
 
@@ -394,18 +452,51 @@
                         </div>
                     </div>
 
-                    <div class="cta-row">
-                        @foreach($contacts as $contact)
-                            @php
-                                $text = urlencode(
-                                    ($contact->whatsapp_text ?? 'Halo, saya tertarik dengan produk berikut:') .
-                                    "\n\nProduk: {$product->name}\nHarga: Rp " . number_format($product->selling_price, 0, ',', '.')
-                                );
-                            @endphp
-                            <a href="https://wa.me/{{ $contact->phone }}?text={{ $text }}" target="_blank" class="btn btn-wa">
-                                <i class="fa-brands fa-whatsapp"></i> {{ $contact->label }}
+                    <div class="buy-row">
+                        @if ($product->stock <= 0)
+                            <button type="button" class="btn btn-buy-now" style="flex:1;min-width:180px;opacity:.5;cursor:not-allowed;" disabled>
+                                <i class="fa-solid fa-ban"></i> Stok Habis
+                            </button>
+                        @elseif (auth('customers')->check())
+                            <a href="{{ route('checkout.create', ['product_id' => $product->id, 'qty' => 1]) }}"
+                                class="btn btn-buy-now">
+                                <i class="fa-solid fa-bolt"></i> Beli Sekarang
                             </a>
-                        @endforeach
+                            <form action="{{ route('cart.add') }}" method="POST" style="flex:1;min-width:180px;">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <button type="submit" class="btn btn-add-cart" style="width:100%;">
+                                    <i class="fa-solid fa-cart-plus"></i> Tambah ke Keranjang
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('customer.login', ['redirect' => url()->current()]) }}"
+                                class="btn btn-buy-now">
+                                <i class="fa-solid fa-bolt"></i> Beli Sekarang
+                            </a>
+                            <a href="{{ route('customer.login', ['redirect' => url()->current()]) }}"
+                                class="btn btn-add-cart">
+                                <i class="fa-solid fa-cart-plus"></i> Tambah ke Keranjang
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="cta-row">
+                        <button type="button" class="btn btn-share" onclick="shareProduct()">
+                            <i class="fa-solid fa-share-nodes"></i> Bagikan
+                        </button>
+
+                        @auth('customers')
+                            <button type="button" class="btn btn-favorite {{ $isFavorited ? 'active' : '' }}" id="favoriteBtn"
+                                data-product-id="{{ $product->id }}" onclick="toggleFavorite(this)">
+                                <i class="fa-solid fa-heart"></i> <span id="favoriteBtnLabel">{{ $isFavorited ? 'Favorit' : 'Favoritkan' }}</span>
+                            </button>
+                        @else
+                            <a href="{{ route('customer.login', ['redirect' => url()->current()]) }}" class="btn btn-favorite">
+                                <i class="fa-solid fa-heart"></i> Favoritkan
+                            </a>
+                        @endauth
+
                         <a href="{{ url('/') }}" class="btn btn-light"><i class="fa-solid fa-list"></i> Lihat Produk Lain</a>
                     </div>
 
@@ -459,5 +550,43 @@
             spaceBetween: 10,
             thumbs: { swiper: thumbSwiper },
         });
+
+        function shareProduct() {
+            const shareData = {
+                title: @json($product->name),
+                text: 'Lihat produk ini: {{ $product->name }}',
+                url: window.location.href,
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    Swal.fire({ icon: 'success', title: 'Link Disalin', text: 'Link produk telah disalin ke clipboard.', timer: 1600, showConfirmButton: false });
+                }).catch(() => {
+                    Swal.fire({ icon: 'info', title: 'Bagikan', text: window.location.href });
+                });
+            }
+        }
+
+        function toggleFavorite(btn) {
+            const productId = btn.dataset.productId;
+            btn.disabled = true;
+
+            fetch(`/akun/produk/${productId}/favorite`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+            })
+                .then(res => res.json())
+                .then(data => {
+                    btn.classList.toggle('active', data.favorited);
+                    document.getElementById('favoriteBtnLabel').innerText = data.favorited ? 'Favorit' : 'Favoritkan';
+                })
+                .finally(() => { btn.disabled = false; });
+        }
     </script>
 @endpush

@@ -455,6 +455,19 @@
                         </div>
                     </div>
 
+                    <!-- HARGA CORET -->
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Harga Coret (opsional)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
+                            <input type="text" id="strikePriceDisplay" oninput="formatRupiahInput(this)"
+                                class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                placeholder="Harga sebelum diskon">
+                            <input type="hidden" name="strike_price" id="strikePrice">
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Harus lebih besar dari Harga Jual. Kosongkan jika tidak ada diskon.</p>
+                    </div>
+
                     <!-- DESKRIPSI -->
                     <div class="col-span-1 sm:col-span-2">
                         <label class="text-xs font-semibold text-slate-600 mb-1 block">Deskripsi Produk</label>
@@ -488,6 +501,18 @@
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
                                 placeholder="0">
                         </div>
+                    </div>
+
+                    <div class="col-span-1 sm:col-span-1">
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Berat (gram)</label>
+                        <div class="relative">
+                            <i
+                                class="fa-solid fa-weight-hanging absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="number" name="weight" id="productWeight" min="1"
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                placeholder="1000" value="1000">
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Dipakai untuk hitung ongkir pengiriman.</p>
                     </div>
 
                     <div class="col-span-1 sm:col-span-2">
@@ -579,17 +604,40 @@
                 @endforeach
                                                                                                                                                                                                                                                                         };
         </script>
-        <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
         <script>
-            let descriptionEditor;
-            ClassicEditor
-                .create(document.querySelector('#productDescription'))
-                .then(editor => {
-                    descriptionEditor = editor;
-                })
-                .catch(error => {
-                    console.error(error);
-                });
+            $('#productDescription').summernote({
+                height: 200,
+                placeholder: 'Tulis deskripsi produk...',
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['codeview']],
+                ],
+                callbacks: {
+                    onImageUpload: function (files) {
+                        const formData = new FormData();
+                        formData.append('image', files[0]);
+                        formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                        fetch('{{ route('products.upload-description-image') }}', {
+                            method: 'POST',
+                            body: formData,
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.url) {
+                                    $('#productDescription').summernote('insertImage', data.url);
+                                }
+                            })
+                            .catch(() => {
+                                alert('Gagal mengunggah gambar.');
+                            });
+                    },
+                },
+            });
 
             let deletedImageIds = [];
             const MAX_PRODUCT_IMAGE_SIZE = 2 * 1024 * 1024;
@@ -762,7 +810,7 @@
                 const form = $('#productForm')
 
                 $('#productForm').on('submit', function () {
-                    $('#productDescription').val(descriptionEditor.getData());
+                    $('#productDescription').val($('#productDescription').summernote('code'));
                 });
 
                 window.openCreateModal = function () {
@@ -771,7 +819,7 @@
                     document.getElementById('productForm').reset();
                     document.getElementById('status').value = 'available';
                     document.getElementById('productIsActive').checked = true;
-                    descriptionEditor.setData('');
+                    $('#productDescription').summernote('code', '');
                     toggleStockInput();
                     modal.removeClass('hidden')
                     form.attr('action', '/products')
@@ -801,6 +849,8 @@
                     $('#brandId').val(data.brand_id)
                     $('#purchasePrice').val(data.purchase_price)
                     $('#sellingPrice').val(data.selling_price)
+                    $('#strikePrice').val(data.strike_price ?? '')
+                    $('#productWeight').val(data.weight || 1000)
                     $('#status').val(data.status)
                     $('#productIsActive').prop('checked', !!data.is_active)
                     if (data.image) {
@@ -813,8 +863,9 @@
 
                     $('#sellingPriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.selling_price));
                     $('#purchasePriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.purchase_price));
+                    $('#strikePriceDisplay').val(data.strike_price ? new Intl.NumberFormat('id-ID').format(data.strike_price) : '');
 
-                    descriptionEditor.setData(data.description ?? '');
+                    $('#productDescription').summernote('code', data.description ?? '');
 
                     if (data.images && data.images.length) {
                         renderExistingGallery(data.images);
