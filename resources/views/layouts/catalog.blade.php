@@ -2056,7 +2056,7 @@
                             </div>
                             <div class="search-dd-info">
                                 <strong>${escapeHtml(p.name)}</strong>
-                                <span>${formatSearchPrice(p.price)}</span>
+                                <span>${formatSearchPrice(p.price)}${p.is_sold ? ' · Sold' : ''}</span>
                             </div>
                         </a>
                     `).join('')}

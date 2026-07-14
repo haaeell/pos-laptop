@@ -35,7 +35,7 @@ class CatalogController extends Controller
     public function data(Request $request)
     {
         $query = Product::with(['category', 'brand', 'images'])
-            ->where('status', 'available')
+            ->whereIn('status', ['available', 'sold'])
             ->where('is_active', true);
 
         if ($request->search) {
@@ -62,12 +62,13 @@ class CatalogController extends Controller
         }
 
         if ($request->boolean('in_stock_only')) {
-            $query->where('stock', '>', 0);
+            $query->where('status', 'available')
+                ->where('stock', '>', 0);
         }
 
-        // Out-of-stock products always sink to the bottom, regardless of
+        // Sold/out-of-stock products always sink to the bottom, regardless of
         // sort order, so shoppers see purchasable products first.
-        $query->orderByRaw('CASE WHEN stock > 0 THEN 0 ELSE 1 END')->latest();
+        $query->orderByRaw("CASE WHEN status = 'available' AND stock > 0 THEN 0 ELSE 1 END")->latest();
 
         $perPageParam = $request->input('per_page', 10);
 
@@ -101,6 +102,8 @@ class CatalogController extends Controller
             'price'     => $p->selling_price,
             'strike_price' => $p->strike_price,
             'stock'     => $p->stock,
+            'status'    => $p->status,
+            'is_sold'   => $p->status === 'sold' || $p->stock <= 0,
             'condition' => $p->condition,
             'category'  => $p->category->name,
             'brand'     => $p->brand?->name,
@@ -113,12 +116,12 @@ class CatalogController extends Controller
     public function show($id)
     {
         $product = Product::with(['category', 'brand', 'images', 'reviews' => fn ($q) => $q->with('customer')->latest()])
-            ->where('status', 'available')
+            ->whereIn('status', ['available', 'sold'])
             ->where('is_active', true)
             ->findOrFail($id);
 
         $related = Product::with(['category', 'brand'])
-            ->where('status', 'available')
+            ->whereIn('status', ['available', 'sold'])
             ->where('is_active', true)
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)

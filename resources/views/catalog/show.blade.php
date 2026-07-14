@@ -476,6 +476,10 @@
 @endsection
 
 @section('content')
+    @php
+        $isSold = $product->status === 'sold' || $product->stock <= 0;
+    @endphp
+
     <div class="container">
         <div class="breadcrumb">
             <a href="{{ url('/') }}">Beranda</a>
@@ -521,7 +525,11 @@
                     <div class="badges">
                         <span class="badge-pill">{{ $product->category->name ?? '-' }}</span>
                         <span class="badge-pill condition">{{ $product->condition === 'used' ? 'Bekas' : 'Baru' }}</span>
-                        <span class="badge-pill stock"><i class="fa-solid fa-circle-check"></i> Tersedia</span>
+                        @if ($isSold)
+                            <span class="badge-pill stock"><i class="fa-solid fa-tag"></i> Sold</span>
+                        @else
+                            <span class="badge-pill stock"><i class="fa-solid fa-circle-check"></i> Tersedia</span>
+                        @endif
                     </div>
 
                     <h1 class="product-title">{{ $product->name }}</h1>
@@ -558,7 +566,7 @@
                     </div>
                     <div class="spec-row">
                         <span>Stok</span>
-                        <span>{{ $product->stock > 0 ? $product->stock . ' unit' : 'Habis' }}</span>
+                        <span>{{ $isSold ? 'Sold' : $product->stock . ' unit' }}</span>
                     </div>
 
                     <div class="info-divider"></div>
@@ -571,9 +579,9 @@
                     </div>
 
                     <div class="buy-row">
-                        @if ($product->stock <= 0)
+                        @if ($isSold)
                             <button type="button" class="btn btn-buy-now" style="flex:1;min-width:180px;opacity:.5;cursor:not-allowed;" disabled>
-                                <i class="fa-solid fa-ban"></i> Stok Habis
+                                <i class="fa-solid fa-ban"></i> Sold
                             </button>
                         @elseif (auth('customers')->check())
                             <a href="{{ route('checkout.create', ['product_id' => $product->id, 'qty' => 1]) }}"

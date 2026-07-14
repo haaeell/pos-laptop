@@ -528,14 +528,14 @@
         }
 
         function card(p) {
-            const outOfStock = Number(p.stock) <= 0;
+            const isSold = Boolean(p.is_sold);
 
             const imageHtml = p.image
                 ? `<img src="/storage/${p.image}" alt="${p.name}" loading="lazy" decoding="async">`
                 : `<i class="fa-solid fa-image" style="font-size:36px;color:#CBD5E1;"></i>`;
 
-            const cartBtn = outOfStock
-                ? `<button type="button" class="detail-btn" disabled style="display:flex;align-items:center;justify-content:center;opacity:.5;cursor:not-allowed;" aria-label="Stok habis"><i class="fa-solid fa-cart-plus"></i></button>`
+            const cartBtn = isSold
+                ? `<button type="button" class="detail-btn" disabled style="display:flex;align-items:center;justify-content:center;opacity:.5;cursor:not-allowed;" aria-label="Sold"><i class="fa-solid fa-cart-plus"></i></button>`
                 : (isCustomerAuthed
                     ? `<button type="button" class="detail-btn add-cart-btn" data-product-id="${p.id}" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></button>`
                     : `<a href="/akun/login?redirect=${encodeURIComponent('/produk/' + p.id)}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></a>`);
@@ -546,11 +546,11 @@
                 : '';
 
             return `
-            <article class="product-card ${outOfStock ? 'out-of-stock' : ''}">
+            <article class="product-card ${isSold ? 'out-of-stock' : ''}">
                 <a href="/produk/${p.id}" style="display:block;">
                     <div class="product-image">
                         ${imageHtml}
-                        ${outOfStock ? '<span class="out-of-stock-badge">Habis</span>' : ''}
+                        ${isSold ? '<span class="out-of-stock-badge">Sold</span>' : ''}
                     </div>
                     <h3>${p.name}</h3>
                     <div class="meta"><span>Kode: ${p.code}</span></div>
