@@ -385,7 +385,7 @@
                     @if ($order->status === 'pending_payment')
                         <div class="order-card" style="display:flex;gap:10px;flex-wrap:wrap;">
                             @if ($order->snap_token)
-                                <a href="{{ route('checkout.pay', $order) }}" class="btn btn-primary" style="flex:1;min-width:160px;">
+                                <a href="{{ route('checkout.pay', $order->order_number) }}" class="btn btn-primary" style="flex:1;min-width:160px;">
                                     Lanjutkan Pembayaran
                                 </a>
                             @endif

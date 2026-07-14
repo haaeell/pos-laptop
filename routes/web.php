@@ -93,7 +93,7 @@ Route::middleware('auth:customers')->group(function () {
         Route::get('/', 'create')->name('create');
         Route::post('/rates', 'rates')->name('rates');
         Route::post('/', 'store')->name('store');
-        Route::get('/{order}/pay', 'pay')->name('pay');
+        Route::get('/{orderNumber}/pay', 'pay')->name('pay');
     });
 });
 

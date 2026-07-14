@@ -97,7 +97,7 @@ class CheckoutController extends Controller
     public function create(Request $request)
     {
         if ($pending = $this->activePendingOrder()) {
-            return redirect()->route('checkout.pay', $pending)
+            return redirect()->route('checkout.pay', $pending->order_number)
                 ->with('info', 'Anda masih memiliki pesanan yang menunggu pembayaran. Selesaikan atau tunggu hingga kedaluwarsa sebelum membuat pesanan baru.');
         }
 
@@ -178,10 +178,10 @@ class CheckoutController extends Controller
             $message = 'Anda masih memiliki pesanan yang menunggu pembayaran. Selesaikan atau tunggu hingga kedaluwarsa sebelum membuat pesanan baru.';
 
             if ($request->wantsJson()) {
-                return response()->json(['message' => $message, 'redirect' => route('checkout.pay', $pending, false)], 422);
+                return response()->json(['message' => $message, 'redirect' => route('checkout.pay', $pending->order_number, false)], 422);
             }
 
-            return redirect()->route('checkout.pay', $pending)->with('info', $message);
+            return redirect()->route('checkout.pay', $pending->order_number)->with('info', $message);
         }
 
         $data = $request->validate([
@@ -296,17 +296,17 @@ class CheckoutController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['redirect' => route('checkout.pay', $order, false)]);
+            return response()->json(['redirect' => route('checkout.pay', $order->order_number, false)]);
         }
 
-        return redirect()->route('checkout.pay', $order);
+        return redirect()->route('checkout.pay', $order->order_number);
     }
 
-    public function pay(Order $order, MidtransService $midtrans)
+    public function pay(string $orderNumber, MidtransService $midtrans)
     {
-        if ($order->customer_id !== $this->customerId()) {
-            abort(404);
-        }
+        $order = Order::where('order_number', $orderNumber)
+            ->where('customer_id', $this->customerId())
+            ->firstOrFail();
 
         $order = $this->orderExpiry->expireIfDue($order);
 
