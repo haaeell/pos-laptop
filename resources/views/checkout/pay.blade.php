@@ -143,7 +143,7 @@
             @endif
 
             <p style="margin-top:20px;">
-                <a href="{{ route('customer.orders.show', $order) }}" style="font-size:13px;color:var(--primary);font-weight:700;">
+                <a href="{{ route('customer.orders.show', $order->order_number) }}" style="font-size:13px;color:var(--primary);font-weight:700;">
                     Lihat Detail Pesanan →
                 </a>
             </p>
@@ -197,10 +197,10 @@
             document.getElementById('payButton').addEventListener('click', function () {
                 snap.pay('{{ $order->snap_token }}', {
                     onSuccess: function () {
-                        window.location.href = '{{ route('customer.orders.show', $order) }}';
+                        window.location.href = '{{ route('customer.orders.show', $order->order_number) }}';
                     },
                     onPending: function () {
-                        window.location.href = '{{ route('customer.orders.show', $order) }}';
+                        window.location.href = '{{ route('customer.orders.show', $order->order_number) }}';
                     },
                     onError: function () {
                         Swal.fire({ icon: 'error', title: 'Pembayaran Gagal', text: 'Silakan coba lagi.' });

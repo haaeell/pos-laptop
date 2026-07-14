@@ -37,12 +37,16 @@ class OrderController extends Controller
         return view('customer.orders.index', ['orders' => $orders, 'activeTab' => $activeTab]);
     }
 
-    public function show(Order $order)
+    protected function customerOrder(string $orderNumber): Order
     {
-        if ($order->customer_id !== Auth::guard('customers')->id()) {
-            abort(404);
-        }
+        return Order::where('order_number', $orderNumber)
+            ->where('customer_id', Auth::guard('customers')->id())
+            ->firstOrFail();
+    }
 
+    public function show(string $orderNumber)
+    {
+        $order = $this->customerOrder($orderNumber);
         $order = $this->orderExpiry->expireIfDue($order);
 
         $order->load(['items.product', 'items.review', 'statusHistories', 'trackingHistories']);
@@ -50,11 +54,9 @@ class OrderController extends Controller
         return view('customer.orders.show', ['order' => $order]);
     }
 
-    public function cancel(Request $request, Order $order)
+    public function cancel(Request $request, string $orderNumber)
     {
-        if ($order->customer_id !== Auth::guard('customers')->id()) {
-            abort(404);
-        }
+        $order = $this->customerOrder($orderNumber);
 
         $data = $request->validate([
             'reason' => 'required|string|max:255',

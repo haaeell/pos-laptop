@@ -390,7 +390,7 @@
                                 </a>
                             @endif
                             <button type="button" onclick="confirmCancelOrder()" class="btn btn-light" style="flex:1;min-width:160px;color:#B42318;"
-                                data-cancel-url="{{ route('customer.orders.cancel', $order) }}">
+                                data-cancel-url="{{ route('customer.orders.cancel', $order->order_number) }}">
                                 Batalkan Pesanan
                             </button>
                         </div>

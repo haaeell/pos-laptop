@@ -95,8 +95,4 @@ class Order extends Model
         return in_array($this->status, ['paid', 'processing', 'shipped', 'completed']);
     }
 
-    public function getRouteKeyName(): string
-    {
-        return 'order_number';
-    }
 }

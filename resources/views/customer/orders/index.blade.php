@@ -153,7 +153,7 @@
                 </div>
             @else
                 @foreach ($orders as $order)
-                    <a href="{{ route('customer.orders.show', $order) }}" class="order-card">
+                    <a href="{{ route('customer.orders.show', $order->order_number) }}" class="order-card">
                         <div>
                             <div class="num">{{ $order->order_number }}</div>
                             <div class="date">{{ $order->created_at->translatedFormat('d M Y H:i') }}</div>
