@@ -7,6 +7,7 @@ use App\Models\Sale;
 use App\Models\Product;
 use App\Models\SaleBonus;
 use App\Models\SaleItem;
+use App\Models\SalePayment;
 use App\Models\SalesPerson;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -15,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SaleController extends Controller
 {
@@ -47,7 +49,7 @@ class SaleController extends Controller
 
     public function detail($id)
     {
-        $sale = Sale::with(['items', 'bonuses', 'salesPerson'])->findOrFail($id);
+        $sale = Sale::with(['items', 'bonuses', 'salesPerson', 'payments.user'])->findOrFail($id);
         return response()->json([
             'invoice' => $sale->invoice_number,
             'date' => Carbon::parse($sale->created_at)
@@ -56,6 +58,22 @@ class SaleController extends Controller
             'grand_total' => $this->rupiah($sale->grand_total),
             'benefit' => $this->rupiah($sale->benefit),
             'fee_sales' => number_format($sale->fee_sales ?? 0, 0, ',', '.'),
+
+            'payment_method' => $sale->payment_method,
+            'payment_status' => $sale->payment_status,
+            'paid_amount' => $this->rupiah($sale->paid_amount),
+            'remaining_amount' => $this->rupiah($sale->remaining_amount),
+            'due_date' => $sale->due_date?->translatedFormat('d M Y'),
+            'collateral_url' => $sale->collateral_url,
+
+            'payments' => $sale->payments->sortByDesc('paid_at')->values()->map(function ($payment) {
+                return [
+                    'date' => $payment->paid_at->translatedFormat('d M Y'),
+                    'amount' => $this->rupiah($payment->amount),
+                    'note' => $payment->note,
+                    'by' => $payment->user?->name,
+                ];
+            }),
 
             'sales_name' => $sale->salesPerson?->name,
             'sales_phone' => $sale->salesPerson?->phone,
@@ -85,7 +103,49 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'payment_method' => 'required|in:cash,transfer,qris',
+            'payment_status' => 'required|in:paid,partial,unpaid',
+            'paid_amount' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->payment_status === 'partial' && (float) $value <= 0) {
+                        $fail('Jumlah bayar wajib diisi untuk transaksi bayar sebagian.');
+                    }
+                },
+            ],
+            'due_date' => 'required_if:payment_status,partial,unpaid|nullable|date|after_or_equal:today',
+            'collateral' => [
+                in_array($request->payment_status, ['partial', 'unpaid']) ? 'required' : 'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,pdf',
+                'max:5120',
+            ],
+        ], [
+            'collateral.required' => 'Upload jaminan (KTP) wajib diisi untuk transaksi bayar sebagian/hutang.',
+            'due_date.required_if' => 'Tanggal jatuh tempo wajib diisi untuk transaksi bayar sebagian/hutang.',
+        ]);
+
         $sale = DB::transaction(function () use ($request) {
+
+            $grandTotal = (float) $request->grand_total;
+
+            if ($request->payment_status === 'partial') {
+                $paidAmount = min(max((float) $request->paid_amount, 0), $grandTotal);
+            } elseif ($request->payment_status === 'unpaid') {
+                $paidAmount = 0;
+            } else {
+                $paidAmount = $grandTotal;
+            }
+
+            $paymentStatus = $paidAmount >= $grandTotal ? 'paid' : ($paidAmount > 0 ? 'partial' : 'unpaid');
+            $dueDate = $paymentStatus !== 'paid' ? $request->due_date : null;
+
+            $collateralPath = $request->hasFile('collateral')
+                ? $request->file('collateral')->store('collateral', 'public')
+                : null;
 
             $sale = Sale::create([
                 'invoice_number' => 'INV-' . date('Ymd') . '-' . str_pad(Sale::count() + 1, 4, '0', STR_PAD_LEFT),
@@ -94,11 +154,24 @@ class SaleController extends Controller
                 'customer_phone' => $request->customer_phone,
                 'sales_person_id' => $request->sales_person_id,
                 'fee_sales' => $request->fee_sales ?? 0,
-                'grand_total' => $request->grand_total,
+                'grand_total' => $grandTotal,
                 'benefit' => $request->benefit,
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'paid',
+                'payment_status' => $paymentStatus,
+                'paid_amount' => $paidAmount,
+                'collateral_path' => $collateralPath,
+                'due_date' => $dueDate,
             ]);
+
+            if ($paidAmount > 0) {
+                SalePayment::create([
+                    'sale_id' => $sale->id,
+                    'user_id' => Auth::id(),
+                    'amount' => $paidAmount,
+                    'paid_at' => now()->toDateString(),
+                    'note' => $paymentStatus === 'paid' ? 'Pembayaran lunas' : 'Pembayaran awal (DP)',
+                ]);
+            }
 
             // ================= SOLD ITEMS =================
             foreach ($request->items as $item) {
@@ -150,6 +223,44 @@ class SaleController extends Controller
             ->with('success_sale_id', $sale->id);
     }
 
+    public function pay(Request $request, $id)
+    {
+        $sale = Sale::findOrFail($id);
+
+        if ($sale->payment_status === 'paid') {
+            return redirect()->back()->with('error', 'Transaksi ini sudah lunas.');
+        }
+
+        $request->validate([
+            'amount' => ['required', 'numeric', 'min:1', 'max:' . $sale->remaining_amount],
+            'paid_at' => 'nullable|date',
+        ], [
+            'amount.max' => 'Jumlah bayar tidak boleh melebihi sisa tagihan (Rp ' . $this->rupiah($sale->remaining_amount) . ').',
+        ]);
+
+        DB::transaction(function () use ($request, $sale) {
+            SalePayment::create([
+                'sale_id' => $sale->id,
+                'user_id' => Auth::id(),
+                'amount' => $request->amount,
+                'paid_at' => $request->paid_at ?? now()->toDateString(),
+                'note' => $request->note,
+            ]);
+
+            $newPaidAmount = $sale->paid_amount + $request->amount;
+
+            $sale->update([
+                'paid_amount' => $newPaidAmount,
+                'payment_status' => $newPaidAmount >= $sale->grand_total ? 'paid' : 'partial',
+                'due_date' => $newPaidAmount >= $sale->grand_total ? null : $sale->due_date,
+            ]);
+        });
+
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Pembayaran cicilan berhasil dicatat.');
+    }
+
     public function destroy($id)
     {
         DB::transaction(function () use ($id) {
@@ -176,8 +287,13 @@ class SaleController extends Controller
                     ->increment('stock', 1);
             }
 
+            if ($sale->collateral_path) {
+                Storage::disk('public')->delete($sale->collateral_path);
+            }
+
             $sale->items()->delete();
             $sale->bonuses()->delete();
+            $sale->payments()->delete();
             $sale->delete();
         });
 

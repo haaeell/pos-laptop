@@ -648,8 +648,9 @@
             }
         }
 
-        @yield('styles')
     </style>
+
+    @yield('styles')
 </head>
 
 <body>

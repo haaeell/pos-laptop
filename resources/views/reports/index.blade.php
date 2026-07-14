@@ -70,7 +70,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="浸13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                     </div>
                 </div>
@@ -157,6 +157,26 @@
                 <div class="absolute bottom-0 left-0 h-1 w-full bg-amber-500"></div>
             </div>
 
+            <!-- Piutang / Belum Tertagih -->
+            <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-rose-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Piutang / Belum
+                            Tertagih</p>
+                        <h3 class="text-xl font-bold text-rose-600 mt-2">Rp{{ number_format($totalPiutang, 0, ',', '.') }}
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            {{ $jumlahSebagian }} sebagian &middot; {{ $jumlahHutang }} hutang
+                        </p>
+                    </div>
+                    <div class="p-2 bg-rose-50 rounded-lg text-rose-600">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-rose-500"></div>
+            </div>
+
             <!-- Jasa Service -->
             <div
                 class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
@@ -217,7 +237,7 @@
 
                 @php
                     $rows = [
-                        ['label' => 'Total Penjualan', 'value' => $totalSales, 'plus' => true],
+                        ['label' => 'Kas Diterima (Penjualan)', 'value' => $totalDiterima, 'plus' => true],
                         ['label' => 'Penambahan Modal', 'value' => $totalPenambahanModal, 'plus' => true],
                         ['label' => 'Total Services', 'value' => $totalServices, 'plus' => true],
                         ['label' => 'Total Pengeluaran', 'value' => $totalExpenses, 'plus' => false],
@@ -225,6 +245,14 @@
                         ['label' => 'Gaji Karyawan', 'value' => $totalGajiKaryawan, 'plus' => false],
                     ];
                 @endphp
+
+                @if ($totalPiutang > 0)
+                    <div class="px-5 py-2.5 bg-rose-50/50 flex items-center gap-2 text-[11px] text-rose-500">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Rp {{ number_format($totalPiutang, 0, ',', '.') }} dari penjualan periode ini belum tertagih
+                        (sebagian/hutang) &mdash; tidak dihitung sebagai kas masuk.
+                    </div>
+                @endif
 
                 @foreach ($rows as $row)
                     <div class="flex items-center justify-between px-5 py-3 {{ $loop->even ? 'bg-slate-50' : '' }}">
@@ -244,7 +272,7 @@
                 <span class="text-sm font-medium text-indigo-200">Jumlah Saldo</span>
                 <span class="text-2xl font-bold text-white">
                     Rp
-                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
+                    {{ number_format($totalDiterima - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
                 </span>
             </div>
 
@@ -297,6 +325,7 @@
                             <th class="px-6 py-4 font-semibold text-right">Total</th>
                             <th class="px-6 py-4 font-semibold text-right">Profit</th>
                             <th class="px-6 py-4 font-semibold text-center">Metode</th>
+                            <th class="px-6 py-4 font-semibold text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody class=" divide-y divide-slate-100">
@@ -316,6 +345,28 @@
                                 <td class="px-6 py-4 text-center">
                                     <span
                                         class="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold uppercase">{{ $sale->payment_method }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @php
+                                        $statusColor = match ($sale->payment_status) {
+                                            'paid' => 'bg-emerald-100 text-emerald-700',
+                                            'partial' => 'bg-amber-100 text-amber-700',
+                                            default => 'bg-rose-100 text-rose-700',
+                                        };
+                                        $statusLabel = match ($sale->payment_status) {
+                                            'paid' => 'Lunas',
+                                            'partial' => 'Sebagian',
+                                            default => 'Hutang',
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase {{ $statusColor }}">
+                                        {{ $statusLabel }}
+                                    </span>
+                                    @if ($sale->payment_status !== 'paid')
+                                        <div class="text-[10px] text-slate-400 normal-case mt-0.5">
+                                            Sisa: Rp {{ number_format($sale->remaining_amount, 0, ',', '.') }}
+                                        </div>
+                                    @endif
                                 </td>
 
                             </tr>

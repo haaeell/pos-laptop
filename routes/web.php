@@ -44,6 +44,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
         Route::get('/create', 'create')->name('sales.create');
         Route::post('/', 'store')->name('sales.store');
         Route::get('/{id}/detail', 'detail');
+        Route::post('/{id}/pay', 'pay')->name('sales.pay');
         Route::get('/{id}/invoice-pdf', 'invoicePdf')->name('sales.invoice.pdf');
         Route::delete('/{id}', 'destroy')->name('sales.destroy');
     });

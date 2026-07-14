@@ -77,6 +77,70 @@
             font-size: 9px;
         }
 
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        .status-paid {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .status-partial {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-unpaid {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .payment-box {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border: 1px dashed #9ca3af;
+            border-radius: 6px;
+            background-color: #fffbeb;
+        }
+
+        .payment-box-title {
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #92400e;
+            margin-bottom: 6px;
+        }
+
+        .payment-row table {
+            width: 100%;
+        }
+
+        .payment-row td {
+            font-size: 10px;
+            padding: 2px 0;
+            border: none;
+        }
+
+        .payment-row .label {
+            color: #6b7280;
+        }
+
+        .payment-row .value {
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .payment-row .value.rose {
+            color: #b91c1c;
+        }
+
         /* ===== INFO SECTION ===== */
         .info-section {
             margin-bottom: 30px;
@@ -224,6 +288,17 @@
         $garansiHari = 14;
         $tanggalTransaksi = $sale->created_at;
         $tanggalGaransi = $tanggalTransaksi->copy()->addDays($garansiHari);
+
+        $statusClass = match ($sale->payment_status) {
+            'paid' => 'status-paid',
+            'partial' => 'status-partial',
+            default => 'status-unpaid',
+        };
+        $statusLabel = match ($sale->payment_status) {
+            'paid' => 'Lunas',
+            'partial' => 'Bayar Sebagian',
+            default => 'Hutang',
+        };
     @endphp
     <div class="container">
         <table class="header-table">
@@ -249,7 +324,8 @@
 
                 <td class="invoice-label">
                     <h2>INVOICE</h2>
-                    <span class="badge">NO: {{ $sale->invoice_number }}</span>
+                    <span class="badge">NO: {{ $sale->invoice_number }}</span><br>
+                    <span class="status-badge {{ $statusClass }}" style="margin-top:6px;">{{ $statusLabel }}</span>
                 </td>
             </tr>
         </table>
@@ -328,7 +404,31 @@
             </table>
         </div>
 
-        <div class="warranty-box">
+        @if($sale->payment_status !== 'paid')
+            <div class="payment-box" style="width: 250px; margin-left: auto; float: right; clear: both;">
+                <div class="payment-box-title">Info Pembayaran &ndash; {{ $statusLabel }}</div>
+                <div class="payment-row">
+                    <table>
+                        <tr>
+                            <td class="label">Sudah Dibayar</td>
+                            <td class="value">Rp {{ number_format($sale->paid_amount) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Sisa Tagihan</td>
+                            <td class="value rose">Rp {{ number_format($sale->remaining_amount) }}</td>
+                        </tr>
+                        @if($sale->due_date)
+                            <tr>
+                                <td class="label">Jatuh Tempo</td>
+                                <td class="value">{{ $sale->due_date->translatedFormat('d M Y') }}</td>
+                            </tr>
+                        @endif
+                    </table>
+                </div>
+            </div>
+        @endif
+
+        <div class="warranty-box" style="clear: both;">
             <div class="warranty-title">Keterangan Garansi</div>
 
             <ul style="margin: 6px 0 0 16px; padding: 0;">

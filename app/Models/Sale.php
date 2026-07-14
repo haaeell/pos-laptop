@@ -17,6 +17,9 @@ class Sale extends Model
         'benefit',
         'payment_method',
         'payment_status',
+        'paid_amount',
+        'collateral_path',
+        'due_date',
         'customer_name',
         'customer_phone',
         'sales_person_id',
@@ -28,7 +31,21 @@ class Sale extends Model
         'grand_total'  => 'decimal:2',
         'benefit'      => 'decimal:2',
         'fee_sales'   => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'due_date'    => 'date',
     ];
+
+    /* ================= ACCESSORS ================= */
+
+    public function getRemainingAmountAttribute()
+    {
+        return max(0, $this->grand_total - $this->paid_amount);
+    }
+
+    public function getCollateralUrlAttribute()
+    {
+        return $this->collateral_path ? asset('storage/' . $this->collateral_path) : null;
+    }
 
     /* ================= RELATIONS ================= */
 
@@ -51,5 +68,10 @@ class Sale extends Model
     public function bonuses()
     {
         return $this->hasMany(SaleBonus::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(SalePayment::class);
     }
 }

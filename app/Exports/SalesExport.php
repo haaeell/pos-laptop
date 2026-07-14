@@ -29,12 +29,17 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
         $bonusLoss     = SaleBonus::whereBetween('created_at', [$this->from, $this->to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$this->from, $this->to])->sum('amount');
 
+        $totalDiterima = $sales->sum('paid_amount');
+        $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
+
         return view('reports.excel', compact(
             'sales',
             'totalSales',
             'totalProfit',
             'bonusLoss',
             'totalExpenses',
+            'totalDiterima',
+            'totalPiutang',
             'from',
             'to'
         ));
@@ -49,6 +54,8 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
             'D' => 18,  // Grand Total
             'E' => 16,  // Profit
             'F' => 14,  // Pembayaran
+            'G' => 14,  // Status
+            'H' => 18,  // Sisa Tagihan
         ];
     }
 

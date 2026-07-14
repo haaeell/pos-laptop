@@ -44,12 +44,24 @@ class ReportController extends Controller
         $feeSales   = $this->calcFeeSales($from, $to, $sales);
         $totalSales = $sales->sum('grand_total') - $feeSales;
 
+        $totalDiterima = $sales->sum('paid_amount') - $feeSales;
+        $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
+
+        $jumlahLunas    = $sales->where('payment_status', 'paid')->count();
+        $jumlahSebagian = $sales->where('payment_status', 'partial')->count();
+        $jumlahHutang   = $sales->where('payment_status', 'unpaid')->count();
+
         $sparePartHpp  = $this->serviceSum($from, $to, 'spare_part_hpp');
         $sparePartCost = $this->serviceSum($from, $to, 'spare_part_cost');
         $storeFee      = $this->serviceSum($from, $to, 'store_fee');
 
         return [
             'totalSales'           => $totalSales,
+            'totalDiterima'        => $totalDiterima,
+            'totalPiutang'         => $totalPiutang,
+            'jumlahLunas'          => $jumlahLunas,
+            'jumlahSebagian'       => $jumlahSebagian,
+            'jumlahHutang'         => $jumlahHutang,
             'totalFeeSales'        => $sales->sum('fee_sales'),
             'totalProfit'          => $sales->sum('benefit'),
             'bonusLoss'            => SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit'),

@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        <form action="{{ route('sales.store') }}" method="POST" id="saleForm">
+        <form action="{{ route('sales.store') }}" method="POST" id="saleForm" enctype="multipart/form-data">
             @csrf
 
             <div class="grid grid-cols-12 gap-6">
@@ -161,6 +161,67 @@
                             </div>
                         </div>
 
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-medium text-slate-600">Status Pembayaran</label>
+
+                            <input type="hidden" name="payment_status" id="paymentStatus" value="paid">
+
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" data-value="paid"
+                                    class="status-card flex flex-col items-center gap-1 px-2 py-2 rounded-xl border
+                                                                                                                               bg-emerald-50 border-emerald-500 ring-2 ring-emerald-200
+                                                                                                                               text-emerald-700 font-semibold shadow-sm transition">
+                                    <i class="fa-solid fa-circle-check text-sm"></i>
+                                    <span class="text-[11px]">Lunas</span>
+                                </button>
+
+                                <button type="button" data-value="partial"
+                                    class="status-card flex flex-col items-center gap-1 px-2 py-2 rounded-xl border
+                                                                                                                               bg-white text-slate-600 transition hover:shadow-sm">
+                                    <i class="fa-solid fa-hand-holding-dollar text-sm"></i>
+                                    <span class="text-[11px]">Sebagian</span>
+                                </button>
+
+                                <button type="button" data-value="unpaid"
+                                    class="status-card flex flex-col items-center gap-1 px-2 py-2 rounded-xl border
+                                                                                                                               bg-white text-slate-600 transition hover:shadow-sm">
+                                    <i class="fa-solid fa-file-invoice text-sm"></i>
+                                    <span class="text-[11px]">Hutang</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="installmentPanel" class="hidden space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                            <div id="paidAmountWrapper" class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">Jumlah Bayar Sekarang</label>
+                                <input type="text" id="paidAmountText" placeholder="0"
+                                    class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-amber-200">
+                                <input type="hidden" name="paid_amount" id="paidAmount" value="0">
+                                <p class="text-[11px] text-slate-500">
+                                    Sisa tagihan: <span class="font-semibold text-amber-700">Rp <span id="remainingText">0</span></span>
+                                </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">Tanggal Jatuh Tempo</label>
+                                <input type="date" name="due_date" id="dueDate"
+                                    class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-amber-200">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-medium text-slate-600">
+                                    Upload Jaminan (KTP / Identitas)
+                                </label>
+                                <input type="file" name="collateral" id="collateralInput" accept="image/*,.pdf"
+                                    class="w-full text-xs rounded-xl border px-3 py-2 file:mr-2 file:rounded-lg file:border-0
+                                           file:bg-amber-600 file:text-white file:px-3 file:py-1.5 file:text-xs">
+                                <p class="text-[11px] text-slate-500">
+                                    <i class="fa-solid fa-circle-info text-amber-500"></i>
+                                    Wajib diisi sebagai jaminan untuk transaksi bayar sebagian/hutang. Format: JPG, PNG, PDF (maks 5MB).
+                                </p>
+                            </div>
+                        </div>
+
                         <div class="space-y-3">
                             <div
                                 class="rounded-xl p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-200">
@@ -270,8 +331,16 @@
                         <span class="font-semibold">Rp <span id="modalGrand">0</span></span>
                     </div>
                     <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>Pembayaran</span>
+                        <span>Metode</span>
                         <span id="modalPayment">Cash</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-500 mt-1">
+                        <span>Status</span>
+                        <span id="modalStatus">Lunas</span>
+                    </div>
+                    <div id="modalDueRow" class="hidden justify-between text-xs text-slate-500 mt-1">
+                        <span>Jatuh Tempo</span>
+                        <span id="modalDueDate">-</span>
                     </div>
                 </div>
 
@@ -297,10 +366,48 @@
             const $modal = $('#confirmModal')
             const isSuperAdmin = {{ Auth::user()->role === 'super_admin' ? 'true' : 'false' }}
 
+            const paymentLabels = {
+                cash: 'Cash',
+                transfer: 'Transfer',
+            }
+
+            const statusLabels = {
+                paid: 'Lunas',
+                partial: 'Bayar Sebagian',
+                unpaid: 'Hutang',
+            }
+
                 $('#submitBtn').on('click', function () {
+                    const method = $('#paymentMethod').val()
+                    const status = $('#paymentStatus').val()
+                    const needsCollateral = status === 'partial' || status === 'unpaid'
+
+                    if (needsCollateral && !$('#collateralInput')[0].files.length) {
+                        showNotification('Upload jaminan (KTP) wajib diisi untuk transaksi bayar sebagian/hutang!', 'error')
+                        return
+                    }
+
+                    if (needsCollateral && !$('#dueDate').val()) {
+                        showNotification('Tanggal jatuh tempo wajib diisi untuk transaksi bayar sebagian/hutang!', 'error')
+                        return
+                    }
+
+                    if (status === 'partial' && cleanNumber($('#paidAmountText').val()) <= 0) {
+                        showNotification('Jumlah bayar sekarang wajib diisi untuk bayar sebagian!', 'error')
+                        return
+                    }
+
                     $('#modalGrand').text($('#grandText').text())
-                    const payment = $('#paymentMethod').val() === 'transfer' ? 'Transfer' : 'Cash'
-                    $('#modalPayment').text(payment)
+                    $('#modalPayment').text(paymentLabels[method] || method)
+                    $('#modalStatus').text(statusLabels[status] || status)
+
+                    if (needsCollateral) {
+                        $('#modalDueDate').text($('#dueDate').val())
+                        $('#modalDueRow').removeClass('hidden').addClass('flex')
+                    } else {
+                        $('#modalDueRow').addClass('hidden').removeClass('flex')
+                    }
+
                     $modal.removeClass('hidden').addClass('flex')
                 })
 
@@ -665,6 +772,10 @@
                 $('#grandText').text(formatRupiah(total))
                 $('#benefit').val(profit)
 
+                const paidAmount = cleanNumber($('#paidAmount').val())
+                const remaining = Math.max(0, total - paidAmount)
+                $('#remainingText').text(formatRupiah(remaining))
+
                 if (isSuperAdmin) {
                     $('#benefitText')
                         .text('Rp ' + formatRupiah(profit))
@@ -682,7 +793,56 @@
                 if ($btn.find('.fa-check').length === 0) {
                     $btn.append('<i class="fa-solid fa-check ml-auto text-xs"></i>')
                 }
-                $('#paymentMethod').val($btn.data('value'))
+                const method = $btn.data('value')
+                $('#paymentMethod').val(method)
+            })
+
+            $(document).on('click', '.status-card', function () {
+                const $btn = $(this)
+                const status = $btn.data('value')
+
+                $('.status-card')
+                    .removeClass('bg-emerald-50 border-emerald-500 ring-2 ring-emerald-200 text-emerald-700 font-semibold shadow-sm')
+                    .removeClass('bg-amber-50 border-amber-500 ring-2 ring-amber-200 text-amber-700 font-semibold shadow-sm')
+
+                if (status === 'paid') {
+                    $btn.addClass('bg-emerald-50 border-emerald-500 ring-2 ring-emerald-200 text-emerald-700 font-semibold shadow-sm')
+                } else {
+                    $btn.addClass('bg-amber-50 border-amber-500 ring-2 ring-amber-200 text-amber-700 font-semibold shadow-sm')
+                }
+
+                $('#paymentStatus').val(status)
+
+                if (status === 'paid') {
+                    $('#installmentPanel').addClass('hidden')
+                    $('#paidAmountText').val('')
+                    $('#paidAmount').val(0)
+                    $('#dueDate').val('')
+                    $('#collateralInput').val('')
+                } else {
+                    $('#installmentPanel').removeClass('hidden')
+
+                    if (status === 'unpaid') {
+                        $('#paidAmountWrapper').addClass('hidden')
+                        $('#paidAmountText').val('')
+                        $('#paidAmount').val(0)
+                    } else {
+                        $('#paidAmountWrapper').removeClass('hidden')
+                    }
+                }
+                calculate()
+            })
+
+            $('#paidAmountText').on('input', function () {
+                let val = cleanNumber($(this).val())
+                const grand = cleanNumber($('#grandTotal').val())
+                if (val >= grand) {
+                    val = grand > 0 ? grand - 1 : 0
+                    showNotification('Untuk bayar sebagian, jumlah bayar harus kurang dari grand total!', 'warning')
+                }
+                $(this).val(formatRupiah(val))
+                $('#paidAmount').val(val)
+                calculate()
             })
 
             $('#feeSalesText').on('input', function () {

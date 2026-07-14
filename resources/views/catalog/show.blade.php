@@ -53,6 +53,7 @@
             border: 1px solid var(--line);
             border-radius: 20px;
             padding: 20px;
+            min-width: 0;
         }
 
         .gallery-main {
