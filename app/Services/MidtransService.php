@@ -9,8 +9,40 @@ use Midtrans\Snap;
 
 class MidtransService
 {
+    protected function configurationIssue(): ?string
+    {
+        $serverKey = Setting::get('midtrans_server_key', '');
+        $clientKey = Setting::get('midtrans_client_key', '');
+        $isProduction = Setting::get('midtrans_is_production', '0') === '1';
+
+        if (!$serverKey || !$clientKey) {
+            return null;
+        }
+
+        $serverUsesSandboxKey = str_starts_with($serverKey, 'SB-Mid-');
+        $clientUsesSandboxKey = str_starts_with($clientKey, 'SB-Mid-');
+
+        if ($serverUsesSandboxKey !== $clientUsesSandboxKey) {
+            return 'Server Key dan Client Key Midtrans tidak satu mode. Pastikan keduanya sama-sama Sandbox atau sama-sama Live/Production.';
+        }
+
+        if ($isProduction && $serverUsesSandboxKey) {
+            return 'Mode Midtrans Production aktif, tapi key yang dipakai masih Sandbox. Matikan Mode Produksi atau ganti ke Live Server Key dan Live Client Key.';
+        }
+
+        if (!$isProduction && !$serverUsesSandboxKey) {
+            return 'Mode Midtrans Sandbox aktif, tapi key yang dipakai terlihat seperti Live/Production. Aktifkan Mode Produksi atau ganti ke Sandbox Server Key dan Sandbox Client Key.';
+        }
+
+        return null;
+    }
+
     protected function configure(): void
     {
+        if ($issue = $this->configurationIssue()) {
+            throw new \RuntimeException($issue);
+        }
+
         $settings = Setting::pluck('value', 'key');
 
         Config::$serverKey = $settings['midtrans_server_key'] ?? '';
