@@ -323,7 +323,7 @@
 
                 @php
                     $rows = [
-                        ['label' => 'Kas Diterima (Penjualan)', 'value' => $totalDiterima, 'plus' => true],
+                        ['label' => 'Total Penjualan', 'value' => $totalSales, 'plus' => true],
                         ['label' => 'Penambahan Modal', 'value' => $totalPenambahanModal, 'plus' => true],
                         ['label' => 'Total Services', 'value' => $totalServices, 'plus' => true],
                         ['label' => 'Total Pengeluaran', 'value' => $totalExpenses, 'plus' => false],
@@ -331,14 +331,6 @@
                         ['label' => 'Gaji Karyawan', 'value' => $totalGajiKaryawan, 'plus' => false],
                     ];
                 @endphp
-
-                @if ($totalPiutang > 0)
-                    <div class="px-5 py-2.5 bg-rose-50/50 flex items-center gap-2 text-[11px] text-rose-500">
-                        <i class="fa-solid fa-circle-info"></i>
-                        Rp {{ number_format($totalPiutang, 0, ',', '.') }} dari penjualan periode ini belum tertagih
-                        (sebagian/hutang) &mdash; tidak dihitung sebagai kas masuk.
-                    </div>
-                @endif
 
                 @foreach ($rows as $row)
                     <div class="flex items-center justify-between px-5 py-3 {{ $loop->even ? 'bg-slate-50' : '' }}">
@@ -358,7 +350,7 @@
                 <span class="text-sm font-medium text-indigo-200">Jumlah Saldo</span>
                 <span class="text-2xl font-bold text-white">
                     Rp
-                    {{ number_format($totalDiterima - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
+                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
                 </span>
             </div>
 

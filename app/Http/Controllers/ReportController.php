@@ -54,7 +54,7 @@ class ReportController extends Controller
         $totalOnlineShipping = $onlineOrders->sum('shipping_cost');
         $totalSales = ($sales->sum('grand_total') - $feeSales) + $totalOnlineSales;
 
-        $totalDiterima = ($sales->sum('paid_amount') - $feeSales) + $totalOnlineSales;
+        $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales;
         $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
 
         $jumlahLunas    = $sales->where('payment_status', 'paid')->count() + $onlineOrders->count();
@@ -76,7 +76,7 @@ class ReportController extends Controller
             'totalOnlineSales'     => $totalOnlineSales,
             'totalOnlineProfit'    => $totalOnlineProfit,
             'totalOnlineShipping'  => $totalOnlineShipping,
-            'totalFeeSales'        => $sales->sum('fee_sales'),
+            'totalFeeSales'        => $feeSales,
             'totalProfit'          => $sales->sum('benefit') + $totalOnlineProfit,
             'bonusLoss'            => SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit'),
             'totalExpenses'        => Expense::whereBetween('entry_date', [$from, $to])->sum('amount'),
@@ -169,9 +169,9 @@ class ReportController extends Controller
                 ],
             ],
             'cashflow' => [
-                'labels' => ['Kas Diterima', 'Services', 'Modal', 'Pengeluaran', 'Cicilan', 'Gaji'],
+                'labels' => ['Total Penjualan', 'Services', 'Modal', 'Pengeluaran', 'Cicilan', 'Gaji'],
                 'values' => [
-                    (float) $metrics['totalDiterima'],
+                    (float) $metrics['totalSales'],
                     (float) $metrics['totalServices'],
                     (float) $metrics['totalPenambahanModal'],
                     -1 * (float) $metrics['totalExpenses'],

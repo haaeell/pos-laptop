@@ -90,9 +90,9 @@
         <td colspan="4"></td>
     </tr>
     <tr>
-        <td colspan="4" style="padding:4px 10px; text-align:right; color:#6b7280;">Kas Diterima (Penjualan)</td>
+        <td colspan="4" style="padding:4px 10px; text-align:right; color:#6b7280;">Total Penjualan</td>
         <td style="padding:4px 10px; text-align:right; font-weight:bold;">Rp
-            {{ number_format($totalDiterima, 0, ',', '.') }}</td>
+            {{ number_format($totalSales, 0, ',', '.') }}</td>
         <td colspan="4"></td>
     </tr>
     <tr>
@@ -104,7 +104,7 @@
     <tr style="background:#eef2ff;">
         <td colspan="4" style="padding:6px 10px; text-align:right; font-weight:bold;">Jumlah Saldo</td>
         <td style="padding:6px 10px; text-align:right; font-weight:bold;">Rp
-            {{ number_format($totalDiterima - $totalExpenses, 0, ',', '.') }}</td>
+            {{ number_format($totalSales - $totalExpenses, 0, ',', '.') }}</td>
         <td colspan="4"></td>
     </tr>
 </table>

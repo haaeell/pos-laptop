@@ -206,8 +206,8 @@
                 <td class="value minus">- Rp {{ number_format($totalPiutang, 0, ',', '.') }}</td>
             </tr>
             <tr class="divider">
-                <td class="label">Kas Diterima (Penjualan)</td>
-                <td class="value">Rp {{ number_format($totalDiterima, 0, ',', '.') }}</td>
+                <td class="label">Total Penjualan</td>
+                <td class="value">Rp {{ number_format($totalSales, 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <td class="label">Bonus / (Loss)</td>
@@ -237,7 +237,7 @@
                 <td class="label">Jumlah Saldo</td>
                 <td class="value">
                     Rp
-                    {{ number_format($totalDiterima - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
+                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
                 </td>
             </tr>
             <tr>
