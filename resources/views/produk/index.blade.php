@@ -276,7 +276,38 @@
             }
 
             .category-grid {
-                grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+                display: flex;
+                overflow-x: auto;
+                gap: 6px;
+                margin-bottom: 18px;
+                padding: 2px 0 6px;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .category-grid::-webkit-scrollbar {
+                display: none;
+            }
+
+            .category-card {
+                flex: 0 0 68px;
+                width: 68px;
+                min-height: 80px;
+                padding: 8px 4px;
+                border-radius: 9px;
+            }
+
+            .category-icon {
+                width: 30px;
+                height: 30px;
+                border-radius: 9px;
+                margin-bottom: 5px;
+                font-size: 12px;
+            }
+
+            .category-card span {
+                font-size: 9px;
+                line-height: 1.2;
             }
 
             .product-card {
