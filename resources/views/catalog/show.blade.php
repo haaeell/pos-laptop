@@ -400,6 +400,7 @@
             border-radius: 16px;
             padding: 14px;
             transition: .25s;
+            min-width: 0;
         }
 
         .product-card:hover {

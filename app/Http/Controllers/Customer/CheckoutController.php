@@ -154,7 +154,10 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Keranjang kosong.'], 422);
         }
 
-        $pricing = $biteship->getRates($originAreaId, $address->area_id, $this->itemsForBiteship($lines));
+        $pricing = collect($biteship->getRates($originAreaId, $address->area_id, $this->itemsForBiteship($lines)))
+            ->sortBy(fn ($option) => (float) ($option['price'] ?? PHP_FLOAT_MAX))
+            ->values()
+            ->all();
 
         return response()->json(['pricing' => $pricing]);
     }
@@ -205,7 +208,9 @@ class CheckoutController extends Controller
 
         // Re-fetch rates server-side and only trust the price Biteship itself
         // returns for the submitted courier — never the client's number.
-        $pricing = $biteship->getRates($originAreaId, $address->area_id, $this->itemsForBiteship($lines));
+        $pricing = collect($biteship->getRates($originAreaId, $address->area_id, $this->itemsForBiteship($lines)))
+            ->sortBy(fn ($option) => (float) ($option['price'] ?? PHP_FLOAT_MAX))
+            ->values();
         $chosen = collect($pricing)->first(fn ($p) =>
             $p['courier_code'] === $data['courier_company'] && $p['type'] === $data['courier_type']
         );

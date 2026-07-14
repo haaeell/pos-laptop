@@ -104,6 +104,7 @@
             padding: 14px;
             transition: .25s;
             position: relative;
+            min-width: 0;
         }
 
         .product-card:hover {
@@ -276,6 +277,33 @@
 
             .category-grid {
                 grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            }
+
+            .product-card {
+                padding: 10px;
+            }
+
+            .product-card h3 {
+                font-size: 12.5px;
+                min-height: 32px;
+                margin: 10px 0 4px;
+            }
+
+            .price {
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-top: 8px;
+            }
+
+            .price strong {
+                font-size: 13px;
+            }
+
+            .detail-btn {
+                width: 30px;
+                height: 30px;
+                border-radius: 8px;
+                font-size: 12px;
             }
         }
     </style>

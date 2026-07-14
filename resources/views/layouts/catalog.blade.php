@@ -68,11 +68,17 @@
             scroll-behavior: smooth;
         }
 
+        html {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: Inter, system-ui, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.5;
+            overflow-x: hidden;
+            max-width: 100vw;
         }
 
         img {
@@ -120,7 +126,9 @@
 
         /* ============ HEADER ============ */
         .header {
-            background: #fff;
+            background: rgba(255, 255, 255, .92);
+            backdrop-filter: blur(18px) saturate(180%);
+            -webkit-backdrop-filter: blur(18px) saturate(180%);
             border-bottom: 1px solid var(--line);
             position: sticky;
             top: 0;
@@ -728,11 +736,29 @@
         }
 
         .nav .container {
+            padding: 12px 0 16px;
+        }
+
+        .nav-shell {
             display: flex;
-            gap: 28px;
             align-items: center;
-            padding: 12px 0;
-            overflow: auto;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 10px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(23, 92, 211, .10);
+            background:
+                radial-gradient(circle at top right, rgba(59, 130, 246, .12), transparent 34%),
+                linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(247, 250, 255, .92));
+            box-shadow: 0 16px 34px rgba(15, 76, 184, .08);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            min-width: 0;
         }
 
         .nav a {
@@ -740,11 +766,51 @@
             font-weight: 600;
             white-space: nowrap;
             color: #475467;
+            padding: 10px 14px;
+            border-radius: 999px;
+            transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
         }
 
         .nav a.active,
         .nav a:hover {
             color: var(--primary);
+            background: rgba(23, 92, 211, .08);
+            box-shadow: inset 0 0 0 1px rgba(23, 92, 211, .12);
+            transform: translateY(-1px);
+        }
+
+        .nav-accent {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #175CD3, #3B82F6);
+            color: #fff !important;
+            box-shadow: 0 14px 28px rgba(23, 92, 211, .24);
+            flex-shrink: 0;
+        }
+
+        .nav-accent:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, #0F4CB8, #2563EB) !important;
+            box-shadow: 0 18px 34px rgba(23, 92, 211, .30) !important;
+        }
+
+        .nav-accent-copy {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .nav-accent-copy strong {
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .nav-accent-copy span {
+            font-size: 10px;
+            opacity: .9;
         }
 
         /* ============ BUTTONS ============ */
@@ -917,9 +983,27 @@
             }
 
             .nav.open .container {
+                padding: 16px 0;
+            }
+
+            .nav.open .nav-shell {
                 flex-direction: column;
-                align-items: flex-start;
-                padding: 16px;
+                align-items: stretch;
+                border-radius: 18px;
+            }
+
+            .nav.open .nav-links {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .nav.open .nav-links a {
+                width: 100%;
+            }
+
+            .nav.open .nav-accent {
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -938,6 +1022,7 @@
             }
 
             .header-main {
+                position: relative;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -946,9 +1031,8 @@
             }
 
             .brand {
-                flex: 1;
-                min-width: 0;
-                justify-content: center;
+                flex: 0 0 auto;
+                justify-content: flex-start;
                 gap: 8px;
             }
 
@@ -960,8 +1044,14 @@
 
             .brand-text {
                 display: block;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
                 text-align: center;
                 overflow: hidden;
+                max-width: 55%;
+                pointer-events: none;
             }
 
             .brand-text strong {
@@ -1358,6 +1448,27 @@
                 transform: rotate(360deg);
             }
         }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(28px) scale(.985);
+            transition: opacity .7s cubic-bezier(.22, 1, .36, 1), transform .7s cubic-bezier(.22, 1, .36, 1);
+            transition-delay: var(--reveal-delay, 0ms);
+            will-change: transform, opacity;
+        }
+
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
     </style>
 
     @yield('styles')
@@ -1446,11 +1557,22 @@
         </div>
         <nav class="nav" id="nav">
             <div class="container">
-                <a class="{{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Beranda</a>
-                <a class="{{ request()->is('produk*') ? 'active' : '' }}" href="{{ route('catalog.listing') }}">Produk</a>
-                <a class="{{ request()->is('service') ? 'active' : '' }}" href="{{ route('pages.service') }}">Service</a>
-                <a class="{{ request()->is('artikel') ? 'active' : '' }}" href="{{ route('pages.articles') }}">Artikel</a>
-                <a class="{{ request()->is('tentang-kami') ? 'active' : '' }}" href="{{ route('pages.about') }}">Tentang Kami</a>
+                <div class="nav-shell">
+                    <div class="nav-links">
+                        <a class="{{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Beranda</a>
+                        <a class="{{ request()->is('produk*') ? 'active' : '' }}" href="{{ route('catalog.listing') }}">Produk</a>
+                        <a class="{{ request()->is('service') ? 'active' : '' }}" href="{{ route('pages.service') }}">Service</a>
+                        <a class="{{ request()->is('artikel') ? 'active' : '' }}" href="{{ route('pages.articles') }}">Artikel</a>
+                        <a class="{{ request()->is('tentang-kami') ? 'active' : '' }}" href="{{ route('pages.about') }}">Tentang Kami</a>
+                    </div>
+                    <a class="nav-accent" href="{{ route('pages.service') }}">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                        <span class="nav-accent-copy">
+                            <strong>Butuh Servis Cepat?</strong>
+                            <span>Konsultasi teknisi toko</span>
+                        </span>
+                    </a>
+                </div>
             </div>
         </nav>
     </header>
@@ -1615,6 +1737,60 @@
             mobileToggleEl.addEventListener('click', () => navEl.classList.toggle('open'));
             navEl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navEl.classList.remove('open')));
         }
+
+        window.applyScrollReveal = function (root = document) {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                return;
+            }
+
+            const selectors = [
+                'main section .hero-card',
+                'main section .benefits',
+                'main section .section-head',
+                'main section .category-card',
+                'main section .product-card',
+                'main section .service-banner',
+                'main section .why-card',
+                'main section .brand-chip',
+                'main section .testimonial',
+                'main section .contact-bar',
+                '.checkout-card',
+                '.addr-card',
+                '.page-card',
+                '.article-card',
+                '.service-card'
+            ];
+
+            const nodes = root.querySelectorAll(selectors.join(','));
+            nodes.forEach((node, index) => {
+                if (node.dataset.revealBound === '1') {
+                    return;
+                }
+
+                node.dataset.revealBound = '1';
+                node.classList.add('scroll-reveal');
+                node.style.setProperty('--reveal-delay', `${Math.min(index % 6, 5) * 70}ms`);
+                revealObserver.observe(node);
+            });
+        };
+
+        const revealObserver = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? { observe() {} }
+            : new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+
+                    entry.target.classList.add('is-visible');
+                    revealObserver.unobserve(entry.target);
+                });
+            }, {
+                threshold: 0.14,
+                rootMargin: '0px 0px -48px 0px',
+            });
+
+        window.applyScrollReveal();
 
         // Bottom nav: active state + tap animation
         const bottomNavItems = document.querySelectorAll('.bottom-nav-item');

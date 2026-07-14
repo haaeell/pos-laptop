@@ -17,11 +17,15 @@ class CustomerAddress extends Model
         'postal_code',
         'area_id',
         'address_detail',
+        'latitude',
+        'longitude',
         'is_default',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function customer()

@@ -2,6 +2,11 @@
 
 @section('title', 'Setting Toko')
 
+@push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+@endpush
+
 @section('content')
     <div class="max-w-4xl mx-auto">
 
@@ -200,7 +205,46 @@
                 <div class="mb-4">
                     <label class="text-xs font-semibold uppercase text-slate-600">Alamat Pengambilan (Pickup)</label>
                     <textarea name="biteship_origin_address" rows="2" placeholder="Alamat lengkap toko untuk pickup kurir"
+                        id="biteshipOriginAddress"
                         class="w-full mt-1 rounded-xl border px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/30">{{ $settings['biteship_origin_address'] ?? '' }}</textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-slate-600">Latitude Pickup</label>
+                        <input type="text" name="biteship_origin_latitude" id="biteshipOriginLatitude"
+                            value="{{ $settings['biteship_origin_latitude'] ?? '' }}" readonly
+                            class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm bg-slate-50 text-slate-600 focus:ring-2 focus:ring-indigo-500/30">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase text-slate-600">Longitude Pickup</label>
+                        <input type="text" name="biteship_origin_longitude" id="biteshipOriginLongitude"
+                            value="{{ $settings['biteship_origin_longitude'] ?? '' }}" readonly
+                            class="w-full mt-1 px-4 py-2.5 rounded-xl border text-sm bg-slate-50 text-slate-600 focus:ring-2 focus:ring-indigo-500/30">
+                    </div>
+                </div>
+
+                <div class="mb-4 rounded-2xl border overflow-hidden bg-white">
+                    <div class="px-4 py-3 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div>
+                            <strong class="block text-sm text-slate-700">Pilih titik pickup di peta</strong>
+                            <span class="text-xs text-slate-500">Klik peta atau geser marker supaya titik pengambilan kurir lebih akurat.</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" id="biteshipUseCurrentLocationBtn"
+                                class="px-3 py-2 rounded-full border text-xs font-semibold text-slate-700 hover:border-indigo-400 hover:text-indigo-600">
+                                Lokasi Saya
+                            </button>
+                            <button type="button" id="biteshipResetMapBtn"
+                                class="px-3 py-2 rounded-full border text-xs font-semibold text-slate-700 hover:border-indigo-400 hover:text-indigo-600">
+                                Reset Titik
+                            </button>
+                        </div>
+                    </div>
+                    <div id="biteshipOriginMap" style="height: 320px;"></div>
+                    <div class="px-4 py-3 text-xs text-slate-500 border-t bg-slate-50">
+                        Koordinat ini disimpan untuk alamat pengiriman admin dan membantu proses pickup serta cek ongkir.
+                    </div>
                 </div>
 
                 <div class="mb-2 relative">
@@ -247,10 +291,38 @@
 @endsection
 
 @push('scripts')
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         let biteshipSearchTimeout = null;
         const biteshipAreaSearch = document.getElementById('biteshipAreaSearch');
         const biteshipAreaResults = document.getElementById('biteshipAreaResults');
+        const biteshipOriginLatitude = document.getElementById('biteshipOriginLatitude');
+        const biteshipOriginLongitude = document.getElementById('biteshipOriginLongitude');
+        const biteshipOriginAddress = document.getElementById('biteshipOriginAddress');
+        const DEFAULT_MAP_CENTER = [-6.563246, 107.760467];
+        let biteshipMap = null;
+        let biteshipMarker = null;
+
+        async function fetchJson(url, options = undefined) {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error('Request failed');
+            }
+            return response.json();
+        }
+
+        async function searchBiteshipAreaByQuery(q) {
+            return fetchJson('{{ route('settings.biteship.search-area') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ q }),
+            });
+        }
 
         biteshipAreaSearch.addEventListener('input', function () {
             clearTimeout(biteshipSearchTimeout);
@@ -262,16 +334,7 @@
             }
 
             biteshipSearchTimeout = setTimeout(async () => {
-                const res = await fetch('{{ route('settings.biteship.search-area') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ q }),
-                });
-                const data = await res.json();
+                const data = await searchBiteshipAreaByQuery(q);
                 const areas = data.areas || [];
 
                 if (!areas.length) {
@@ -302,5 +365,113 @@
                 biteshipAreaResults.classList.add('hidden');
             }
         });
+
+        function setBiteshipMapPoint(lat, lng, { syncAddress = true } = {}) {
+            biteshipOriginLatitude.value = Number(lat).toFixed(7);
+            biteshipOriginLongitude.value = Number(lng).toFixed(7);
+
+            const point = [Number(lat), Number(lng)];
+            if (biteshipMarker) {
+                biteshipMarker.setLatLng(point);
+            } else {
+                biteshipMarker = L.marker(point, { draggable: true }).addTo(biteshipMap);
+                biteshipMarker.on('dragend', () => {
+                    const markerPoint = biteshipMarker.getLatLng();
+                    setBiteshipMapPoint(markerPoint.lat, markerPoint.lng, { syncAddress: true });
+                });
+            }
+
+            biteshipMap.setView(point, Math.max(biteshipMap.getZoom(), 15));
+
+            if (syncAddress) {
+                reverseGeocodeBiteshipPoint(lat, lng);
+            }
+        }
+
+        async function reverseGeocodeBiteshipPoint(lat, lng) {
+            try {
+                const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=id`);
+                const address = data.address || {};
+                const areaQuery = [address.city_district || address.suburb || address.state_district || address.village, address.city || address.county || address.municipality || address.town]
+                    .filter(Boolean)
+                    .join(' ');
+
+                const detailParts = [
+                    address.road,
+                    address.house_number,
+                    address.neighbourhood,
+                    address.hamlet,
+                    address.residential,
+                    address.suburb,
+                ].filter(Boolean);
+
+                if (detailParts.length) {
+                    biteshipOriginAddress.value = detailParts.join(', ');
+                } else if (data.display_name) {
+                    biteshipOriginAddress.value = data.display_name;
+                }
+
+                if (areaQuery.length >= 3) {
+                    biteshipAreaSearch.value = areaQuery;
+                    const areaData = await searchBiteshipAreaByQuery(areaQuery);
+                    const bestArea = areaData.areas?.[0];
+                    if (bestArea) {
+                        document.getElementById('biteshipOriginAreaId').value = bestArea.id;
+                        document.getElementById('biteshipOriginAreaName').value = bestArea.name;
+                        document.getElementById('biteshipAreaCurrent').innerText = bestArea.name;
+                    }
+                }
+            } catch (error) {
+                console.warn('Reverse geocoding pickup gagal', error);
+            }
+        }
+
+        function initBiteshipMap() {
+            if (biteshipMap) {
+                return;
+            }
+
+            biteshipMap = L.map('biteshipOriginMap', { zoomControl: true }).setView(DEFAULT_MAP_CENTER, 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors',
+            }).addTo(biteshipMap);
+
+            biteshipMap.on('click', (event) => {
+                setBiteshipMapPoint(event.latlng.lat, event.latlng.lng, { syncAddress: true });
+            });
+
+            document.getElementById('biteshipUseCurrentLocationBtn').addEventListener('click', () => {
+                if (!navigator.geolocation) {
+                    Swal.fire({ icon: 'warning', title: 'Lokasi Tidak Tersedia', text: 'Browser ini tidak mendukung geolocation.' });
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition((position) => {
+                    setBiteshipMapPoint(position.coords.latitude, position.coords.longitude, { syncAddress: true });
+                }, () => {
+                    Swal.fire({ icon: 'warning', title: 'Lokasi Gagal Diambil', text: 'Izinkan akses lokasi atau pilih titik langsung di peta.' });
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                });
+            });
+
+            document.getElementById('biteshipResetMapBtn').addEventListener('click', () => {
+                biteshipOriginLatitude.value = '';
+                biteshipOriginLongitude.value = '';
+                if (biteshipMarker) {
+                    biteshipMap.removeLayer(biteshipMarker);
+                    biteshipMarker = null;
+                }
+                biteshipMap.setView(DEFAULT_MAP_CENTER, 12);
+            });
+
+            if (biteshipOriginLatitude.value && biteshipOriginLongitude.value) {
+                setBiteshipMapPoint(biteshipOriginLatitude.value, biteshipOriginLongitude.value, { syncAddress: false });
+            }
+        }
+
+        initBiteshipMap();
     </script>
 @endpush

@@ -40,6 +40,8 @@ class AddressController extends Controller
             'district' => 'required|string|max:100',
             'postal_code' => 'nullable|string|max:10',
             'address_detail' => 'required|string|max:500',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ];
     }
 
