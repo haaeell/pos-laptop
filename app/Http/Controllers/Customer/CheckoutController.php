@@ -178,7 +178,7 @@ class CheckoutController extends Controller
             $message = 'Anda masih memiliki pesanan yang menunggu pembayaran. Selesaikan atau tunggu hingga kedaluwarsa sebelum membuat pesanan baru.';
 
             if ($request->wantsJson()) {
-                return response()->json(['message' => $message, 'redirect' => route('checkout.pay', $pending)], 422);
+                return response()->json(['message' => $message, 'redirect' => route('checkout.pay', $pending, false)], 422);
             }
 
             return redirect()->route('checkout.pay', $pending)->with('info', $message);
@@ -296,7 +296,7 @@ class CheckoutController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['redirect' => route('checkout.pay', $order)]);
+            return response()->json(['redirect' => route('checkout.pay', $order, false)]);
         }
 
         return redirect()->route('checkout.pay', $order);

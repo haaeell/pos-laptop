@@ -519,7 +519,7 @@
                 @endif
 
                 <div class="checkout-grid">
-                    <form action="{{ route('checkout.store') }}" method="POST" id="checkoutForm">
+                    <form action="{{ route('checkout.store', [], false) }}" method="POST" id="checkoutForm">
                         @csrf
                         @if ($buyNowProductId)
                             <input type="hidden" name="product_id" value="{{ $buyNowProductId }}">
@@ -854,7 +854,7 @@
             updateSummary(0);
 
             try {
-                const res = await fetch('{{ route('checkout.rates') }}', {
+                const res = await fetch('{{ route('checkout.rates', [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1135,7 +1135,7 @@
             };
 
             try {
-                const res = await fetch('{{ route('customer.addresses.store') }}', {
+                const res = await fetch('{{ route('customer.addresses.store', [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
