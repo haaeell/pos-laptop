@@ -62,7 +62,7 @@
 
 <body class="bg-slate-50 text-slate-700">
 
-    <div class="flex min-h-screen">
+    <div class="min-h-screen">
 
         <!-- Overlay -->
         <div id="overlay" class="fixed inset-0 bg-black/40 z-30 opacity-0 pointer-events-none transition md:hidden">
@@ -79,10 +79,10 @@
 
 
         <!-- SIDEBAR -->
-        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64
         bg-white border-r border-slate-200
         shadow-sm transform -translate-x-full md:translate-x-0
-        transition-all duration-300 flex flex-col">
+        transition-transform duration-300 flex flex-col overflow-y-auto">
 
             <!-- LOGO -->
             <div class="h-16 flex items-center px-10 text-sm font-semibold border-b">
@@ -91,15 +91,39 @@
 
             <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
 
-                <!-- Dashboard — semua role -->
+                {{-- ===================== DASHBOARD — SEMUA ROLE ===================== --}}
                 <a href="/home"
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('home') }}">
                     <i class="fa-solid fa-gauge-high w-5"></i>
                     Dashboard
                 </a>
 
+                {{-- ===================== TRANSAKSI — SEMUA ROLE ===================== --}}
+                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Transaksi
+                </div>
+
+                <a href="/sales"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales') }}">
+                    <i class="fa-solid fa-cash-register w-5"></i>
+                    Penjualan
+                </a>
+
+                <a href="/sales/create"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales/create') }}">
+                    <i class="fa-solid fa-receipt w-5"></i>
+                    Transaksi Baru
+                </a>
+
+                <a href="/services"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('services*') }}">
+                    <i class="fa-solid fa-screwdriver-wrench w-5"></i>
+                    Service
+                </a>
+
                 @if (Auth::user()->isSuperAdmin())
 
+                    {{-- ===================== MASTER DATA — ADMIN ONLY ===================== --}}
                     <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                         Master Data
                     </div>
@@ -134,34 +158,10 @@
                         Karyawan
                     </a>
 
-                @endif
-                {{-- ===================================================== --}}
-
-                <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Transaksi
-                </div>
-
-                <!-- Penjualan — semua role -->
-                <a href="/sales"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales') }}">
-                    <i class="fa-solid fa-cash-register w-5"></i>
-                    Penjualan
-                </a>
-
-                <a href="/sales/create"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales/create') }}">
-                    <i class="fa-solid fa-receipt w-5"></i>
-                    Transaksi Baru
-                </a>
-
-                <a href="/services"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('services*') }}">
-                    <i class="fa-solid fa-screwdriver-wrench w-5"></i>
-                    Service
-                </a>
-
-                {{-- ===================== ADMIN ONLY ===================== --}}
-                @if (Auth::user()->isSuperAdmin())
+                    {{-- ===================== KEUANGAN — ADMIN ONLY ===================== --}}
+                    <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Keuangan
+                    </div>
 
                     <a href="/expenses"
                         class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('expenses') }}">
@@ -181,25 +181,18 @@
                         Penggajian
                     </a>
 
-                @endif
-
-
-                {{-- ===================== ADMIN ONLY ===================== --}}
-                @if (Auth::user()->isSuperAdmin())
-
-                    {{-- ===================================================== --}}
-
+                    {{-- ===================== LAPORAN — ADMIN ONLY ===================== --}}
                     <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                         Laporan
                     </div>
 
-                    <!-- Laporan — semua role -->
                     <a href="/reports"
                         class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('reports*') }}">
                         <i class="fa-solid fa-chart-line w-5"></i>
                         Laporan Penjualan
                     </a>
 
+                    {{-- ===================== PENGATURAN — ADMIN ONLY ===================== --}}
                     <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
                         Pengaturan
                     </div>
@@ -223,17 +216,16 @@
                     </a>
 
                 @endif
-                {{-- ===================================================== --}}
 
             </nav>
         </aside>
 
 
         <!-- CONTENT -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex flex-col min-h-screen md:ml-64">
 
             <!-- HEADER -->
-            <header class="h-16 bg-white border-b shadow-sm flex items-center justify-between px-4 md:px-6">
+            <header class="h-16 bg-white border-b shadow-sm flex items-center justify-between px-4 md:px-6 sticky top-0 z-20">
 
                 <button id="menuBtn" class="p-2 rounded-lg hover:bg-indigo-50 text-indigo-600 md:hidden">
                     <i class="fa-solid fa-bars"></i>

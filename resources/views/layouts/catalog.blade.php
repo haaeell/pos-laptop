@@ -178,29 +178,388 @@
             font-size: 16px;
         }
 
-        .header-actions {
+        /* ============ SEARCH DROPDOWN (history + suggestions) ============ */
+        .search-wrap {
+            position: relative;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 20px 44px rgba(16, 24, 40, .16);
+            z-index: 80;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
+            transition: opacity .18s ease, transform .18s ease;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .search-dropdown.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .search-dd-section {
+            padding: 12px 14px 6px;
+        }
+
+        .search-dd-heading {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .search-dd-clear {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            background: none;
+            border: 0;
+        }
+
+        .search-dd-history {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-bottom: 10px;
+        }
+
+        .search-dd-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 6px 8px 6px 12px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .search-dd-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .search-dd-chip button {
+            border: 0;
+            background: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 10px;
+            padding: 3px;
+            display: grid;
+            place-items: center;
+        }
+
+        .search-dd-chip button:hover {
+            color: var(--danger);
+        }
+
+        .search-dd-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: background .15s ease;
+        }
+
+        .search-dd-item:hover {
+            background: var(--bg);
+        }
+
+        .search-dd-thumb {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            background: #F6F8FB;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            color: #CBD5E1;
+        }
+
+        .search-dd-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .search-dd-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-dd-info strong {
+            display: block;
+            font-size: 12.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-dd-info span {
+            font-size: 11.5px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .search-dd-empty {
+            padding: 18px 14px;
+            text-align: center;
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+
+        .search-dd-footer {
+            border-top: 1px solid var(--line);
+            padding: 10px 14px;
+        }
+
+        /* ============ WHATSAPP FLOATING WIDGET ============ */
+        .wa-float {
+            position: fixed;
+            right: 22px;
+            bottom: 24px;
+            z-index: 70;
+        }
+
+        .wa-fab {
+            position: relative;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 0;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: #fff;
+            font-size: 26px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            box-shadow: 0 12px 28px rgba(18, 140, 126, .4);
+            transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        .wa-fab:hover {
+            transform: scale(1.08);
+        }
+
+        .wa-fab:active {
+            transform: scale(.92);
+        }
+
+        .wa-fab-ping {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: #25D366;
+            opacity: .55;
+            animation: waPing 2.2s cubic-bezier(0, 0, .2, 1) infinite;
+            z-index: -1;
+        }
+
+        @keyframes waPing {
+
+            75%,
+            100% {
+                transform: scale(1.9);
+                opacity: 0;
+            }
+        }
+
+        .wa-popup {
+            position: absolute;
+            right: 0;
+            bottom: 74px;
+            width: 320px;
+            max-width: calc(100vw - 40px);
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(16, 24, 40, .24);
+            overflow: hidden;
+            transform: translateY(16px) scale(.96);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), opacity .2s ease;
+            border: 1px solid var(--line);
+        }
+
+        .wa-popup.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .wa-popup-header {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: #fff;
+            padding: 16px;
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
 
-        .action {
+        .wa-popup-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .wa-popup-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wa-popup-title {
+            flex: 1;
+            line-height: 1.3;
+            min-width: 0;
+        }
+
+        .wa-popup-title strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .wa-popup-title span {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, .85);
             display: flex;
-            flex-direction: column;
             align-items: center;
-            font-size: 11px;
-            color: var(--muted);
             gap: 4px;
         }
 
-        .action-icon {
-            width: 38px;
-            height: 38px;
-            border: 1px solid var(--line);
-            border-radius: 10px;
+        .wa-popup-close {
+            background: rgba(255, 255, 255, .18);
+            border: 0;
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
             display: grid;
             place-items: center;
-            color: #fff;
-            background: var(--success);
+            flex-shrink: 0;
+        }
+
+        .wa-popup-body {
+            padding: 14px;
+            background: #ECE5DD;
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .wa-bubble {
+            background: #fff;
+            border-radius: 12px;
+            border-top-left-radius: 2px;
+            padding: 10px 12px;
+            font-size: 12.5px;
+            color: var(--text);
+            box-shadow: 0 2px 6px rgba(16, 24, 40, .06);
+            margin-bottom: 12px;
+            max-width: 92%;
+        }
+
+        .wa-contact-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 6px rgba(16, 24, 40, .06);
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .wa-contact-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .wa-contact-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(16, 24, 40, .12);
+        }
+
+        .wa-contact-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+        .wa-contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .wa-contact-info strong {
+            display: block;
+            font-size: 12.5px;
+        }
+
+        .wa-contact-info span {
+            font-size: 10.5px;
+            color: var(--muted);
+        }
+
+        .wa-contact-icon {
+            color: #25D366;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .wa-empty {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        @media(max-width:640px) {
+            .wa-float {
+                right: 14px;
+                bottom: 100px;
+            }
+
+            .wa-fab {
+                width: 52px;
+                height: 52px;
+                font-size: 22px;
+            }
+
+            .wa-popup {
+                bottom: 66px;
+                width: 280px;
+            }
         }
 
         .mobile-toggle {
@@ -453,10 +812,6 @@
                 border-radius: 0 999px 999px 0;
             }
 
-            .header-actions {
-                display: none;
-            }
-
             .mobile-toggle {
                 display: none;
             }
@@ -490,7 +845,6 @@
             .bottom-nav {
                 display: flex;
                 align-items: center;
-                justify-content: space-around;
                 position: fixed;
                 left: 10px;
                 right: 10px;
@@ -504,6 +858,16 @@
                 padding: 8px 6px calc(6px + env(safe-area-inset-bottom));
                 box-shadow: 0 12px 32px rgba(16, 24, 40, .14);
                 animation: navRise .45s cubic-bezier(.22, 1, .36, 1);
+            }
+
+            /* Equal-width left/right groups so the search FAB always sits dead-center,
+               regardless of how many items are in either group. */
+            .bottom-nav-side {
+                display: flex;
+                align-items: center;
+                flex: 1;
+                min-width: 0;
+                justify-content: space-around;
             }
 
             @keyframes navRise {
@@ -673,20 +1037,18 @@
                 </div>
             </a>
 
-            <form class="search-bar" action="{{ url('/') }}" method="GET">
-                <input id="global-search" name="search" type="search" placeholder="Cari nama produk atau kode..." />
-                <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </form>
+            <div class="search-wrap">
+                <form class="search-bar" action="{{ url('/') }}" method="GET" id="searchForm" autocomplete="off">
+                    <input id="global-search" name="search" type="search" placeholder="Cari nama produk atau kode..." />
+                    <button type="submit" aria-label="Cari"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
 
-            <div class="header-actions">
-                @foreach($navContacts as $contact)
-                    <a href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text) }}"
-                        target="_blank" class="action" title="{{ $contact->label }}">
-                        <div class="action-icon"><i class="fa-brands fa-whatsapp"></i></div>
-                        <span>{{ $contact->label }}</span>
-                    </a>
-                @endforeach
+                <div class="search-dropdown" id="searchDropdown">
+                    <div class="search-dd-section" id="searchDdHistory"></div>
+                    <div id="searchDdSuggestions"></div>
+                </div>
             </div>
+
             <button class="mobile-toggle" id="mobileToggle" aria-label="Buka menu"><i
                     class="fa-solid fa-bars"></i></button>
         </div>
@@ -704,30 +1066,77 @@
     @yield('content')
 
     <nav class="bottom-nav" id="bottomNav">
-        <a href="{{ url('/') }}#home" class="bottom-nav-item {{ request()->is('/') ? 'active' : '' }}">
-            <i class="fa-solid fa-house"></i>
-            <span>Beranda</span>
-        </a>
-        <a href="{{ url('/') }}#products" class="bottom-nav-item">
-            <i class="fa-solid fa-grip"></i>
-            <span>Kategori</span>
-        </a>
+        <div class="bottom-nav-side">
+            <a href="{{ url('/') }}#home" class="bottom-nav-item {{ request()->is('/') ? 'active' : '' }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Beranda</span>
+            </a>
+            <a href="{{ url('/') }}#products" class="bottom-nav-item">
+                <i class="fa-solid fa-grip"></i>
+                <span>Kategori</span>
+            </a>
+        </div>
+
         <a href="#" class="bottom-nav-item bottom-nav-fab-wrap" id="bottomNavSearch">
             <span class="bottom-nav-fab"><i class="fa-solid fa-magnifying-glass"></i></span>
             <span>Cari</span>
         </a>
-        <a href="{{ url('/') }}#service" class="bottom-nav-item">
-            <i class="fa-solid fa-screwdriver-wrench"></i>
-            <span>Service</span>
-        </a>
-        @if($navContacts->count())
-            <a href="https://wa.me/{{ $navContacts->first()->phone }}?text={{ urlencode($navContacts->first()->whatsapp_text ?? 'Halo, saya ingin bertanya.') }}"
-                target="_blank" class="bottom-nav-item">
-                <i class="fa-brands fa-whatsapp"></i>
-                <span>Chat</span>
+
+        <div class="bottom-nav-side">
+            <a href="{{ url('/') }}#service" class="bottom-nav-item">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <span>Service</span>
             </a>
-        @endif
+            @if($navContacts->count())
+                <button type="button" class="bottom-nav-item" id="bottomNavChat"
+                    style="background:none;border:0;">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span>Chat</span>
+                </button>
+            @endif
+        </div>
     </nav>
+
+    <div class="wa-float" id="waFloat">
+        <div class="wa-popup" id="waPopup">
+            <div class="wa-popup-header">
+                <div class="wa-popup-avatar"><img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaToko }}"></div>
+                <div class="wa-popup-title">
+                    <strong>{{ $namaToko }}</strong>
+                    <span><i class="fa-solid fa-circle" style="color:#B9F6CA;font-size:6px;"></i> Biasanya balas
+                        cepat</span>
+                </div>
+                <button type="button" class="wa-popup-close" id="waPopupClose" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="wa-popup-body">
+                <div class="wa-bubble">
+                    Halo! 👋 Ada yang bisa kami bantu? Pilih admin di bawah untuk mulai chat via WhatsApp.
+                </div>
+
+                @forelse($navContacts as $contact)
+                    <a class="wa-contact-row"
+                        href="https://wa.me/{{ $contact->phone }}?text={{ urlencode($contact->whatsapp_text ?? 'Halo, saya ingin bertanya.') }}"
+                        target="_blank">
+                        <div class="wa-contact-avatar"><i class="fa-solid fa-headset"></i></div>
+                        <div class="wa-contact-info">
+                            <strong>{{ $contact->label }}</strong>
+                            <span>Klik untuk chat via WhatsApp</span>
+                        </div>
+                        <i class="fa-brands fa-whatsapp wa-contact-icon"></i>
+                    </a>
+                @empty
+                    <p class="wa-empty">Kontak belum tersedia.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <button type="button" class="wa-fab" id="waFabBtn" aria-label="Chat WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span class="wa-fab-ping"></span>
+        </button>
+    </div>
 
     <footer>
         <div class="container">
@@ -802,6 +1211,214 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 const globalSearch = document.getElementById('global-search');
                 setTimeout(() => globalSearch && globalSearch.focus(), 300);
+            });
+        }
+
+        // ===== WhatsApp floating widget =====
+        const waFabBtn = document.getElementById('waFabBtn');
+        const waPopup = document.getElementById('waPopup');
+        const waPopupClose = document.getElementById('waPopupClose');
+        const bottomNavChat = document.getElementById('bottomNavChat');
+
+        function toggleWaPopup(forceOpen) {
+            if (!waPopup) return;
+            if (forceOpen === true) waPopup.classList.add('open');
+            else if (forceOpen === false) waPopup.classList.remove('open');
+            else waPopup.classList.toggle('open');
+        }
+
+        if (waFabBtn) waFabBtn.addEventListener('click', () => toggleWaPopup());
+        if (waPopupClose) waPopupClose.addEventListener('click', () => toggleWaPopup(false));
+        if (bottomNavChat) bottomNavChat.addEventListener('click', () => toggleWaPopup(true));
+
+        document.addEventListener('click', (e) => {
+            if (waPopup && waPopup.classList.contains('open') && !e.target.closest('.wa-float') && !e.target.closest('#bottomNavChat')) {
+                toggleWaPopup(false);
+            }
+        });
+
+        // ===== Search: history + live suggestions (e-commerce style) =====
+        const SEARCH_HISTORY_KEY = 'catalog_search_history';
+        const searchInput = document.getElementById('global-search');
+        const searchDropdown = document.getElementById('searchDropdown');
+        const searchDdHistory = document.getElementById('searchDdHistory');
+        const searchDdSuggestions = document.getElementById('searchDdSuggestions');
+        const searchForm = document.getElementById('searchForm');
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function getSearchHistory() {
+            try {
+                return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveSearchHistory(term) {
+            term = (term || '').trim();
+            if (!term) return;
+            let history = getSearchHistory().filter(t => t.toLowerCase() !== term.toLowerCase());
+            history.unshift(term);
+            localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, 8)));
+        }
+
+        function removeSearchHistoryItem(term) {
+            localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(getSearchHistory().filter(t => t !== term)));
+            renderHistory();
+        }
+
+        function clearSearchHistory() {
+            localStorage.removeItem(SEARCH_HISTORY_KEY);
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (!searchDdHistory) return;
+            const history = getSearchHistory();
+
+            if (!history.length) {
+                searchDdHistory.innerHTML = '';
+                return;
+            }
+
+            searchDdHistory.innerHTML = `
+                <div class="search-dd-heading">
+                    <span><i class="fa-solid fa-clock-rotate-left"></i> Pencarian Terakhir</span>
+                    <button type="button" class="search-dd-clear" id="searchDdClearBtn">Hapus Semua</button>
+                </div>
+                <div class="search-dd-history">
+                    ${history.map(term => `
+                        <span class="search-dd-chip" data-term="${escapeHtml(term)}">
+                            ${escapeHtml(term)}
+                            <button type="button" data-remove="${escapeHtml(term)}" aria-label="Hapus"><i class="fa-solid fa-xmark"></i></button>
+                        </span>
+                    `).join('')}
+                </div>
+            `;
+
+            searchDdHistory.querySelectorAll('.search-dd-chip').forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    if (e.target.closest('button[data-remove]')) return;
+                    searchInput.value = chip.dataset.term;
+                    submitSearch(chip.dataset.term);
+                });
+            });
+
+            searchDdHistory.querySelectorAll('button[data-remove]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeSearchHistoryItem(btn.dataset.remove);
+                });
+            });
+
+            const clearBtn = document.getElementById('searchDdClearBtn');
+            if (clearBtn) clearBtn.addEventListener('click', clearSearchHistory);
+        }
+
+        function submitSearch(term) {
+            saveSearchHistory(term);
+            window.location.href = `{{ url('/') }}?search=${encodeURIComponent(term)}`;
+        }
+
+        function formatSearchPrice(v) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0
+            }).format(v);
+        }
+
+        let suggestTimeout = null;
+        async function fetchSuggestions(term) {
+            if (!searchDdSuggestions) return;
+
+            searchDdSuggestions.innerHTML = `<div class="search-dd-empty">Mencari...</div>`;
+
+            try {
+                const res = await fetch(`/data/catalog?search=${encodeURIComponent(term)}&page=1`);
+                const data = await res.json();
+                const items = (data.data || []).slice(0, 5);
+
+                if (!items.length) {
+                    searchDdSuggestions.innerHTML = `<div class="search-dd-empty">Produk "${escapeHtml(term)}" tidak ditemukan.</div>`;
+                    return;
+                }
+
+                searchDdSuggestions.innerHTML = `
+                    <div class="search-dd-heading" style="padding:6px 14px 0;">
+                        <span><i class="fa-solid fa-bolt"></i> Rekomendasi Produk</span>
+                    </div>
+                    ${items.map(p => `
+                        <a class="search-dd-item" href="/produk/${p.id}">
+                            <div class="search-dd-thumb">
+                                ${p.image ? `<img src="/storage/${p.image}" alt="">` : `<i class="fa-solid fa-image"></i>`}
+                            </div>
+                            <div class="search-dd-info">
+                                <strong>${escapeHtml(p.name)}</strong>
+                                <span>${formatSearchPrice(p.price)}</span>
+                            </div>
+                        </a>
+                    `).join('')}
+                    <div class="search-dd-footer">
+                        <a href="{{ url('/') }}?search=${encodeURIComponent(term)}" class="search-dd-viewall"
+                            data-term="${escapeHtml(term)}" style="font-size:12px;font-weight:700;color:var(--primary);">
+                            Lihat semua hasil untuk "${escapeHtml(term)}" →
+                        </a>
+                    </div>
+                `;
+
+                const viewAllLink = searchDdSuggestions.querySelector('.search-dd-viewall');
+                if (viewAllLink) viewAllLink.addEventListener('click', () => saveSearchHistory(viewAllLink.dataset.term));
+            } catch (e) {
+                searchDdSuggestions.innerHTML = '';
+            }
+        }
+
+        function openSearchDropdown() {
+            if (!searchDropdown) return;
+            searchDropdown.classList.add('open');
+            if (!searchInput.value.trim()) {
+                renderHistory();
+                if (searchDdSuggestions) searchDdSuggestions.innerHTML = '';
+            }
+        }
+
+        function closeSearchDropdown() {
+            if (searchDropdown) searchDropdown.classList.remove('open');
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('focus', openSearchDropdown);
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(suggestTimeout);
+                const val = this.value.trim();
+
+                if (!val) {
+                    renderHistory();
+                    if (searchDdSuggestions) searchDdSuggestions.innerHTML = '';
+                    return;
+                }
+
+                searchDdHistory.innerHTML = '';
+                suggestTimeout = setTimeout(() => fetchSuggestions(val), 300);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-wrap')) closeSearchDropdown();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeSearchDropdown();
+            });
+        }
+
+        if (searchForm) {
+            searchForm.addEventListener('submit', function () {
+                saveSearchHistory(searchInput.value);
             });
         }
     </script>
