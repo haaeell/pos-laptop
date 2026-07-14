@@ -37,6 +37,23 @@
                         </div>
                     </div>
 
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Tampilan
+                            Grafik</label>
+                        <div class="relative">
+                            <div
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-chart-simple text-xs"></i>
+                            </div>
+                            <select name="trend"
+                                class="pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700">
+                                <option value="daily" @selected(($trend ?? 'daily') === 'daily')>Harian</option>
+                                <option value="monthly" @selected(($trend ?? 'daily') === 'monthly')>Bulanan</option>
+                                <option value="yearly" @selected(($trend ?? 'daily') === 'yearly')>Tahunan</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <button type="submit"
                         class="h-[40px] px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-magnifying-glass"></i> Terapkan
@@ -253,8 +270,8 @@
             <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
                     <div>
-                        <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Tren Penjualan Harian</h2>
-                        <p class="text-xs text-slate-400 mt-1">Perbandingan omzet kasir, online, dan profit per hari.</p>
+                        <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Tren Penjualan {{ $chartData['trend']['label'] ?? 'Harian' }}</h2>
+                        <p class="text-xs text-slate-400 mt-1">Perbandingan omzet kasir, online, dan profit per {{ $chartData['trend']['unit'] ?? 'hari' }}.</p>
                     </div>
                     <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                         <i class="fa-solid fa-chart-line"></i>

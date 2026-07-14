@@ -31,6 +31,9 @@ class ReportController extends Controller
     {
         $from = $request->from ? Carbon::parse($request->from)->startOfDay() : Carbon::now()->startOfMonth();
         $to   = $request->to ? Carbon::parse($request->to)->endOfDay() : Carbon::now();
+        $trend = in_array($request->input('trend'), ['daily', 'monthly', 'yearly'], true)
+            ? $request->input('trend')
+            : 'daily';
 
         $sales = Sale::with('user')
             ->whereBetween('created_at', [$from, $to])
@@ -40,9 +43,9 @@ class ReportController extends Controller
         $onlineOrders = $this->onlineOrders($from, $to);
         $transactions = $this->transactionRows($sales, $onlineOrders)->sortByDesc('date')->values();
         $metrics = $this->getMetrics($from, $to, $sales, $onlineOrders);
-        $chartData = $this->chartData($from, $to, $transactions, $metrics);
+        $chartData = $this->chartData($from, $to, $transactions, $metrics, $trend);
 
-        return view('reports.index', array_merge(compact('sales', 'onlineOrders', 'transactions', 'chartData', 'from', 'to'), $metrics));
+        return view('reports.index', array_merge(compact('sales', 'onlineOrders', 'transactions', 'chartData', 'from', 'to', 'trend'), $metrics));
     }
 
     private function getMetrics(Carbon $from, Carbon $to, $sales, $onlineOrders = null): array
@@ -138,16 +141,15 @@ class ReportController extends Controller
         return $offlineRows->concat($onlineRows);
     }
 
-    private function chartData(Carbon $from, Carbon $to, $transactions, array $metrics): array
+    private function chartData(Carbon $from, Carbon $to, $transactions, array $metrics, string $trend = 'daily'): array
     {
-        $days = collect(CarbonPeriod::create($from->copy()->startOfDay(), $to->copy()->startOfDay()))
-            ->map(fn (Carbon $date) => $date->format('Y-m-d'));
+        [$buckets, $keyFormat, $label, $unit] = $this->trendBuckets($from, $to, $trend);
 
-        $dailyRows = $days->map(function (string $date) use ($transactions) {
-            $rows = $transactions->filter(fn ($row) => $row->date->format('Y-m-d') === $date);
+        $dailyRows = $buckets->map(function (array $bucket) use ($transactions, $keyFormat) {
+            $rows = $transactions->filter(fn ($row) => $row->date->format($keyFormat) === $bucket['key']);
 
             return [
-                'label' => Carbon::parse($date)->format('d M'),
+                'label' => $bucket['label'],
                 'kasir' => (float) $rows->where('source', 'Kasir')->sum('grand_total'),
                 'online' => (float) $rows->where('source', 'Online')->sum('grand_total'),
                 'profit' => (float) $rows->sum('benefit'),
@@ -155,6 +157,11 @@ class ReportController extends Controller
         });
 
         return [
+            'trend' => [
+                'mode' => $trend,
+                'label' => $label,
+                'unit' => $unit,
+            ],
             'daily' => [
                 'labels' => $dailyRows->pluck('label')->values(),
                 'kasir' => $dailyRows->pluck('kasir')->values(),
@@ -180,6 +187,37 @@ class ReportController extends Controller
                 ],
             ],
         ];
+    }
+
+    private function trendBuckets(Carbon $from, Carbon $to, string $trend): array
+    {
+        if ($trend === 'yearly') {
+            $years = collect(range((int) $from->format('Y'), (int) $to->format('Y')))
+                ->map(fn (int $year) => [
+                    'key' => (string) $year,
+                    'label' => (string) $year,
+                ]);
+
+            return [$years, 'Y', 'Tahunan', 'tahun'];
+        }
+
+        if ($trend === 'monthly') {
+            $months = collect(CarbonPeriod::create($from->copy()->startOfMonth(), '1 month', $to->copy()->startOfMonth()))
+                ->map(fn (Carbon $date) => [
+                    'key' => $date->format('Y-m'),
+                    'label' => $date->format('M Y'),
+                ]);
+
+            return [$months, 'Y-m', 'Bulanan', 'bulan'];
+        }
+
+        $days = collect(CarbonPeriod::create($from->copy()->startOfDay(), $to->copy()->startOfDay()))
+            ->map(fn (Carbon $date) => [
+                'key' => $date->format('Y-m-d'),
+                'label' => $date->format('d M'),
+            ]);
+
+        return [$days, 'Y-m-d', 'Harian', 'hari'];
     }
 
     private function calcFeeSales(Carbon $from, Carbon $to, $sales): float|int
