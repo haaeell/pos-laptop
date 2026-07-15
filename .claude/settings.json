@@ -3,7 +3,10 @@
     "allow": [
       "Bash(php artisan tinker '--execute= *)",
       "Bash(node test4.mjs)",
-      "Bash(node test5.mjs)"
+      "Bash(node test5.mjs)",
+      "Bash(xargs -I{} grep -l \"sales\" {})",
+      "Bash(php -l app/Http/Controllers/ProductController.php)",
+      "Bash(php -r ' *)"
     ]
   }
 }

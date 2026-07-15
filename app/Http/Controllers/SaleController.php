@@ -32,8 +32,13 @@ class SaleController extends Controller
             $query->whereDate('created_at', '<=', $request->to);
         }
 
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
         return view('sales.index', [
-            'sales' => $query->get()
+            'sales' => $query->get(),
+            'paymentStatusFilter' => $request->payment_status,
         ]);
     }
 
@@ -77,6 +82,9 @@ class SaleController extends Controller
 
             'sales_name' => $sale->salesPerson?->name,
             'sales_phone' => $sale->salesPerson?->phone,
+
+            'customer_name' => $sale->customer_name,
+            'customer_phone' => $sale->customer_phone,
 
             'items' => $sale->items->map(function ($item) {
                 return [

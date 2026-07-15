@@ -157,6 +157,16 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
         Route::get('/{id}/print-pickup', 'printPickup')->name('services.print-pickup');
         Route::delete('/{id}', 'destroy')->name('services.destroy');
     });
+
+    // Produk
+    Route::prefix('products')->controller(ProductController::class)->group(function () {
+        Route::get('/export-pdf', 'exportPdf')->name('products.export-pdf');
+        Route::post('/upload-description-image', 'uploadDescriptionImage')->name('products.upload-description-image');
+        Route::get('/', 'index')->name('products.index');
+        Route::post('/', 'store');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
 });
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
@@ -219,16 +229,10 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
         Route::delete('/{id}', 'destroy');
     });
 
-    // Produk
+    // Produk (import massal & template — berisi harga beli, super admin only)
     Route::prefix('products')->controller(ProductController::class)->group(function () {
         Route::get('/template', 'template')->name('products.template');
-        Route::get('/export-pdf', 'exportPdf')->name('products.export-pdf');
         Route::post('/import', 'import')->name('products.import');
-        Route::post('/upload-description-image', 'uploadDescriptionImage')->name('products.upload-description-image');
-        Route::get('/', 'index')->name('products.index');
-        Route::post('/', 'store');
-        Route::put('/{id}', 'update');
-        Route::delete('/{id}', 'destroy');
     });
 
     // Artikel

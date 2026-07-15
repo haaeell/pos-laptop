@@ -133,6 +133,12 @@
                     @endif
                 </a>
 
+                <a href="/products"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('products*') }}">
+                    <i class="fa-solid fa-box-open w-5"></i>
+                    Master Produk
+                </a>
+
                 @if (Auth::user()->isSuperAdmin())
 
                     {{-- ===================== MASTER DATA — ADMIN ONLY ===================== --}}
@@ -150,12 +156,6 @@
                         class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('brands*') }}">
                         <i class="fa-solid fa-tags w-5"></i>
                         Brand
-                    </a>
-
-                    <a href="/products"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('products*') }}">
-                        <i class="fa-solid fa-box-open w-5"></i>
-                        Produk
                     </a>
 
                     <a href="/articles"

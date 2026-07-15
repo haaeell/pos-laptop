@@ -28,10 +28,12 @@
                     class="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
                     <i class="fa-solid fa-print"></i> Cetak Semua
                 </button>
-                <button onclick="openImportModal()"
-                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2">
-                    <i class="fa-solid fa-file-import"></i> Import
-                </button>
+                @if (Auth::user()->isSuperAdmin())
+                    <button onclick="openImportModal()"
+                        class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-import"></i> Import
+                    </button>
+                @endif
                 <button onclick="openCreateModal()"
                     class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                     + Tambah
@@ -288,7 +290,7 @@
                                     title="Cetak Barcode">
                                     <i class="fa-solid fa-barcode"></i>
                                 </button>
-                                <button onclick='openEditModal(@json($product->load('images')))'
+                                <button onclick='openEditModal(@json($product->load("images")->makeHidden(Auth::user()->isSuperAdmin() ? [] : ["purchase_price"])))'
                                     class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -431,17 +433,19 @@
                         </div>
                     </div>
 
-                    <!-- HARGA BELI -->
-                    <div>
-                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Harga Beli</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
-                            <input type="text" id="purchasePriceDisplay" oninput="formatRupiahInput(this)"
-                                class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
-                                placeholder="0">
-                            <input type="hidden" name="purchase_price" id="purchasePrice">
+                    <!-- HARGA BELI (SUPER ADMIN ONLY) -->
+                    @if (Auth::user()->isSuperAdmin())
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 mb-1 block">Harga Beli</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Rp</span>
+                                <input type="text" id="purchasePriceDisplay" oninput="formatRupiahInput(this)"
+                                    class="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
+                                    placeholder="0">
+                                <input type="hidden" name="purchase_price" id="purchasePrice">
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
                     <!-- HARGA JUAL -->
                     <div>
@@ -847,7 +851,10 @@
                     $('#productName').val(data.name)
                     $('#categoryId').val(data.category_id)
                     $('#brandId').val(data.brand_id)
-                    $('#purchasePrice').val(data.purchase_price)
+                    if (data.purchase_price !== undefined) {
+                        $('#purchasePrice').val(data.purchase_price)
+                        $('#purchasePriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.purchase_price));
+                    }
                     $('#sellingPrice').val(data.selling_price)
                     $('#strikePrice').val(data.strike_price ?? '')
                     $('#productWeight').val(data.weight || 1000)
@@ -862,7 +869,6 @@
                     }
 
                     $('#sellingPriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.selling_price));
-                    $('#purchasePriceDisplay').val(new Intl.NumberFormat('id-ID').format(data.purchase_price));
                     $('#strikePriceDisplay').val(data.strike_price ? new Intl.NumberFormat('id-ID').format(data.strike_price) : '');
 
                     $('#productDescription').summernote('code', data.description ?? '');

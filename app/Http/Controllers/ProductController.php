@@ -58,12 +58,14 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $isSuperAdmin = $request->user()->isSuperAdmin();
+
         $data = $request->validate([
             'product_code' => 'required|unique:products,product_code',
             'name' => 'required',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
-            'purchase_price' => 'required|numeric',
+            'purchase_price' => $isSuperAdmin ? 'required|numeric' : 'nullable|numeric',
             'selling_price' => 'required|numeric',
             'strike_price' => 'nullable|numeric|gt:selling_price',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -104,6 +106,10 @@ class ProductController extends Controller
         $data['weight'] = $data['weight'] ?? 1000;
         $data['is_active'] = $request->boolean('is_active', true);
 
+        if (!$isSuperAdmin) {
+            $data['purchase_price'] = 0;
+        }
+
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
         }
@@ -129,12 +135,13 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+        $isSuperAdmin = $request->user()->isSuperAdmin();
 
         $request->validate([
             'name' => 'required',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
-            'purchase_price' => 'required|numeric',
+            'purchase_price' => $isSuperAdmin ? 'required|numeric' : 'nullable|numeric',
             'selling_price' => 'required|numeric',
             'strike_price' => 'nullable|numeric|gt:selling_price',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -172,6 +179,10 @@ class ProductController extends Controller
             ? (int) ($data['stock'] ?? 0)
             : 0;
         $data['is_active'] = $request->boolean('is_active');
+
+        if (!$isSuperAdmin) {
+            unset($data['purchase_price']);
+        }
 
         if ($request->filled('deleted_images')) {
             $ids = explode(',', $request->deleted_images);

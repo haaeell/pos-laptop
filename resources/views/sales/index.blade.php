@@ -49,6 +49,22 @@
                 </div>
             </div>
 
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Status Pembayaran</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-circle-dollar-to-slot text-xs"></i>
+                    </div>
+                    <select name="payment_status"
+                        class="pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-slate-700 appearance-none">
+                        <option value="">Semua Status</option>
+                        <option value="paid" {{ $paymentStatusFilter === 'paid' ? 'selected' : '' }}>Lunas</option>
+                        <option value="partial" {{ $paymentStatusFilter === 'partial' ? 'selected' : '' }}>Lunas Sebagian</option>
+                        <option value="unpaid" {{ $paymentStatusFilter === 'unpaid' ? 'selected' : '' }}>Hutang</option>
+                    </select>
+                </div>
+            </div>
+
             <button type="submit"
                 class="h-[40px] px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm shadow-indigo-100 transition-all flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -64,6 +80,7 @@
                             <th class="px-4 py-4 font-semibold whitespace-nowrap">#</th>
                             <th class="px-4 py-4 font-semibold whitespace-nowrap">Invoice</th>
                             <th class="px-4 py-4 font-semibold whitespace-nowrap">Tanggal</th>
+                            <th class="px-4 py-4 font-semibold whitespace-nowrap">Pembeli</th>
                             <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Grand Total</th>
                             @if (Auth::user()->role == 'super_admin')
                                 <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Profit</th>
@@ -90,6 +107,19 @@
                                         <span class="text-[10px] text-slate-400">{{ $sale->created_at->format('H:i') }}
                                             WIB</span>
                                     </div>
+                                </td>
+
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    @if ($sale->customer_name)
+                                        <div class="flex flex-col">
+                                            <span class="font-semibold text-slate-700">{{ $sale->customer_name }}</span>
+                                            @if ($sale->customer_phone)
+                                                <span class="text-[10px] text-slate-400">{{ $sale->customer_phone }}</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-xs italic text-slate-400">Pelanggan Umum</span>
+                                    @endif
                                 </td>
 
                                 <td class="px-4 py-4 font-bold text-slate-800 whitespace-nowrap">
@@ -219,7 +249,13 @@
             </div>
 
             <div class="p-8">
-                <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
+                        <p class="text-xs font-semibold text-indigo-500 uppercase">Pembeli</p>
+                        <p id="modalCustomer" class="font-bold text-slate-700 mt-1">-</p>
+                        <p id="modalCustomerPhone" class="text-xs text-slate-400"></p>
+                    </div>
+
                     <div class="p-4 rounded-2xl bg-slate-50 border">
                         <p class="text-xs font-semibold text-slate-400 uppercase">Sales</p>
                         <p id="modalSales" class="font-bold text-slate-700 mt-1">-</p>
@@ -350,6 +386,9 @@
                     document.getElementById('modalTotal').innerText = 'Rp ' + data.grand_total
                     document.getElementById('modalSales').innerText = data.sales_name ?? 'Tanpa Sales'
                     document.getElementById('modalSalesPhone').innerText = data.sales_phone ?? ''
+
+                    document.getElementById('modalCustomer').innerText = data.customer_name ?? 'Pelanggan Umum'
+                    document.getElementById('modalCustomerPhone').innerText = data.customer_phone ?? ''
                     document.getElementById('modalFeeSales').innerText = 'Rp ' + data.fee_sales
 
                     if (isSuperAdmin) {
