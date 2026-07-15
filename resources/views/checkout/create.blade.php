@@ -196,9 +196,7 @@
         }
 
         .payment-trust-badge {
-            margin: 6px 0 0;
-            justify-content: center;
-            width: 100%;
+            margin: 2px 0 0;
         }
 
         .courier-selected-logo {
@@ -644,13 +642,11 @@
                 <div class="checkout-bottom-total-label">Total Pembayaran</div>
                 <div class="checkout-bottom-total-value" id="summaryGrandTotal">Rp
                     {{ number_format($itemsSubtotal, 0, ',', '.') }}</div>
-            </div>
-            <div>
-                <button type="submit" form="checkoutForm" class="btn btn-primary" id="checkoutSubmitBtn">
-                    Buat Pesanan
-                </button>
                 <p class="payment-trust-badge"><i class="fa-solid fa-lock"></i> Pembayaran Aman</p>
             </div>
+            <button type="submit" form="checkoutForm" class="btn btn-primary" id="checkoutSubmitBtn">
+                Buat Pesanan
+            </button>
         </div>
     </div>
 
