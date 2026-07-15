@@ -416,9 +416,20 @@
 @push('scripts')
     <script>
         const isCustomerAuthed = @json(Auth::guard('customers')->check());
+        const pageParams = new URLSearchParams(window.location.search);
+        const initialBrand = pageParams.get('brand') || '';
+        const initialCategory = pageParams.get('category') || '';
 
         $(document).ready(function () {
             $('#brand').select2({ placeholder: "Semua Merek", allowClear: true });
+
+            brandEl.value = initialBrand;
+            $('#brand').val(initialBrand).trigger('change.select2');
+
+            activeCategory = initialCategory;
+            document.querySelectorAll('.category-card').forEach(c => {
+                c.classList.toggle('active', c.dataset.category === String(activeCategory));
+            });
 
             $('#brand').on('change', function () {
                 currentPage = 1;

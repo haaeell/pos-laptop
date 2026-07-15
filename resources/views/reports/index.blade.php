@@ -346,6 +346,7 @@
                         ['label' => 'Total Pengeluaran', 'value' => $totalExpenses, 'plus' => false],
                         ['label' => 'Cicilan Modal', 'value' => $totalCicilan, 'plus' => false],
                         ['label' => 'Gaji Karyawan', 'value' => $totalGajiKaryawan, 'plus' => false],
+                        ['label' => 'Piutang', 'value' => $totalPiutang, 'plus' => false],
                     ];
                 @endphp
 
@@ -367,7 +368,7 @@
                 <span class="text-sm font-medium text-indigo-200">Jumlah Saldo</span>
                 <span class="text-2xl font-bold text-white">
                     Rp
-                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
+                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan - $totalPiutang, 0, ',', '.') }}
                 </span>
             </div>
 

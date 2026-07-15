@@ -233,11 +233,15 @@
                 <td class="label minus">Gaji Karyawan</td>
                 <td class="value minus">- Rp {{ number_format($totalGajiKaryawan, 0, ',', '.') }}</td>
             </tr>
+            <tr>
+                <td class="label minus">Piutang</td>
+                <td class="value minus">- Rp {{ number_format($totalPiutang, 0, ',', '.') }}</td>
+            </tr>
             <tr class="total">
                 <td class="label">Jumlah Saldo</td>
                 <td class="value">
                     Rp
-                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan, 0, ',', '.') }}
+                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan - $totalPiutang, 0, ',', '.') }}
                 </td>
             </tr>
             <tr>

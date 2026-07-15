@@ -6,7 +6,8 @@
       "Bash(node test5.mjs)",
       "Bash(xargs -I{} grep -l \"sales\" {})",
       "Bash(php -l app/Http/Controllers/ProductController.php)",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "Bash(pkill -f \"artisan serve --port=8567\")"
     ]
   }
 }

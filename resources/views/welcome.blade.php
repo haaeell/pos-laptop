@@ -293,6 +293,12 @@
             cursor: pointer;
         }
 
+        .category-card-link {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+
         .category-card:hover {
             border-color: #B6CDF6;
             transform: translateY(-3px);
@@ -442,6 +448,15 @@
             font-size: 15px;
             text-align: center;
             padding: 8px;
+        }
+
+        .brand-chip-link {
+            display: grid;
+            place-items: center;
+            width: 100%;
+            height: 100%;
+            color: inherit;
+            text-decoration: none;
         }
 
         .brand-chip-logo {
@@ -848,10 +863,10 @@
                     </div>
                     <div class="category-grid">
                         @foreach($categories as $cat)
-                            <div class="category-card" onclick="filterByCategory('{{ $cat->id }}')">
+                            <a href="{{ route('catalog.listing', ['category' => $cat->id]) }}" class="category-card category-card-link" aria-label="Lihat produk kategori {{ $cat->name }}">
                                 <div class="category-icon"><i class="{{ $cat->icon ?: 'fa-solid fa-layer-group' }}"></i></div>
                                 <span>{{ $cat->name }}</span>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                 </div>
@@ -948,13 +963,13 @@
                     </div>
                     <div class="brands">
                         @foreach($brands as $brand)
-                            <div class="brand-chip">
+                            <a href="{{ route('catalog.listing', ['brand' => $brand->id]) }}" class="brand-chip brand-chip-link" aria-label="Lihat produk merek {{ $brand->name }}">
                                 @if($brand->logo)
                                     <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="brand-chip-logo">
                                 @else
                                     {{ $brand->name }}
                                 @endif
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                 </div>
@@ -1047,13 +1062,6 @@
         const brandEl = document.getElementById('brand');
         const container = document.getElementById('products-grid');
         const emptyEl = document.getElementById('empty');
-
-        function filterByCategory(id) {
-            activeCategory = id;
-            currentPage = 1;
-            loadProducts();
-            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
-        }
 
         async function loadProducts() {
             container.innerHTML = skeleton();
