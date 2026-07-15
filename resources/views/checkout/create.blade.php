@@ -52,18 +52,29 @@
             }
 
             .checkout-bottom-bar {
-                position: static;
-                background: transparent;
-                border-top: 0;
-                box-shadow: none;
-                padding: 0;
-                margin-top: 18px;
+                display: none;
             }
 
-            .checkout-bottom-bar-inner {
-                max-width: 100%;
-                justify-content: flex-end;
+            .checkout-summary-submit-btn,
+            .checkout-summary-trust-badge {
+                display: block;
             }
+        }
+
+        .checkout-summary-submit-btn,
+        .checkout-summary-trust-badge {
+            display: none;
+        }
+
+        .checkout-summary-submit-btn {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .checkout-summary-trust-badge {
+            justify-content: center;
+            width: 100%;
+            margin-top: 8px;
         }
 
         .checkout-section h1 {
@@ -629,6 +640,11 @@
                                 <span>Total</span>
                                 <strong id="summaryGrandTotalCard">Rp {{ number_format($itemsSubtotal, 0, ',', '.') }}</strong>
                             </div>
+
+                            <button type="submit" form="checkoutForm" class="btn btn-primary checkout-summary-submit-btn">
+                                Buat Pesanan
+                            </button>
+                            <p class="payment-trust-badge checkout-summary-trust-badge"><i class="fa-solid fa-lock"></i> Pembayaran Aman</p>
                         </div>
                     </aside>
                 </div>
