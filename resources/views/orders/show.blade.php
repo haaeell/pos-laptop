@@ -17,13 +17,15 @@
 
         $meta = $statusMeta[$order->status] ?? $statusMeta['pending_payment'];
         $nextAction = [
-            'paid' => ['label' => 'Tandai Diproses', 'icon' => 'fa-box-open'],
+            'paid' => ['label' => $order->delivery_method === 'pickup' ? 'Tandai Selesai' : 'Tandai Diproses', 'icon' => 'fa-box-open'],
             'shipped' => ['label' => 'Tandai Selesai', 'icon' => 'fa-circle-check'],
         ][$order->status] ?? null;
-        $canCreateShipment = in_array($order->status, ['paid', 'processing']) && !$order->hasShipment();
+        $canCreateShipment = $order->delivery_method === 'shipping' && in_array($order->status, ['paid', 'processing']) && !$order->hasShipment();
         $canCancel = !in_array($order->status, ['completed', 'cancelled', 'expired', 'failed']);
         $paymentLabel = $order->midtrans_payment_type ? strtoupper(str_replace('_', ' ', $order->midtrans_payment_type)) : 'Belum terdeteksi';
-        $statusSteps = ['pending_payment', 'paid', 'processing', 'shipped', 'completed'];
+        $statusSteps = $order->delivery_method === 'pickup'
+            ? ['pending_payment', 'paid', 'completed']
+            : ['pending_payment', 'paid', 'processing', 'shipped', 'completed'];
         $currentStep = array_search($order->status, $statusSteps, true);
     @endphp
 
@@ -51,7 +53,7 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[520px]">
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[520px]">
                     <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
                         <p class="text-[11px] uppercase tracking-wider text-slate-300">Total</p>
                         <p class="mt-1 text-lg font-black">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</p>
@@ -69,6 +71,20 @@
                         <p class="mt-1 truncate text-sm font-black">{{ $paymentLabel }}</p>
                     </div>
                 </div>
+                    </div>
+                </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Metode Pesanan</p>
+                    <p class="mt-1 font-bold text-slate-800">{{ $order->delivery_label }}</p>
+                </div>
+                @if ($order->delivery_method === 'pickup')
+                    <span class="inline-flex w-fit items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                        <i class="fa-solid fa-store"></i> Ambil di Toko
+                    </span>
+                @endif
             </div>
         </div>
 
@@ -155,10 +171,16 @@
                 <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h2 class="text-base font-bold text-slate-800">Tracking Pengiriman</h2>
-                            <p class="text-xs text-slate-500">Status resi, tracking ID, dan riwayat perjalanan paket.</p>
+                            <h2 class="text-base font-bold text-slate-800">
+                                {{ $order->delivery_method === 'pickup' ? 'Info Pickup' : 'Tracking Pengiriman' }}
+                            </h2>
+                            <p class="text-xs text-slate-500">
+                                {{ $order->delivery_method === 'pickup'
+                                    ? 'Pesanan ini diambil sendiri di toko, tanpa resi dan tanpa pengiriman.'
+                                    : 'Status resi, tracking ID, dan riwayat perjalanan paket.' }}
+                            </p>
                         </div>
-                        @if ($order->hasShipment())
+                        @if ($order->hasShipment() && $order->delivery_method === 'shipping')
                             <form action="{{ route('orders.shipment.refresh', $order->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-600 hover:text-white">
@@ -168,7 +190,18 @@
                         @endif
                     </div>
 
-                    @if (!$order->hasShipment())
+                    @if ($order->delivery_method === 'pickup')
+                        <div class="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-5">
+                            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <p class="font-bold text-amber-800">Pesanan pickup, tidak perlu resi pengiriman</p>
+                                    <p class="mt-1 text-sm text-amber-700">
+                                        Customer tinggal datang ke toko setelah pembayaran lunas. Kurir tidak perlu dibuat.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif (!$order->hasShipment())
                         <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
                             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                 <div>
@@ -252,7 +285,7 @@
                             </form>
                         @endif
 
-                        @if ($order->hasShipment())
+                        @if ($order->hasShipment() && $order->delivery_method === 'shipping')
                             <a href="{{ route('orders.shipment.label', $order->id) }}"
                                 class="w-full rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-700">
                                 <i class="fa-solid fa-download mr-2"></i> Download Resi A6

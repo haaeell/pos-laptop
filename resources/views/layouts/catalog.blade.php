@@ -1047,21 +1047,7 @@
             }
 
             .brand-text {
-                display: block;
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                text-align: center;
-                width: calc(100% - 112px);
-                pointer-events: none;
-            }
-
-            .brand-text strong {
-                font-size: 13px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                display: none;
             }
 
             .header-right {

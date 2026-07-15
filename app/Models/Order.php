@@ -9,6 +9,7 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'customer_id',
+        'delivery_method',
         'status',
         'grand_total',
         'items_subtotal',
@@ -61,6 +62,11 @@ class Order extends Model
         'failed' => 'Gagal',
     ];
 
+    const DELIVERY_LABELS = [
+        'shipping' => 'Pengiriman',
+        'pickup' => 'Pickup Sendiri',
+    ];
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
@@ -94,6 +100,11 @@ class Order extends Model
     public function isPaid(): bool
     {
         return in_array($this->status, ['paid', 'processing', 'shipped', 'completed']);
+    }
+
+    public function getDeliveryLabelAttribute(): string
+    {
+        return self::DELIVERY_LABELS[$this->delivery_method] ?? 'Pengiriman';
     }
 
 }

@@ -73,14 +73,17 @@ class MidtransService
                 'first_name' => $order->recipient_name,
                 'phone' => $order->recipient_phone,
                 'email' => $order->customer->email,
-                'shipping_address' => [
-                    'first_name' => $order->recipient_name,
-                    'phone' => $order->recipient_phone,
-                    'address' => $order->address_detail,
-                    'city' => $order->city,
-                ],
             ],
         ];
+
+        if ($order->delivery_method === 'shipping') {
+            $params['customer_details']['shipping_address'] = [
+                'first_name' => $order->recipient_name,
+                'phone' => $order->recipient_phone,
+                'address' => $order->address_detail,
+                'city' => $order->city,
+            ];
+        }
 
         return Snap::getSnapToken($params);
     }

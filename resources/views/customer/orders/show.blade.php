@@ -329,10 +329,15 @@
                                 <strong>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</strong>
                             </div>
                         @endforeach
-                        @if ($order->shipping_cost !== null)
+                        @if ($order->delivery_method === 'shipping' && $order->shipping_cost !== null)
                             <div class="order-item-row">
                                 <span>Ongkos Kirim ({{ $order->courier_service_name }})</span>
                                 <strong>Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</strong>
+                            </div>
+                        @elseif ($order->delivery_method === 'pickup')
+                            <div class="order-item-row">
+                                <span>Metode</span>
+                                <strong>Pickup Sendiri</strong>
                             </div>
                         @endif
                         <div class="order-item-row" style="font-weight:800;color:var(--primary);">
@@ -342,16 +347,22 @@
                     </div>
 
                     <div class="order-card address-box">
-                        <h3><i class="fa-solid fa-location-dot"></i> Alamat Pengiriman</h3>
-                        <p><strong>{{ $order->recipient_name }}</strong> ({{ $order->recipient_phone }})</p>
-                        <p>{{ $order->address_detail }}</p>
-                        <p class="muted">{{ $order->district }}, {{ $order->city }}, {{ $order->province }}</p>
+                        <h3><i class="fa-solid fa-location-dot"></i> {{ $order->delivery_method === 'pickup' ? 'Info Pickup' : 'Alamat Pengiriman' }}</h3>
+                        @if ($order->delivery_method === 'pickup')
+                            <p><strong>{{ $namaToko }}</strong></p>
+                            <p>{{ $alamat }}</p>
+                            <p class="muted">Pesanan diambil sendiri di toko setelah pembayaran selesai.</p>
+                        @else
+                            <p><strong>{{ $order->recipient_name }}</strong> ({{ $order->recipient_phone }})</p>
+                            <p>{{ $order->address_detail }}</p>
+                            <p class="muted">{{ $order->district }}, {{ $order->city }}, {{ $order->province }}</p>
+                        @endif
                         @if ($order->notes)
                             <p class="muted">Catatan: {{ $order->notes }}</p>
                         @endif
                     </div>
 
-                    @if ($order->hasShipment())
+                    @if ($order->delivery_method === 'shipping' && $order->hasShipment())
                         <div class="order-card">
                             <h3><i class="fa-solid fa-truck-fast"></i> Lacak Paket</h3>
                             <p style="font-size:13px;margin-bottom:4px;">
@@ -379,6 +390,16 @@
                             @else
                                 <p style="font-size:12.5px;color:var(--muted);">Belum ada update tracking.</p>
                             @endif
+                        </div>
+                    @elseif ($order->delivery_method === 'pickup')
+                        <div class="order-card">
+                            <h3><i class="fa-solid fa-store"></i> Ambil di Toko</h3>
+                            <p style="font-size:13px;margin-bottom:4px;">
+                                <strong>Pesanan siap diambil setelah status pembayaran lunas.</strong>
+                            </p>
+                            <p style="font-size:12.5px;color:var(--muted);margin-bottom:0;">
+                                Tidak ada resi, tracking, atau pengiriman kurir untuk pesanan ini.
+                            </p>
                         </div>
                     @endif
 

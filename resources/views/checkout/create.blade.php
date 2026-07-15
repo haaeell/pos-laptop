@@ -195,6 +195,49 @@
             padding: 10px 0;
         }
 
+        .delivery-options {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .delivery-option {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 14px;
+            cursor: pointer;
+            background: #fff;
+            transition: .2s;
+        }
+
+        .delivery-option.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-soft);
+        }
+
+        .delivery-option strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13.5px;
+        }
+
+        .delivery-option span {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .delivery-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .delivery-hidden {
+            display: none;
+        }
+
         .shipping-trust-badge,
         .payment-trust-badge {
             display: inline-flex;
@@ -574,6 +617,7 @@
                             <input type="hidden" name="product_id" value="{{ $buyNowProductId }}">
                             <input type="hidden" name="qty" value="{{ $buyNowQty }}">
                         @endif
+                        <input type="hidden" name="delivery_method" id="deliveryMethod" value="shipping">
                         <input type="hidden" name="address_id" id="selectedAddressId">
                         <input type="hidden" name="courier_company" id="selectedCourierCompany">
                         <input type="hidden" name="courier_type" id="selectedCourierType">
@@ -590,6 +634,21 @@
                         </div>
 
                         <div class="checkout-card">
+                            <h3><i class="fa-solid fa-truck-fast"></i> Metode Pengambilan</h3>
+                            <div class="delivery-options" id="deliveryOptions">
+                                <div class="delivery-option selected" data-method="shipping">
+                                    <strong>Pengiriman</strong>
+                                    <span>Pesanan dikirim ke alamat pilihan Anda melalui kurir.</span>
+                                </div>
+                                <div class="delivery-option" data-method="pickup">
+                                    <strong>Pickup Sendiri</strong>
+                                    <span>Ambil pesanan langsung di toko tanpa ongkir dan tanpa resi.</span>
+                                </div>
+                            </div>
+                            <p class="delivery-note">Pilih pickup jika Anda ingin datang langsung ke toko untuk mengambil pesanan.</p>
+                        </div>
+
+                        <div class="checkout-card" id="shippingAddressCard">
                             <h3><i class="fa-solid fa-location-dot"></i> Alamat Pengiriman</h3>
                             <div class="addr-summary-card" id="addressSummaryCard">
                                 <div class="addr-summary-empty" id="addressSummaryEmpty">
@@ -605,7 +664,7 @@
                             </div>
                         </div>
 
-                        <div class="checkout-card">
+                        <div class="checkout-card" id="shippingCourierCard">
                             <h3><i class="fa-solid fa-truck-fast"></i> Pilih Kurir</h3>
                             <p class="shipping-trust-badge"><i class="fa-solid fa-shield-halved"></i> Pengiriman Terpercaya</p>
                             <div id="selectedCourierLogo" class="courier-selected-logo" style="display:none;">
@@ -615,6 +674,17 @@
                             <div id="courierList" class="courier-list">
                                 <p class="courier-hint">Pilih alamat pengiriman untuk melihat opsi kurir.</p>
                             </div>
+                        </div>
+
+                        <div class="checkout-card" id="pickupInfoCard" style="display:none;">
+                            <h3><i class="fa-solid fa-store"></i> Info Pickup</h3>
+                            <div class="addr-summary-body" style="display:block;">
+                                <strong>{{ $namaToko }}</strong>
+                                <p>{{ $alamat }}</p>
+                            </div>
+                            <p class="delivery-note" style="margin-top:12px;">
+                                Pembayaran tetap dilakukan seperti biasa. Setelah lunas, customer tinggal datang ke toko dan konfirmasi ke admin.
+                            </p>
                         </div>
 
                         <div class="checkout-card">
@@ -776,10 +846,16 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const itemsSubtotal = {{ (float) $itemsSubtotal }};
+        const storeName = @json($namaToko);
+        const storeAddress = @json($alamat);
         const selectedAddressIdInput = document.getElementById('selectedAddressId');
         const selectedCourierCompanyInput = document.getElementById('selectedCourierCompany');
         const selectedCourierTypeInput = document.getElementById('selectedCourierType');
+        const deliveryMethodInput = document.getElementById('deliveryMethod');
         const courierListEl = document.getElementById('courierList');
+        const shippingAddressCard = document.getElementById('shippingAddressCard');
+        const shippingCourierCard = document.getElementById('shippingCourierCard');
+        const pickupInfoCard = document.getElementById('pickupInfoCard');
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const WILAYAH_BASE = 'https://www.emsifa.com/api-wilayah-indonesia/api';
         const DEFAULT_MAP_CENTER = [-6.563246, 107.760467];
@@ -787,6 +863,7 @@
         let addresses = @json($addresses);
         let selectedCourierLabel = '';
         let selectedShippingCost = 0;
+        let selectedDeliveryMethod = 'shipping';
         let naMap = null;
         let naMarker = null;
 
@@ -846,6 +923,45 @@
             document.getElementById('summaryGrandTotalCard').innerText = formatRupiah(grandTotal);
         }
 
+        function setDeliveryMethod(method) {
+            selectedDeliveryMethod = method;
+            deliveryMethodInput.value = method;
+
+            document.querySelectorAll('.delivery-option').forEach(option => {
+                option.classList.toggle('selected', option.dataset.method === method);
+            });
+
+            const isPickup = method === 'pickup';
+            shippingAddressCard.classList.toggle('delivery-hidden', isPickup);
+            shippingCourierCard.classList.toggle('delivery-hidden', isPickup);
+            pickupInfoCard.style.display = isPickup ? 'block' : 'none';
+
+            if (isPickup) {
+                selectedAddressIdInput.value = '';
+                selectedCourierCompanyInput.value = '';
+                selectedCourierTypeInput.value = '';
+                selectedCourierLabel = '';
+                courierListEl.innerHTML = '<p class="courier-hint">Pickup sendiri tidak memerlukan pilihan kurir.</p>';
+                document.getElementById('selectedCourierLogo').style.display = 'none';
+                updateSummary(0);
+                renderAddressSummary();
+            } else {
+                pickupInfoCard.style.display = 'none';
+
+                if (addresses.length && !selectedAddressIdInput.value) {
+                    const initial = addresses.find(a => a.is_default) || addresses[0];
+                    if (initial) {
+                        selectAddress(initial.id);
+                        return;
+                    }
+                }
+
+                if (selectedAddressIdInput.value) {
+                    loadRatesForAddress(selectedAddressIdInput.value);
+                }
+            }
+        }
+
         function extraParams() {
             const params = {};
             const productIdInput = document.querySelector('input[name=product_id]');
@@ -856,6 +972,19 @@
         }
 
         function renderAddressSummary() {
+            if (selectedDeliveryMethod === 'pickup') {
+                const emptyEl = document.getElementById('addressSummaryEmpty');
+                const bodyEl = document.getElementById('addressSummaryBody');
+                const btnLabel = document.getElementById('addressChangeBtnLabel');
+
+                emptyEl.style.display = 'none';
+                bodyEl.style.display = 'block';
+                btnLabel.innerText = 'Pickup';
+                document.getElementById('addressSummaryTitle').innerText = storeName;
+                document.getElementById('addressSummaryText').innerText = storeAddress;
+                return;
+            }
+
             const selected = addresses.find(a => String(a.id) === String(selectedAddressIdInput.value));
             const emptyEl = document.getElementById('addressSummaryEmpty');
             const bodyEl = document.getElementById('addressSummaryBody');
@@ -907,6 +1036,11 @@
         }
 
         async function loadRatesForAddress(addressId) {
+            if (selectedDeliveryMethod === 'pickup') {
+                updateSummary(0);
+                return;
+            }
+
             courierListEl.innerHTML = '<p class="courier-hint">Memuat opsi kurir...</p>';
             selectedCourierCompanyInput.value = '';
             selectedCourierTypeInput.value = '';
@@ -979,6 +1113,9 @@
         }
 
         function openAddressModal() {
+            if (selectedDeliveryMethod === 'pickup') {
+                return;
+            }
             renderAddressPickList();
             document.getElementById('addressModalOverlay').classList.add('open');
         }
@@ -1148,6 +1285,9 @@
         }
 
         function toggleAddAddressForm(show) {
+            if (selectedDeliveryMethod === 'pickup') {
+                return;
+            }
             const formEl = document.getElementById('newAddressForm');
             const listEl = document.getElementById('addressPickList');
             const toggleBtn = document.getElementById('addAddressToggleBtn');
@@ -1245,11 +1385,20 @@
         });
 
         // --- init ---
+        document.querySelectorAll('.delivery-option').forEach(option => {
+            option.addEventListener('click', function () {
+                setDeliveryMethod(this.dataset.method);
+            });
+        });
+
         renderAddressSummary();
         if (addresses.length) {
             const initial = addresses.find(a => a.is_default) || addresses[0];
-            selectAddress(initial.id);
+            if (initial) {
+                selectAddress(initial.id);
+            }
         }
+        setDeliveryMethod('shipping');
 
         window.applyScrollReveal?.();
 
@@ -1257,25 +1406,29 @@
         document.getElementById('checkoutForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            if (!selectedAddressIdInput.value) {
+            const grandTotal = itemsSubtotal + selectedShippingCost;
+            const isPickup = selectedDeliveryMethod === 'pickup';
+            const selectedAddress = !isPickup ? addresses.find(a => String(a.id) === String(selectedAddressIdInput.value)) : null;
+
+            if (!isPickup && !selectedAddressIdInput.value) {
                 Swal.fire({ icon: 'warning', title: 'Alamat Belum Dipilih', text: 'Mohon pilih atau tambahkan alamat pengiriman terlebih dahulu.' });
                 return;
             }
-            if (!selectedCourierCompanyInput.value) {
+            if (!isPickup && !selectedCourierCompanyInput.value) {
                 Swal.fire({ icon: 'warning', title: 'Kurir Belum Dipilih', text: 'Mohon pilih kurir pengiriman terlebih dahulu.' });
                 return;
             }
-
-            const selectedAddress = addresses.find(a => String(a.id) === String(selectedAddressIdInput.value));
-            const grandTotal = itemsSubtotal + selectedShippingCost;
 
             Swal.fire({
                 icon: 'question',
                 title: 'Konfirmasi Pesanan',
                 html: `
                     <div style="text-align:left;font-size:13.5px;">
-                        <p style="margin-bottom:8px;"><strong>Alamat:</strong><br>${selectedAddress.label} — ${selectedAddress.recipient_name}<br>${selectedAddress.address_detail}, ${selectedAddress.district}, ${selectedAddress.city}</p>
-                        <p style="margin-bottom:8px;"><strong>Kurir:</strong><br>${selectedCourierLabel}</p>
+                        ${isPickup
+                            ? `<p style="margin-bottom:8px;"><strong>Pickup:</strong><br>${storeName}<br>${storeAddress}</p>`
+                            : `<p style="margin-bottom:8px;"><strong>Alamat:</strong><br>${selectedAddress.label} — ${selectedAddress.recipient_name}<br>${selectedAddress.address_detail}, ${selectedAddress.district}, ${selectedAddress.city}</p>
+                               <p style="margin-bottom:8px;"><strong>Kurir:</strong><br>${selectedCourierLabel}</p>`
+                        }
                         <p><strong>Total Bayar:</strong> ${formatRupiah(grandTotal)}</p>
                         <p style="color:#B42318;font-size:12px;margin-top:10px;">Selesaikan pembayaran dalam 30 menit setelah pesanan dibuat, atau pesanan otomatis dibatalkan.</p>
                     </div>

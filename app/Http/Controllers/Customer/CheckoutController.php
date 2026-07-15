@@ -194,15 +194,14 @@ class CheckoutController extends Controller
         }
 
         $data = $request->validate([
-            'address_id' => 'required|exists:customer_addresses,id',
-            'courier_company' => 'required|string',
-            'courier_type' => 'required|string',
+            'delivery_method' => 'required|in:shipping,pickup',
+            'address_id' => 'nullable|exists:customer_addresses,id',
+            'courier_company' => 'nullable|string',
+            'courier_type' => 'nullable|string',
             'notes' => 'nullable|string|max:500',
             'product_id' => 'nullable|integer',
             'qty' => 'nullable|integer|min:1',
         ]);
-
-        $address = CustomerAddress::where('customer_id', $this->customerId())->findOrFail($data['address_id']);
 
         $lines = $this->resolveLines($request);
 
@@ -210,57 +209,72 @@ class CheckoutController extends Controller
             return $this->checkoutError($request, 'Keranjang Anda kosong.', 'cart.index');
         }
 
-        $originAreaId = Setting::get('biteship_origin_area_id');
-
-        if (!$biteship->isConfigured() || !$originAreaId || !$address->area_id) {
-            return $this->checkoutError($request, 'Pengiriman belum siap digunakan, silakan hubungi admin toko.');
-        }
-
-        // Re-fetch rates server-side and only trust the price Biteship itself
-        // returns for the submitted courier — never the client's number.
-        $pricing = collect($biteship->getRates($originAreaId, $address->area_id, $this->itemsForBiteship($lines)))
-            ->sortBy(fn ($option) => (float) ($option['price'] ?? PHP_FLOAT_MAX))
-            ->values();
-        $chosen = collect($pricing)->first(fn ($p) =>
-            $p['courier_code'] === $data['courier_company'] && $p['type'] === $data['courier_type']
-        );
-
-        if (!$chosen) {
-            return $this->checkoutError($request, 'Opsi kurir yang dipilih tidak lagi tersedia, silakan pilih ulang.');
-        }
-
-        $shippingCost = (float) $chosen['price'];
         $itemsSubtotal = collect($lines)->sum(fn ($l) => $l['qty'] * $l['product']->selling_price);
+        $shippingCost = 0;
+        $chosen = null;
+        $address = null;
+        $originAreaId = null;
+
+        if ($data['delivery_method'] === 'shipping') {
+            $address = CustomerAddress::where('customer_id', $this->customerId())->findOrFail($data['address_id']);
+            $originAreaId = Setting::get('biteship_origin_area_id');
+
+            if (!$biteship->isConfigured() || !$originAreaId || !$address->area_id) {
+                return $this->checkoutError($request, 'Pengiriman belum siap digunakan, silakan hubungi admin toko.');
+            }
+
+            // Re-fetch rates server-side and only trust the price Biteship itself
+            // returns for the submitted courier — never the client's number.
+            $pricing = collect($biteship->getRates($originAreaId, $address->area_id, $this->itemsForBiteship($lines)))
+                ->sortBy(fn ($option) => (float) ($option['price'] ?? PHP_FLOAT_MAX))
+                ->values();
+            $chosen = collect($pricing)->first(fn ($p) =>
+                $p['courier_code'] === $data['courier_company'] && $p['type'] === $data['courier_type']
+            );
+
+            if (!$chosen) {
+                return $this->checkoutError($request, 'Opsi kurir yang dipilih tidak lagi tersedia, silakan pilih ulang.');
+            }
+
+            $shippingCost = (float) $chosen['price'];
+        }
+
         $grandTotal = $itemsSubtotal + $shippingCost;
+        $customer = Auth::guard('customers')->user();
+        $storeName = Setting::get('nama_toko', 'Barokah Computer');
+        $storeAddress = Setting::get('alamat', 'Alamat toko belum diatur');
 
         try {
-            $order = DB::transaction(function () use ($data, $lines, $request, $address, $chosen, $shippingCost, $itemsSubtotal, $grandTotal, $originAreaId) {
+            $order = DB::transaction(function () use ($data, $lines, $request, $address, $chosen, $shippingCost, $itemsSubtotal, $grandTotal, $originAreaId, $customer, $storeName, $storeAddress) {
                 // Locks and decrements product stock for these lines — must run
                 // inside this same transaction so the row locks it takes are
                 // held until the order itself commits, closing the window where
                 // two simultaneous checkouts could both reserve the last unit.
                 $this->stockReservation->reserve($lines);
 
+                $isPickup = $data['delivery_method'] === 'pickup';
+
                 $order = Order::create([
                     'order_number' => 'ORD-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
                     'customer_id' => $this->customerId(),
+                    'delivery_method' => $data['delivery_method'],
                     'status' => 'pending_payment',
                     'grand_total' => $grandTotal,
                     'items_subtotal' => $itemsSubtotal,
                     'shipping_cost' => $shippingCost,
-                    'recipient_name' => $address->recipient_name,
-                    'recipient_phone' => $address->recipient_phone,
-                    'province' => $address->province,
-                    'city' => $address->city,
-                    'district' => $address->district,
-                    'address_detail' => $address->address_detail,
+                    'recipient_name' => $isPickup ? $customer->name : $address->recipient_name,
+                    'recipient_phone' => $isPickup ? ($customer->phone ?: $address->recipient_phone) : $address->recipient_phone,
+                    'province' => $isPickup ? 'Pickup di Toko' : $address->province,
+                    'city' => $isPickup ? $storeName : $address->city,
+                    'district' => $isPickup ? 'Pickup Sendiri' : $address->district,
+                    'address_detail' => $isPickup ? $storeAddress : $address->address_detail,
                     'notes' => $data['notes'] ?? null,
                     'expires_at' => now()->addMinutes(self::PAYMENT_WINDOW_MINUTES),
-                    'courier_company' => $chosen['courier_code'],
-                    'courier_type' => $chosen['type'],
-                    'courier_service_name' => $chosen['courier_name'] . ' - ' . $chosen['courier_service_name'],
-                    'origin_area_id' => $originAreaId,
-                    'destination_area_id' => $address->area_id,
+                    'courier_company' => $isPickup ? null : $chosen['courier_code'],
+                    'courier_type' => $isPickup ? null : $chosen['type'],
+                    'courier_service_name' => $isPickup ? 'Pickup Sendiri' : ($chosen['courier_name'] . ' - ' . $chosen['courier_service_name']),
+                    'origin_area_id' => $isPickup ? null : $originAreaId,
+                    'destination_area_id' => $isPickup ? null : $address->area_id,
                 ]);
 
                 foreach ($lines as $line) {
@@ -278,7 +292,9 @@ class CheckoutController extends Controller
                 OrderStatusHistory::create([
                     'order_id' => $order->id,
                     'status' => 'pending_payment',
-                    'note' => 'Pesanan dibuat, menunggu pembayaran.',
+                    'note' => $data['delivery_method'] === 'pickup'
+                        ? 'Pesanan pickup dibuat, menunggu pembayaran.'
+                        : 'Pesanan dibuat, menunggu pembayaran.',
                 ]);
 
                 // "Buy now" never touches the cart. Only clear cart rows when this

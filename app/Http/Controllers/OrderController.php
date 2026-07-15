@@ -75,7 +75,12 @@ class OrderController extends Controller
     public function advance($id)
     {
         $order = Order::findOrFail($id);
-        $next = self::NEXT_STATUS[$order->status] ?? null;
+
+        if ($order->delivery_method === 'pickup' && $order->status === 'paid') {
+            $next = 'completed';
+        } else {
+            $next = self::NEXT_STATUS[$order->status] ?? null;
+        }
 
         if (!$next) {
             return back()->with('error', 'Status pesanan ini tidak bisa dilanjutkan.');
@@ -121,6 +126,10 @@ class OrderController extends Controller
     {
         $order = Order::with('items.product')->findOrFail($id);
 
+        if ($order->delivery_method === 'pickup') {
+            return back()->with('error', 'Pesanan pickup tidak perlu dibuat resi pengiriman.');
+        }
+
         if (!in_array($order->status, ['paid', 'processing'])) {
             return back()->with('error', 'Pesanan harus berstatus lunas/diproses untuk membuat pengiriman.');
         }
@@ -155,6 +164,10 @@ class OrderController extends Controller
     public function refreshTracking($id, BiteshipService $biteship)
     {
         $order = Order::findOrFail($id);
+
+        if ($order->delivery_method === 'pickup') {
+            return back()->with('error', 'Pesanan pickup tidak memiliki tracking pengiriman.');
+        }
 
         if (!$order->hasShipment()) {
             return back()->with('error', 'Pesanan ini belum memiliki pengiriman.');
@@ -209,6 +222,10 @@ class OrderController extends Controller
     public function downloadShipmentLabel($id)
     {
         $order = Order::with(['items.product', 'customer'])->findOrFail($id);
+
+        if ($order->delivery_method === 'pickup') {
+            return back()->with('error', 'Pesanan pickup tidak memiliki resi pengiriman.');
+        }
 
         if (!$order->hasShipment()) {
             return back()->with('error', 'Pesanan ini belum memiliki resi pengiriman.');
