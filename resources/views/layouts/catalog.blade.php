@@ -191,6 +191,10 @@
             color: var(--muted);
         }
 
+        .mobile-brand-title {
+            display: none;
+        }
+
         .header-actions {
             display: flex;
             align-items: center;
@@ -1050,6 +1054,23 @@
                 display: none;
             }
 
+            .mobile-brand-title {
+                display: block;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: calc(100% - 112px);
+                text-align: center;
+                pointer-events: none;
+                font-size: 13px;
+                font-weight: 800;
+                color: var(--text);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
             .header-right {
                 flex-shrink: 0;
             }
@@ -1493,6 +1514,8 @@
                     <strong>{{ $namaToko }}</strong>
                 </div>
             </a>
+
+            <div class="mobile-brand-title">Barokah Computer</div>
 
             <div class="search-wrap">
                 <form class="search-bar" action="{{ url('/') }}" method="GET" id="searchForm" autocomplete="off">
