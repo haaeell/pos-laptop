@@ -22,12 +22,15 @@ class BrandController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required'
+            'name' => 'required',
+            'logo' => 'nullable|image|max:2048',
         ]);
 
         Brand::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name)
+            'slug' => Str::slug($request->name),
+            'logo' => $request->hasFile('logo') ? $request->file('logo')->store('brands', 'public') : null,
+            'show_as_partner' => $request->boolean('show_as_partner', true),
         ]);
 
         return redirect()->back()->with('success', 'Brand berhasil ditambahkan');
@@ -36,15 +39,33 @@ class BrandController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required'
+            'name' => 'required',
+            'logo' => 'nullable|image|max:2048',
         ]);
 
-        Brand::findOrFail($id)->update([
+        $brand = Brand::findOrFail($id);
+
+        $data = [
             'name' => $request->name,
-            'slug' => Str::slug($request->name)
-        ]);
+            'slug' => Str::slug($request->name),
+            'show_as_partner' => $request->boolean('show_as_partner', true),
+        ];
+
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $request->file('logo')->store('brands', 'public');
+        }
+
+        $brand->update($data);
 
         return redirect()->back()->with('success', 'Brand berhasil diperbarui');
+    }
+
+    public function togglePartner($id)
+    {
+        $brand = Brand::findOrFail($id);
+        $brand->update(['show_as_partner' => !$brand->show_as_partner]);
+
+        return redirect()->back()->with('success', 'Status brand partner berhasil diperbarui');
     }
 
     public function destroy($id)

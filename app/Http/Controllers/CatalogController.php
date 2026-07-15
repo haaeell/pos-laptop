@@ -15,8 +15,8 @@ class CatalogController extends Controller
     public function index()
     {
         return view('welcome', [
-            'categories' => Category::orderBy('name')->get(),
-            'brands'     => Brand::orderBy('name')->get(),
+            'categories' => Category::where('show_on_customer_site', true)->orderBy('name')->get(),
+            'brands'     => Brand::where('show_as_partner', true)->orderBy('name')->get(),
             'contacts'   => Contact::where('is_active', true)->get(),
             'settings'   => Setting::pluck('value', 'key'),
         ]);
@@ -25,7 +25,7 @@ class CatalogController extends Controller
     public function listing()
     {
         return view('produk.index', [
-            'categories' => Category::orderBy('name')->get(),
+            'categories' => Category::where('show_on_customer_site', true)->orderBy('name')->get(),
             'brands'     => Brand::orderBy('name')->get(),
         ]);
     }

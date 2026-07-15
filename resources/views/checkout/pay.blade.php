@@ -136,7 +136,7 @@
                     </button>
                 @else
                     <p class="auth-alert">
-                        Pesanan sudah dibuat, tetapi token pembayaran Midtrans belum berhasil dibuat. Silakan hubungi
+                        Pesanan sudah dibuat, tetapi token pembayaran belum berhasil dibuat. Silakan hubungi
                         admin toko dan sebutkan nomor pesanan ini.
                     </p>
                 @endif

@@ -22,12 +22,15 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required'
+            'name' => 'required',
+            'icon' => 'nullable|string|max:100',
         ]);
 
         Category::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name)
+            'slug' => Str::slug($request->name),
+            'icon' => $request->icon,
+            'show_on_customer_site' => $request->boolean('show_on_customer_site', true),
         ]);
 
         return redirect()->back()->with('success', 'Kategori berhasil ditambahkan');
@@ -36,15 +39,26 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required'
+            'name' => 'required',
+            'icon' => 'nullable|string|max:100',
         ]);
 
         Category::findOrFail($id)->update([
             'name' => $request->name,
-            'slug' => Str::slug($request->name)
+            'slug' => Str::slug($request->name),
+            'icon' => $request->icon,
+            'show_on_customer_site' => $request->boolean('show_on_customer_site', true),
         ]);
 
         return redirect()->back()->with('success', 'Kategori berhasil diperbarui');
+    }
+
+    public function toggleVisibility($id)
+    {
+        $category = Category::findOrFail($id);
+        $category->update(['show_on_customer_site' => !$category->show_on_customer_site]);
+
+        return redirect()->back()->with('success', 'Visibilitas kategori berhasil diperbarui');
     }
 
     public function destroy($id)

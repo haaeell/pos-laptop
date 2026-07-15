@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
+use App\Models\Courier;
 use App\Models\CustomerAddress;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -155,9 +156,17 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Keranjang kosong.'], 422);
         }
 
+        $courierLogos = Courier::pluck('logo', 'code');
+
         $pricing = collect($biteship->getRates($originAreaId, $address->area_id, $this->itemsForBiteship($lines)))
             ->sortBy(fn ($option) => (float) ($option['price'] ?? PHP_FLOAT_MAX))
             ->values()
+            ->map(function ($option) use ($courierLogos) {
+                $logo = $courierLogos[strtolower((string) ($option['courier_code'] ?? ''))] ?? null;
+                $option['courier_logo_url'] = $logo ? asset('storage/' . $logo) : null;
+
+                return $option;
+            })
             ->all();
 
         return response()->json(['pricing' => $pricing]);

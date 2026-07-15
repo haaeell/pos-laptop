@@ -399,7 +399,7 @@
                     </div>
                     @foreach($categories as $cat)
                         <div class="category-card" data-category="{{ $cat->id }}" onclick="filterByCategory('{{ $cat->id }}')">
-                            <div class="category-icon"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="category-icon"><i class="{{ $cat->icon ?: 'fa-solid fa-layer-group' }}"></i></div>
                             <span>{{ $cat->name }}</span>
                         </div>
                     @endforeach

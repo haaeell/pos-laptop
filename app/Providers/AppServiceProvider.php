@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Category;
 use App\Models\Contact;
+use App\Models\Order;
 use App\Models\Setting;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -54,6 +55,23 @@ class AppServiceProvider extends ServiceProvider
                 'jamBuka'       => $settings['jam_buka'] ?? '09.00 – 21.00',
                 'deskripsi'     => $settings['deskripsi'] ?? 'Laptop & elektronik berkualitas dengan harga terbaik.',
                 'logo'          => $settings['logo'] ?? 'logo.jpeg',
+            ]);
+        });
+
+        View::composer('layouts.app', function ($view) {
+            if (!auth()->check()) {
+                return;
+            }
+
+            $newOrders = Order::with('customer')
+                ->where('status', 'paid')
+                ->latest()
+                ->take(5)
+                ->get();
+
+            $view->with([
+                'newOrdersCount' => Order::where('status', 'paid')->count(),
+                'newOrders'      => $newOrders,
             ]);
         });
     }

@@ -184,6 +184,46 @@
             padding: 10px 0;
         }
 
+        .shipping-trust-badge,
+        .payment-trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #16a34a;
+            margin: 4px 0 10px;
+        }
+
+        .payment-trust-badge {
+            margin: 6px 0 0;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .courier-selected-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+        }
+
+        .courier-selected-logo img {
+            height: 28px;
+            max-width: 90px;
+            object-fit: contain;
+        }
+
+        .courier-selected-logo span {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+        }
+
         .form-group {
             margin-bottom: 0;
         }
@@ -558,6 +598,11 @@
 
                         <div class="checkout-card">
                             <h3><i class="fa-solid fa-truck-fast"></i> Pilih Kurir</h3>
+                            <p class="shipping-trust-badge"><i class="fa-solid fa-shield-halved"></i> Pengiriman Terpercaya</p>
+                            <div id="selectedCourierLogo" class="courier-selected-logo" style="display:none;">
+                                <img id="selectedCourierLogoImg" src="" alt="">
+                                <span id="selectedCourierLogoLabel"></span>
+                            </div>
                             <div id="courierList" class="courier-list">
                                 <p class="courier-hint">Pilih alamat pengiriman untuk melihat opsi kurir.</p>
                             </div>
@@ -600,9 +645,12 @@
                 <div class="checkout-bottom-total-value" id="summaryGrandTotal">Rp
                     {{ number_format($itemsSubtotal, 0, ',', '.') }}</div>
             </div>
-            <button type="submit" form="checkoutForm" class="btn btn-primary" id="checkoutSubmitBtn">
-                Buat Pesanan
-            </button>
+            <div>
+                <button type="submit" form="checkoutForm" class="btn btn-primary" id="checkoutSubmitBtn">
+                    Buat Pesanan
+                </button>
+                <p class="payment-trust-badge"><i class="fa-solid fa-lock"></i> Pembayaran Aman</p>
+            </div>
         </div>
     </div>
 
@@ -851,6 +899,7 @@
             selectedCourierCompanyInput.value = '';
             selectedCourierTypeInput.value = '';
             selectedCourierLabel = '';
+            document.getElementById('selectedCourierLogo').style.display = 'none';
             updateSummary(0);
 
             try {
@@ -879,7 +928,7 @@
 
                 courierListEl.innerHTML = pricing.map((p) => `
                     <div class="courier-card" data-company="${p.courier_code}" data-type="${p.type}" data-price="${p.price}"
-                        data-label="${p.courier_name} - ${p.courier_service_name}">
+                        data-label="${p.courier_name} - ${p.courier_service_name}" data-logo="${p.courier_logo_url || ''}">
                         <div>
                             <div class="name">${p.courier_name} - ${p.courier_service_name}</div>
                             <div class="duration">Estimasi ${p.duration || '-'}</div>
@@ -887,6 +936,10 @@
                         <div class="price">${formatRupiah(p.price)}</div>
                     </div>
                 `).join('');
+
+                const selectedLogoWrap = document.getElementById('selectedCourierLogo');
+                const selectedLogoImg = document.getElementById('selectedCourierLogoImg');
+                const selectedLogoLabel = document.getElementById('selectedCourierLogoLabel');
 
                 courierListEl.querySelectorAll('.courier-card').forEach(card => {
                     card.addEventListener('click', function () {
@@ -896,6 +949,14 @@
                         selectedCourierTypeInput.value = this.dataset.type;
                         selectedCourierLabel = this.dataset.label;
                         updateSummary(Number(this.dataset.price));
+
+                        if (this.dataset.logo) {
+                            selectedLogoImg.src = this.dataset.logo;
+                            selectedLogoLabel.textContent = this.dataset.label;
+                            selectedLogoWrap.style.display = 'flex';
+                        } else {
+                            selectedLogoWrap.style.display = 'none';
+                        }
                     });
                 });
 

@@ -12,6 +12,12 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
+        'icon',
+        'show_on_customer_site',
+    ];
+
+    protected $casts = [
+        'show_on_customer_site' => 'boolean',
     ];
 
     /* ================= RELATIONS ================= */

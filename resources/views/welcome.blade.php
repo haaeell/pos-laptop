@@ -444,6 +444,12 @@
             padding: 8px;
         }
 
+        .brand-chip-logo {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
         .testimonial-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -843,7 +849,7 @@
                     <div class="category-grid">
                         @foreach($categories as $cat)
                             <div class="category-card" onclick="filterByCategory('{{ $cat->id }}')">
-                                <div class="category-icon"><i class="fa-solid fa-layer-group"></i></div>
+                                <div class="category-icon"><i class="{{ $cat->icon ?: 'fa-solid fa-layer-group' }}"></i></div>
                                 <span>{{ $cat->name }}</span>
                             </div>
                         @endforeach
@@ -942,7 +948,13 @@
                     </div>
                     <div class="brands">
                         @foreach($brands as $brand)
-                            <div class="brand-chip">{{ $brand->name }}</div>
+                            <div class="brand-chip">
+                                @if($brand->logo)
+                                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="brand-chip-logo">
+                                @else
+                                    {{ $brand->name }}
+                                @endif
+                            </div>
                         @endforeach
                     </div>
                 </div>

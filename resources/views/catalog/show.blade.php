@@ -523,7 +523,12 @@
 
                 <div class="info-panel">
                     <div class="badges">
-                        <span class="badge-pill">{{ $product->category->name ?? '-' }}</span>
+                        <span class="badge-pill">
+                            @if($product->category?->icon)
+                                <i class="{{ $product->category->icon }}"></i>
+                            @endif
+                            {{ $product->category->name ?? '-' }}
+                        </span>
                         <span class="badge-pill condition">{{ $product->condition === 'used' ? 'Bekas' : 'Baru' }}</span>
                         @if ($isSold)
                             <span class="badge-pill stock"><i class="fa-solid fa-tag"></i> Sold</span>
@@ -558,7 +563,12 @@
                     </div>
                     <div class="spec-row">
                         <span>Merek</span>
-                        <span>{{ $product->brand->name ?? '-' }}</span>
+                        <span>
+                            @if($product->brand?->logo)
+                                <img src="{{ asset('storage/' . $product->brand->logo) }}" alt="{{ $product->brand->name }}" style="height:18px;vertical-align:middle;object-fit:contain;margin-right:4px;">
+                            @endif
+                            {{ $product->brand->name ?? '-' }}
+                        </span>
                     </div>
                     <div class="spec-row">
                         <span>Kondisi</span>

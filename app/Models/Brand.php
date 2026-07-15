@@ -12,6 +12,12 @@ class Brand extends Model
     protected $fillable = [
         'name',
         'slug',
+        'logo',
+        'show_as_partner',
+    ];
+
+    protected $casts = [
+        'show_as_partner' => 'boolean',
     ];
 
     /* ================= RELATIONS ================= */

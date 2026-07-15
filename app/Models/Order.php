@@ -31,6 +31,7 @@ class Order extends Model
         'biteship_order_id',
         'courier_waybill_id',
         'courier_tracking_id',
+        'courier_routing_code',
         'shipment_status',
         'paid_at',
         'shipped_at',

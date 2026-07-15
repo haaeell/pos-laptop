@@ -20,6 +20,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\CourierController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Customer\AddressController;
@@ -129,11 +130,13 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     // Pesanan Online
     Route::prefix('orders')->controller(OrderController::class)->group(function () {
         Route::get('/', 'index')->name('orders.index');
+        Route::get('/notifications/latest', 'latestNotifications')->name('orders.notifications.latest');
         Route::get('/{id}', 'show')->name('orders.show');
         Route::post('/{id}/advance', 'advance')->name('orders.advance');
         Route::post('/{id}/cancel', 'cancel')->name('orders.cancel');
         Route::post('/{id}/shipment', 'createShipment')->name('orders.shipment.create');
         Route::post('/{id}/shipment/refresh', 'refreshTracking')->name('orders.shipment.refresh');
+        Route::get('/{id}/shipment/label', 'downloadShipmentLabel')->name('orders.shipment.label');
     });
 
     // Laporan
@@ -163,6 +166,7 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store');
         Route::put('/{id}', 'update');
+        Route::post('/{id}/toggle-visibility', 'toggleVisibility')->name('categories.toggle-visibility');
         Route::delete('/{id}', 'destroy');
     });
 
@@ -199,11 +203,19 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
         Route::post('/biteship/search-area', 'searchBiteshipArea')->name('settings.biteship.search-area');
     });
 
+    // Kurir
+    Route::prefix('couriers')->controller(CourierController::class)->group(function () {
+        Route::get('/', 'index')->name('couriers.index');
+        Route::post('/{id}/toggle-active', 'toggleActive')->name('couriers.toggle-active');
+        Route::post('/{id}/logo', 'updateLogo')->name('couriers.update-logo');
+    });
+
     // Brand
     Route::prefix('brands')->controller(BrandController::class)->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store');
         Route::put('/{id}', 'update');
+        Route::post('/{id}/toggle-partner', 'togglePartner')->name('brands.toggle-partner');
         Route::delete('/{id}', 'destroy');
     });
 

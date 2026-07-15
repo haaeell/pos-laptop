@@ -252,6 +252,13 @@
                             </form>
                         @endif
 
+                        @if ($order->hasShipment())
+                            <a href="{{ route('orders.shipment.label', $order->id) }}"
+                                class="w-full rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-700">
+                                <i class="fa-solid fa-download mr-2"></i> Download Resi A6
+                            </a>
+                        @endif
+
                         @if ($canCancel)
                             <form action="{{ route('orders.cancel', $order->id) }}" method="POST" onsubmit="return confirm('Batalkan pesanan ini?')">
                                 @csrf

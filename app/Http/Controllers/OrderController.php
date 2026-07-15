@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Courier;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use App\Models\Setting;
 use App\Models\ShipmentTrackingHistory;
 use App\Services\BiteshipService;
 use App\Services\StockReservationService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -26,6 +30,28 @@ class OrderController extends Controller
         return view('orders.index', [
             'orders' => $query->get(),
             'statusFilter' => $request->status,
+        ]);
+    }
+
+    public function latestNotifications()
+    {
+        $orders = Order::with('customer')
+            ->where('status', 'paid')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn ($order) => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'customer_name' => $order->customer?->name ?? $order->recipient_name,
+                'grand_total' => (float) $order->grand_total,
+                'created_at' => $order->created_at->diffForHumans(),
+                'url' => route('orders.show', $order->id),
+            ]);
+
+        return response()->json([
+            'count' => Order::where('status', 'paid')->count(),
+            'orders' => $orders,
         ]);
     }
 
@@ -145,6 +171,7 @@ class OrderController extends Controller
             'shipment_status' => $status,
             'courier_waybill_id' => $order->courier_waybill_id ?: ($data['courier']['waybill_id'] ?? null),
             'courier_tracking_id' => $order->courier_tracking_id ?: ($data['courier']['tracking_id'] ?? null),
+            'courier_routing_code' => $data['courier']['routing_code'] ?? null,
         ]));
 
         $existingStatuses = $order->trackingHistories()->pluck('status')->all();
@@ -177,5 +204,44 @@ class OrderController extends Controller
         }
 
         return back()->with('success', 'Data tracking berhasil diperbarui.');
+    }
+
+    public function downloadShipmentLabel($id)
+    {
+        $order = Order::with(['items.product', 'customer'])->findOrFail($id);
+
+        if (!$order->hasShipment()) {
+            return back()->with('error', 'Pesanan ini belum memiliki resi pengiriman.');
+        }
+
+        $settings = Setting::pluck('value', 'key');
+        $logoPath = null;
+
+        if (!empty($settings['logo']) && Storage::disk('public')->exists($settings['logo'])) {
+            $logoPath = storage_path('app/public/' . $settings['logo']);
+        } elseif (file_exists(public_path('logo.jpeg'))) {
+            $logoPath = public_path('logo.jpeg');
+        }
+
+        $courier = Courier::where('code', strtolower((string) $order->courier_company))->first();
+        $courierLogoPath = null;
+
+        if ($courier?->logo && Storage::disk('public')->exists($courier->logo)) {
+            $courierLogoPath = storage_path('app/public/' . $courier->logo);
+        }
+
+        $courierMeta = [
+            'label' => $courier->name ?? strtoupper((string) ($order->courier_company ?: 'Courier')),
+        ];
+
+        $pdf = Pdf::loadView('orders.shipment-label-pdf', [
+            'order' => $order,
+            'settings' => $settings,
+            'logoPath' => $logoPath,
+            'courierMeta' => $courierMeta,
+            'courierLogoPath' => $courierLogoPath,
+        ])->setPaper([0, 0, 298, 420], 'portrait');
+
+        return $pdf->download('resi-' . $order->order_number . '.pdf');
     }
 }

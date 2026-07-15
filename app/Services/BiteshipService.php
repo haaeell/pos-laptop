@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Courier;
 use App\Models\Order;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
@@ -68,7 +69,7 @@ class BiteshipService
     public function getRates(string $originAreaId, string $destinationAreaId, array $items, array $courierCodes = []): array
     {
         if (empty($courierCodes)) {
-            $courierCodes = ['jne', 'jnt', 'sicepat', 'anteraja', 'ninja'];
+            $courierCodes = Courier::where('is_active', true)->pluck('code')->all();
         }
 
         $response = $this->client()->post('/v1/rates/couriers', [
@@ -125,6 +126,7 @@ class BiteshipService
             'biteship_order_id' => $data['id'] ?? null,
             'courier_waybill_id' => $data['courier']['waybill_id'] ?? null,
             'courier_tracking_id' => $data['courier']['tracking_id'] ?? null,
+            'courier_routing_code' => $data['courier']['routing_code'] ?? null,
             'shipment_status' => $data['status'] ?? null,
         ]);
 

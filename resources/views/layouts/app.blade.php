@@ -124,7 +124,13 @@
                 <a href="/orders"
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('orders*') }}">
                     <i class="fa-solid fa-bag-shopping w-5"></i>
-                    Pesanan Online
+                    <span class="flex-1">Pesanan Online</span>
+                    @if(($newOrdersCount ?? 0) > 0)
+                        <span id="sidebarOrdersBadge" class="min-w-[20px] h-5 px-1.5 flex items-center justify-center
+                            text-[11px] font-bold rounded-full bg-red-500 text-white">
+                            {{ $newOrdersCount }}
+                        </span>
+                    @endif
                 </a>
 
                 @if (Auth::user()->isSuperAdmin())
@@ -227,6 +233,12 @@
                         Setting Toko
                     </a>
 
+                    <a href="/couriers"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('couriers*') }}">
+                        <i class="fa-solid fa-truck w-5"></i>
+                        Kurir
+                    </a>
+
                     <a href="/users"
                         class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('users*') }}">
                         <i class="fa-solid fa-user-shield w-5"></i>
@@ -249,7 +261,48 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
-                <div class="relative ml-auto" id="profileDropdown">
+                <div class="flex items-center gap-2 ml-auto">
+
+                <div class="relative" id="notifDropdown">
+                    <button type="button" class="relative p-2 rounded-lg hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 focus:outline-none" id="notifBtn">
+                        <i class="fa-solid fa-bell text-lg"></i>
+                        <span id="notifBadge"
+                            class="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center
+                            text-[10px] font-bold rounded-full bg-red-500 text-white {{ ($newOrdersCount ?? 0) > 0 ? '' : 'hidden' }}">
+                            {{ $newOrdersCount ?? 0 }}
+                        </span>
+                    </button>
+
+                    <!-- NOTIF DROPDOWN -->
+                    <div id="notifMenu" class="absolute right-0 mt-3 w-80 max-w-[90vw] bg-white border rounded-xl shadow-lg
+                               opacity-0 invisible transition z-50 max-h-96 overflow-y-auto">
+                        <div class="px-4 py-3 border-b font-semibold text-sm text-slate-700">
+                            Pesanan Baru
+                        </div>
+
+                        <div id="notifList">
+                            @forelse(($newOrders ?? []) as $order)
+                                <a href="{{ route('orders.show', $order->id) }}"
+                                    class="flex flex-col gap-0.5 px-4 py-3 text-sm hover:bg-slate-50 border-b last:border-b-0">
+                                    <span class="font-semibold text-slate-800">{{ $order->order_number }}</span>
+                                    <span class="text-slate-500 text-xs">{{ $order->customer?->name ?? $order->recipient_name }} &bull; Rp {{ number_format($order->grand_total, 0, ',', '.') }}</span>
+                                    <span class="text-slate-400 text-xs">{{ $order->created_at->diffForHumans() }}</span>
+                                </a>
+                            @empty
+                                <div class="px-4 py-6 text-center text-sm text-slate-400">
+                                    Tidak ada pesanan baru
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <a href="/orders?status=paid"
+                            class="block text-center px-4 py-2.5 text-xs font-semibold text-indigo-600 hover:bg-slate-50 border-t">
+                            Lihat Semua Pesanan
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative" id="profileDropdown">
                     <button type="button" class="flex items-center gap-3 focus:outline-none" id="profileBtn">
 
                         <div class="text-right hidden sm:block">
@@ -280,6 +333,8 @@
                             </button>
                         </form>
                     </div>
+                </div>
+
                 </div>
 
             </header>
@@ -321,12 +376,61 @@
 
             $('#profileBtn').on('click', function (e) {
                 e.stopPropagation()
+                $('#notifMenu').addClass('opacity-0 invisible')
                 $('#profileMenu').toggleClass('opacity-0 invisible')
+            })
+
+            $('#notifBtn').on('click', function (e) {
+                e.stopPropagation()
+                $('#profileMenu').addClass('opacity-0 invisible')
+                $('#notifMenu').toggleClass('opacity-0 invisible')
             })
 
             $(document).on('click', function () {
                 $('#profileMenu').addClass('opacity-0 invisible')
+                $('#notifMenu').addClass('opacity-0 invisible')
             })
+
+            @auth
+            function refreshOrderNotifications() {
+                fetch('{{ route('orders.notifications.latest') }}', { headers: { 'Accept': 'application/json' } })
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if (!data) return
+
+                        const count = data.count || 0
+                        const badge = $('#notifBadge')
+                        const sidebarBadge = $('#sidebarOrdersBadge')
+
+                        if (count > 0) {
+                            badge.text(count).removeClass('hidden')
+                            if (sidebarBadge.length) {
+                                sidebarBadge.text(count)
+                            }
+                        } else {
+                            badge.addClass('hidden')
+                            sidebarBadge.text('0').addClass('hidden')
+                        }
+
+                        const list = $('#notifList')
+                        if (!data.orders || data.orders.length === 0) {
+                            list.html('<div class="px-4 py-6 text-center text-sm text-slate-400">Tidak ada pesanan baru</div>')
+                            return
+                        }
+
+                        list.html(data.orders.map(order => `
+                            <a href="${order.url}" class="flex flex-col gap-0.5 px-4 py-3 text-sm hover:bg-slate-50 border-b last:border-b-0">
+                                <span class="font-semibold text-slate-800">${order.order_number}</span>
+                                <span class="text-slate-500 text-xs">${order.customer_name ?? '-'} &bull; Rp ${Number(order.grand_total).toLocaleString('id-ID')}</span>
+                                <span class="text-slate-400 text-xs">${order.created_at}</span>
+                            </a>
+                        `).join(''))
+                    })
+                    .catch(() => {})
+            }
+
+            setInterval(refreshOrderNotifications, 30000)
+            @endauth
         })
     </script>
 
