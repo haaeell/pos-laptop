@@ -30,6 +30,22 @@
             margin-bottom: 14px;
         }
 
+        .checkout-summary-submit-btn,
+        .checkout-summary-trust-badge {
+            display: none;
+        }
+
+        .checkout-summary-submit-btn {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .checkout-summary-trust-badge {
+            justify-content: center;
+            width: 100%;
+            margin-top: 8px;
+        }
+
         @media(min-width:900px) {
             .checkout-section {
                 padding-bottom: 44px;
@@ -59,22 +75,6 @@
             .checkout-summary-trust-badge {
                 display: block;
             }
-        }
-
-        .checkout-summary-submit-btn,
-        .checkout-summary-trust-badge {
-            display: none;
-        }
-
-        .checkout-summary-submit-btn {
-            width: 100%;
-            margin-top: 16px;
-        }
-
-        .checkout-summary-trust-badge {
-            justify-content: center;
-            width: 100%;
-            margin-top: 8px;
         }
 
         .checkout-section h1 {
