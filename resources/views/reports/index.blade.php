@@ -82,6 +82,10 @@
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Penjualan</p>
                         <h3 class="text-xl font-bold text-slate-800 mt-2">Rp{{ number_format($totalSales, 0, ',', '.') }}
                         </h3>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            Offline: Rp{{ number_format($totalOfflineSales ?? 0, 0, ',', '.') }} &middot;
+                            Online: Rp{{ number_format(($totalOnlineSales ?? 0) - ($totalOnlineMarketingFee ?? 0), 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -167,6 +171,10 @@
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profit</p>
                         <h3 class="text-xl font-bold text-emerald-600 mt-2">Rp{{ number_format($totalProfit, 0, ',', '.') }}
                         </h3>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            Offline: Rp{{ number_format($totalOfflineProfit ?? 0, 0, ',', '.') }} &middot;
+                            Online: Rp{{ number_format($totalOnlineProfit ?? 0, 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"

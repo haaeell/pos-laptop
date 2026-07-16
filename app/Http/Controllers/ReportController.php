@@ -57,8 +57,10 @@ class ReportController extends Controller
         $feeSales   = $offlineFeeSales + $onlineMarketingFee;
         $totalOnlineSales = $onlineOrders->sum('grand_total');
         $totalOnlineProfit = $this->onlineProfit($onlineOrders);
+        $totalOfflineSales = $sales->sum('grand_total') - $offlineFeeSales;
+        $totalOfflineProfit = $sales->sum('benefit');
         $totalOnlineShipping = $onlineOrders->sum('shipping_cost');
-        $totalSales = ($sales->sum('grand_total') - $offlineFeeSales) + ($totalOnlineSales - $onlineMarketingFee);
+        $totalSales = $totalOfflineSales + ($totalOnlineSales - $onlineMarketingFee);
 
         $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales;
         $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
@@ -79,13 +81,15 @@ class ReportController extends Controller
             'jumlahSebagian'       => $jumlahSebagian,
             'jumlahHutang'         => $jumlahHutang,
             'jumlahOnline'         => $onlineOrders->count(),
+            'totalOfflineSales'    => $totalOfflineSales,
             'totalOnlineSales'     => $totalOnlineSales,
+            'totalOfflineProfit'   => $totalOfflineProfit,
             'totalOnlineProfit'    => $totalOnlineProfit,
             'totalOnlineShipping'  => $totalOnlineShipping,
             'totalOnlineMarketingFee' => $onlineMarketingFee,
             'totalOnlineReferralDiscount' => $onlineReferralDiscount,
             'totalFeeSales'        => $feeSales,
-            'totalProfit'          => $sales->sum('benefit') + $totalOnlineProfit,
+            'totalProfit'          => $totalOfflineProfit + $totalOnlineProfit,
             'bonusLoss'            => SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit'),
             'totalExpenses'        => Expense::whereBetween('entry_date', [$from, $to])->sum('amount'),
             'totalAsset'           => Product::where('status', 'available')->selectRaw('SUM(purchase_price * GREATEST(stock, 1)) as total')->value('total') ?? 0,
