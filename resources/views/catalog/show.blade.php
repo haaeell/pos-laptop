@@ -445,7 +445,7 @@
             }
 
             .gallery-main {
-                aspect-ratio: 4 / 3;
+                aspect-ratio: 3 / 4;
             }
 
             .product-title {
