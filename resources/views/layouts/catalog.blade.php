@@ -1870,9 +1870,18 @@
             suggestEl.innerHTML = `<div class="search-dd-empty">${term ? 'Mencari...' : 'Memuat rekomendasi...'}</div>`;
 
             try {
-                const res = await fetch(`/data/catalog?search=${encodeURIComponent(term)}&page=1`);
+                const res = await fetch(`/data/catalog?search=${encodeURIComponent(term)}&page=1${term ? '' : '&per_page=all'}`);
                 const data = await res.json();
-                const items = (data.data || []).slice(0, 5);
+                let items = data.data || [];
+
+                if (!term) {
+                    items = items
+                        .map(p => ({ p, sort: Math.random() }))
+                        .sort((a, b) => a.sort - b.sort)
+                        .map(({ p }) => p);
+                }
+
+                items = items.slice(0, 5);
 
                 if (!items.length) {
                     suggestEl.innerHTML = term
