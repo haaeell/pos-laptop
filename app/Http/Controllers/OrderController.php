@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contact;
 use App\Models\Courier;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
@@ -60,6 +61,15 @@ class OrderController extends Controller
         $order = Order::with(['items', 'statusHistories', 'trackingHistories', 'customer', 'salesPerson'])->findOrFail($id);
 
         return view('orders.show', ['order' => $order]);
+    }
+
+    public function invoicePdf($id)
+    {
+        $order = Order::with(['items.product', 'customer', 'salesPerson'])->findOrFail($id);
+        $contacts = Contact::where('is_active', 1)->get();
+        $settings = Setting::pluck('value', 'key');
+
+        return view('orders.invoice-pdf', compact('order', 'contacts', 'settings'));
     }
 
     protected const NEXT_STATUS = [

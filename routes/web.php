@@ -135,6 +135,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
         Route::get('/', 'index')->name('orders.index');
         Route::get('/notifications/latest', 'latestNotifications')->name('orders.notifications.latest');
         Route::get('/{id}', 'show')->name('orders.show');
+        Route::get('/{id}/invoice-pdf', 'invoicePdf')->name('orders.invoice.pdf');
         Route::post('/{id}/advance', 'advance')->name('orders.advance');
         Route::post('/{id}/cancel', 'cancel')->name('orders.cancel');
         Route::post('/{id}/shipment', 'createShipment')->name('orders.shipment.create');

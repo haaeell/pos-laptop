@@ -163,6 +163,9 @@
                         <p class="text-[11px] text-slate-400 mt-0.5">
                             Ongkir Rp{{ number_format($totalOnlineShipping, 0, ',', '.') }}
                         </p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Diskon referral Rp{{ number_format($totalOnlineReferralDiscount ?? 0, 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
                         <i class="fa-solid fa-cart-shopping"></i>

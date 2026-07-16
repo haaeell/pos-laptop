@@ -314,6 +314,11 @@
                 <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <h2 class="text-base font-bold text-slate-800">Aksi Admin</h2>
                     <div class="mt-4 flex flex-col gap-3">
+                        <a href="{{ route('orders.invoice.pdf', $order->id) }}" target="_blank"
+                            class="w-full rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-700">
+                            <i class="fa-solid fa-print mr-2"></i> Cetak Nota
+                        </a>
+
                         @if ($nextAction)
                             <form action="{{ route('orders.advance', $order->id) }}" method="POST">
                                 @csrf

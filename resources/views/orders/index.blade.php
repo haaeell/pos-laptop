@@ -75,6 +75,11 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <a href="{{ route('orders.invoice.pdf', $order->id) }}" target="_blank"
+                                        class="inline-flex items-center justify-center w-9 h-9 text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-900 hover:text-white transition-all duration-200 shadow-sm"
+                                        title="Cetak Nota">
+                                        <i class="fa-solid fa-print text-sm"></i>
+                                    </a>
                                     <a href="{{ route('orders.show', $order->id) }}"
                                         class="inline-flex items-center justify-center w-9 h-9 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm shadow-blue-100"
                                         title="Lihat Detail">
