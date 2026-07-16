@@ -82,7 +82,7 @@ class PageController extends Controller
         ]);
 
         $products = Product::query()
-            ->whereIn('status', ['available', 'sold'])
+            ->where('status', 'available')
             ->where('is_active', true)
             ->get(['slug', 'updated_at'])
             ->map(fn ($product) => [
