@@ -4,42 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Order;
-use Illuminate\Http\Request;
-
 class AdminCustomerController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Customer::query()
+        $customers = Customer::query()
             ->withCount(['orders', 'addresses', 'favoriteProducts', 'reviews'])
-            ->withSum('orders', 'grand_total');
-
-        if ($request->filled('search')) {
-            $search = trim((string) $request->search);
-
-            $query->where(function ($builder) use ($search) {
-                $builder->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        if ($request->filled('sort')) {
-            match ($request->sort) {
-                'oldest' => $query->oldest(),
-                'most_orders' => $query->orderByDesc('orders_count')->latest(),
-                'highest_spent' => $query->orderByDesc('orders_sum_grand_total')->latest(),
-                default => $query->latest(),
-            };
-        } else {
-            $query->latest();
-        }
-
-        $customers = $query->paginate(12)->withQueryString();
+            ->withSum('orders', 'grand_total')
+            ->latest()
+            ->get();
 
         $statsBase = Customer::query();
 
@@ -51,11 +24,6 @@ class AdminCustomerController extends Controller
                 'customersWithOrders' => Customer::has('orders')->count(),
                 'totalCustomerOrders' => Order::count(),
                 'totalCustomerRevenue' => Order::whereIn('status', ['paid', 'processing', 'shipped', 'completed'])->sum('grand_total'),
-            ],
-            'filters' => [
-                'search' => $request->string('search')->toString(),
-                'status' => $request->string('status')->toString(),
-                'sort' => $request->string('sort')->toString(),
             ],
         ]);
     }
