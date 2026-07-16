@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="google-site-verification" content="m9aNRYIi7-DHrJnPfbOawMfsSRFxJE8BqNZ8i30Jrzo">
     @php
         $seoDescription = trim($__env->yieldContent('meta_description')) ?: (($navSettings['nama_toko'] ?? 'Barokah Computer') . ' - Toko komputer Subang terpercaya. Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas di Subang.');
         $seoKeywords = $navSettings['meta_keywords'] ?? 'Barokah Computer Subang, toko komputer Subang, jual laptop Subang, service laptop Subang, komputer Subang, aksesoris komputer Subang';
