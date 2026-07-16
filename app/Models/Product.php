@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -11,6 +12,7 @@ class Product extends Model
 
     protected $fillable = [
         'product_code',
+        'slug',
         'name',
         'category_id',
         'brand_id',
@@ -33,6 +35,21 @@ class Product extends Model
         'strike_price'   => 'decimal:2',
         'is_active'      => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Product $product) {
+            if (blank($product->slug) || $product->isDirty('name')) {
+                $product->slug = static::generateUniqueSlug($product->name);
+            }
+        });
+
+        static::updating(function (Product $product) {
+            if ($product->isDirty('name') || blank($product->slug)) {
+                $product->slug = static::generateUniqueSlug($product->name, $product->id);
+            }
+        });
+    }
 
     /* ================= RELATIONS ================= */
 
@@ -87,5 +104,24 @@ class Product extends Model
     public function reviewsCount(): int
     {
         return $this->reviews()->count();
+    }
+
+    public static function generateUniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name);
+        $base = $base !== '' ? $base : 'produk';
+        $slug = $base;
+        $suffix = 2;
+
+        while (
+            static::where('slug', $slug)
+                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $base . '-' . $suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 }

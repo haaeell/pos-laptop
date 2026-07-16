@@ -696,7 +696,7 @@
                 </div>
                 <div class="related-grid">
                     @foreach($related as $r)
-                        <a href="{{ route('catalog.show', $r->id) }}" class="product-card">
+                        <a href="{{ route('catalog.show', $r->slug) }}" class="product-card">
                             <div class="product-image">
                                 @if($r->image)
                                     <img src="{{ asset('storage/' . $r->image) }}" alt="{{ $r->name }}" loading="lazy" decoding="async">

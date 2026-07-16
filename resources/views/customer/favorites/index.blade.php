@@ -126,7 +126,7 @@
                             <button type="button" class="fav-remove-btn" onclick="removeFavorite({{ $product->id }}, this)" aria-label="Hapus dari favorit">
                                 <i class="fa-solid fa-heart"></i>
                             </button>
-                            <a href="{{ route('catalog.show', $product->id) }}">
+                            <a href="{{ route('catalog.show', $product->slug) }}">
                                 <div class="fav-card-image">
                                     @if ($product->image)
                                         <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" loading="lazy" decoding="async">

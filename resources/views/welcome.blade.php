@@ -324,9 +324,55 @@
         .pagination-row {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 8px;
             margin-top: 32px;
             flex-wrap: wrap;
+        }
+
+        .pagination-btn,
+        .pagination-ellipsis {
+            min-width: 44px;
+            height: 44px;
+            padding: 0 14px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pagination-btn {
+            cursor: pointer;
+            transition: .18s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: #bfd3fb;
+            background: #f8fbff;
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn.is-active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(23, 92, 211, .18);
+        }
+
+        .pagination-btn:disabled {
+            cursor: not-allowed;
+            opacity: .45;
+        }
+
+        .pagination-ellipsis {
+            border-style: dashed;
+            color: var(--muted);
         }
 
         .empty-state {
@@ -881,6 +927,7 @@
                         <p>Pilihan produk terbaik untuk kebutuhan kerja, belajar, dan hiburan.</p>
                     </div>
                     <div class="filter-row">
+                        <a href="{{ route('catalog.listing') }}" class="btn btn-light">Lihat Semua Produk</a>
                         <select id="brand">
                             <option value="">Semua Merek</option>
                             @foreach($brands as $brand)
@@ -1095,28 +1142,47 @@
             pag.innerHTML = '';
             if (meta.last_page <= 1) return;
 
-            pag.innerHTML += `
-        <button ${meta.current_page === 1 ? 'disabled' : ''}
-            onclick="goPage(${meta.current_page - 1})"
-            class="btn-light" style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;${meta.current_page === 1 ? 'color:#ccc;' : ''}">
-            ‹
-        </button>`;
+            const pages = [];
+            const current = meta.current_page;
+            const last = meta.last_page;
 
-            for (let i = 1; i <= meta.last_page; i++) {
-                pag.innerHTML += `
-            <button onclick="goPage(${i})"
-                style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);cursor:pointer;font-weight:700;
-                ${i === meta.current_page ? 'background:var(--primary);color:#fff;border-color:var(--primary);' : 'background:#fff;'}">
-                ${i}
-            </button>`;
+            pages.push(1);
+            for (let i = current - 1; i <= current + 1; i++) {
+                if (i > 1 && i < last) pages.push(i);
             }
+            if (last > 1) pages.push(last);
+
+            const uniquePages = [...new Set(pages)].sort((a, b) => a - b);
 
             pag.innerHTML += `
-        <button ${meta.current_page === meta.last_page ? 'disabled' : ''}
-            onclick="goPage(${meta.current_page + 1})"
-            style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;${meta.current_page === meta.last_page ? 'color:#ccc;' : ''}">
-            ›
-        </button>`;
+                <button ${current === 1 ? 'disabled' : ''}
+                    onclick="goPage(${current - 1})"
+                    class="pagination-btn"
+                    aria-label="Halaman sebelumnya">
+                    ‹
+                </button>`;
+
+            uniquePages.forEach((page, index) => {
+                const prevPage = uniquePages[index - 1];
+                if (prevPage && page - prevPage > 1) {
+                    pag.innerHTML += `<span class="pagination-ellipsis">...</span>`;
+                }
+
+                pag.innerHTML += `
+                    <button onclick="goPage(${page})"
+                        class="pagination-btn ${page === current ? 'is-active' : ''}"
+                        aria-label="Ke halaman ${page}">
+                        ${page}
+                    </button>`;
+            });
+
+            pag.innerHTML += `
+                <button ${current === last ? 'disabled' : ''}
+                    onclick="goPage(${current + 1})"
+                    class="pagination-btn"
+                    aria-label="Halaman berikutnya">
+                    ›
+                </button>`;
         }
 
         function goPage(page) {
@@ -1136,7 +1202,7 @@
                 ? `<button type="button" class="detail-btn" disabled style="display:flex;align-items:center;justify-content:center;opacity:.5;cursor:not-allowed;" aria-label="Stok habis"><i class="fa-solid fa-cart-plus"></i></button>`
                 : (isCustomerAuthed
                     ? `<button type="button" class="detail-btn add-cart-btn" data-product-id="${p.id}" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></button>`
-                    : `<a href="/akun/login?redirect=${encodeURIComponent('/produk/' + p.id)}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></a>`);
+                    : `<a href="/akun/login?redirect=${encodeURIComponent(p.url)}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></a>`);
 
             const hasDiscount = p.strike_price && Number(p.strike_price) > Number(p.price);
             const strikeHtml = hasDiscount
@@ -1145,7 +1211,7 @@
 
             return `
             <article class="product-card ${outOfStock ? 'out-of-stock' : ''}">
-                <a href="/produk/${p.id}" style="display:block;">
+                <a href="${p.url}" style="display:block;">
                     <div class="product-image">
                         ${imageHtml}
                         ${outOfStock ? '<span class="out-of-stock-badge">Habis</span>' : ''}
@@ -1160,7 +1226,7 @@
                     </div>
                     <div style="display:flex;gap:6px;">
                         ${cartBtn}
-                        <a href="/produk/${p.id}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Lihat detail">
+                        <a href="${p.url}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Lihat detail">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                     </div>

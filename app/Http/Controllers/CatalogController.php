@@ -97,6 +97,8 @@ class CatalogController extends Controller
     {
         return [
             'id'        => $p->id,
+            'slug'      => $p->slug,
+            'url'       => route('catalog.show', $p->slug, false),
             'name'      => $p->name,
             'code'      => $p->product_code,
             'price'     => $p->selling_price,
@@ -113,12 +115,31 @@ class CatalogController extends Controller
         ];
     }
 
-    public function show($id)
+    public function show($slug)
     {
         $product = Product::with(['category', 'brand', 'images', 'reviews' => fn ($q) => $q->with('customer')->latest()])
             ->whereIn('status', ['available', 'sold'])
             ->where('is_active', true)
-            ->findOrFail($id);
+            ->where('slug', $slug)
+            ->first();
+
+        if ($product) {
+            return $this->renderProductDetail($product);
+        }
+
+        if (ctype_digit((string) $slug)) {
+            $legacyProduct = Product::whereIn('status', ['available', 'sold'])
+                ->where('is_active', true)
+                ->findOrFail((int) $slug);
+
+            return redirect()->route('catalog.show', $legacyProduct->slug, 301);
+        }
+
+        abort(404);
+    }
+
+    protected function renderProductDetail(Product $product)
+    {
 
         $related = Product::with(['category', 'brand'])
             ->whereIn('status', ['available', 'sold'])

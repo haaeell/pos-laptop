@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [CatalogController::class, 'index']);
 Route::get('/data/catalog', [CatalogController::class, 'data'])->name('catalog.data');
 Route::get('/produk', [CatalogController::class, 'listing'])->name('catalog.listing');
-Route::get('/produk/{id}', [CatalogController::class, 'show'])->name('catalog.show');
+Route::get('/produk/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
 Route::get('/service', [PageController::class, 'service'])->name('pages.service');
 Route::get('/tentang-kami', [PageController::class, 'about'])->name('pages.about');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('pages.privacy');

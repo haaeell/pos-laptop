@@ -20,14 +20,59 @@
 
         .filter-bar {
             display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 24px;
+            box-shadow: 0 18px 38px rgba(15, 23, 42, .05);
+        }
+
+        .filter-mobile-head {
+            display: none;
+        }
+
+        .filter-panel {
+            display: flex;
             gap: 12px;
             flex-wrap: wrap;
             align-items: flex-end;
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 24px;
+        }
+
+        .filter-mobile-kicker {
+            display: block;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #94A3B8;
+            margin-bottom: 4px;
+        }
+
+        .filter-mobile-summary {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .filter-mobile-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 0 16px;
+            border: 1px solid #D7E3F7;
+            border-radius: 999px;
+            background: #F8FBFF;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
         .filter-group {
@@ -50,6 +95,12 @@
             border: 1px solid var(--line);
             border-radius: 10px;
             font-size: 13px;
+        }
+
+        .filter-price-grid {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
         }
 
         .filter-group select {
@@ -82,12 +133,89 @@
         }
 
         @media(max-width:640px) {
+            .produk-section {
+                padding-top: 12px;
+            }
+
             .filter-bar {
+                gap: 14px;
+                padding: 14px;
+                border-radius: 22px;
+                margin-bottom: 18px;
+            }
+
+            .filter-mobile-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
                 gap: 10px;
             }
 
-            .filter-group input[type="number"] {
-                width: 100px;
+            .filter-mobile-head > div {
+                min-width: 0;
+            }
+
+            .filter-mobile-summary {
+                font-size: 13px;
+            }
+
+            .filter-mobile-toggle {
+                display: inline-flex;
+                flex-shrink: 0;
+            }
+
+            .filter-panel {
+                display: none;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                padding-top: 4px;
+            }
+
+            .filter-bar.is-open .filter-panel {
+                display: flex;
+            }
+
+            .filter-group {
+                gap: 6px;
+            }
+
+            .filter-group input[type="number"],
+            .filter-group select,
+            .select2-container {
+                width: 100% !important;
+            }
+
+            .filter-group input[type="number"],
+            .filter-group select {
+                min-height: 44px;
+                font-size: 14px;
+                border-radius: 12px;
+            }
+
+            .filter-price-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .filter-price-sep {
+                display: none;
+            }
+
+            .filter-checkbox {
+                min-height: 44px;
+                padding: 12px 14px;
+                border: 1px solid var(--line);
+                border-radius: 14px;
+                background: #F8FAFC;
+            }
+
+            #applyFilterBtn {
+                width: 100%;
+                min-height: 46px;
+                border-radius: 14px;
+                font-size: 14px;
             }
         }
 
@@ -238,9 +366,55 @@
         .pagination-row {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 8px;
             margin-top: 32px;
             flex-wrap: wrap;
+        }
+
+        .pagination-btn,
+        .pagination-ellipsis {
+            min-width: 44px;
+            height: 44px;
+            padding: 0 14px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pagination-btn {
+            cursor: pointer;
+            transition: .18s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: #bfd3fb;
+            background: #f8fbff;
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn.is-active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(23, 92, 211, .18);
+        }
+
+        .pagination-btn:disabled {
+            cursor: not-allowed;
+            opacity: .45;
+        }
+
+        .pagination-ellipsis {
+            border-style: dashed;
+            color: var(--muted);
         }
 
         .empty-state {
@@ -350,45 +524,59 @@
                 </div>
             </div>
 
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label>Merek</label>
-                    <select id="brand">
-                        <option value="">Semua Merek</option>
-                        @foreach($brands as $brand)
-                            <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-                        @endforeach
-                    </select>
+            <div class="filter-bar" id="filterBar">
+                <div class="filter-mobile-head">
+                    <div>
+                        <span class="filter-mobile-kicker">Filter Produk</span>
+                        <span class="filter-mobile-summary" id="filterSummary">Semua produk ditampilkan</span>
+                    </div>
+                    <button type="button" id="toggleFilterBtn" class="filter-mobile-toggle" aria-expanded="false">
+                        <i class="fa-solid fa-sliders"></i> Filter
+                    </button>
                 </div>
 
-                <div class="filter-group">
-                    <label>Harga Min</label>
-                    <input type="number" id="minPrice" placeholder="0" min="0">
-                </div>
-                <span class="filter-price-sep">—</span>
-                <div class="filter-group">
-                    <label>Harga Max</label>
-                    <input type="number" id="maxPrice" placeholder="Tanpa batas" min="0">
-                </div>
+                <div class="filter-panel" id="filterPanel">
+                    <div class="filter-group">
+                        <label>Merek</label>
+                        <select id="brand">
+                            <option value="">Semua Merek</option>
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <label class="filter-checkbox">
-                    <input type="checkbox" id="inStockOnly"> Hanya yang Tersedia
-                </label>
+                    <div class="filter-price-grid">
+                        <div class="filter-group">
+                            <label>Harga Min</label>
+                            <input type="number" id="minPrice" placeholder="0" min="0">
+                        </div>
+                        <span class="filter-price-sep">—</span>
+                        <div class="filter-group">
+                            <label>Harga Max</label>
+                            <input type="number" id="maxPrice" placeholder="Tanpa batas" min="0">
+                        </div>
+                    </div>
 
-                <div class="filter-group">
-                    <label>Tampilkan</label>
-                    <select id="perPage">
-                        <option value="10">10 Produk</option>
-                        <option value="20">20 Produk</option>
-                        <option value="50">50 Produk</option>
-                        <option value="100">100 Produk</option>
-                        <option value="all">Semua</option>
-                    </select>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="inStockOnly"> Hanya yang Tersedia
+                    </label>
+
+                    <div class="filter-group">
+                        <label>Tampilkan</label>
+                        <select id="perPage">
+                            <option value="10">10 Produk</option>
+                            <option value="20">20 Produk</option>
+                            <option value="50">50 Produk</option>
+                            <option value="100">100 Produk</option>
+                            <option value="all">Semua</option>
+                        </select>
+                    </div>
+
+                    <button type="button" id="applyFilterBtn" class="btn btn-primary">
+                        <i class="fa-solid fa-filter"></i> Terapkan
+                    </button>
                 </div>
-
-                <button type="button" id="applyFilterBtn" class="btn btn-primary">
-                    <i class="fa-solid fa-filter"></i> Terapkan
-                </button>
             </div>
 
             @if($categories->count())
@@ -419,12 +607,17 @@
         const pageParams = new URLSearchParams(window.location.search);
         const initialBrand = pageParams.get('brand') || '';
         const initialCategory = pageParams.get('category') || '';
+        const isMobileViewport = window.matchMedia('(max-width: 640px)').matches;
 
         $(document).ready(function () {
-            $('#brand').select2({ placeholder: "Semua Merek", allowClear: true });
+            if (!isMobileViewport) {
+                $('#brand').select2({ placeholder: "Semua Merek", allowClear: true });
+            }
 
             brandEl.value = initialBrand;
-            $('#brand').val(initialBrand).trigger('change.select2');
+            if (!isMobileViewport) {
+                $('#brand').val(initialBrand).trigger('change.select2');
+            }
 
             activeCategory = initialCategory;
             document.querySelectorAll('.category-card').forEach(c => {
@@ -444,13 +637,23 @@
             document.getElementById('applyFilterBtn').addEventListener('click', function () {
                 currentPage = 1;
                 loadProducts();
+                closeMobileFilter();
             });
+
+            const toggleFilterBtn = document.getElementById('toggleFilterBtn');
+            if (toggleFilterBtn) {
+                toggleFilterBtn.addEventListener('click', function () {
+                    document.getElementById('filterBar').classList.toggle('is-open');
+                    this.setAttribute('aria-expanded', document.getElementById('filterBar').classList.contains('is-open') ? 'true' : 'false');
+                });
+            }
 
             const globalSearch = document.getElementById('global-search');
             if (globalSearch && globalSearch.value) {
                 searchEl.value = globalSearch.value;
             }
 
+            updateFilterSummary();
             loadProducts();
         });
 
@@ -464,6 +667,7 @@
         const perPageEl = document.getElementById('perPage');
         const container = document.getElementById('products-grid');
         const emptyEl = document.getElementById('empty');
+        const filterSummaryEl = document.getElementById('filterSummary');
 
         function filterByCategory(id) {
             activeCategory = id;
@@ -472,8 +676,55 @@
             loadProducts();
         }
 
+        function updateFilterSummary() {
+            if (!filterSummaryEl) return;
+
+            const parts = [];
+            const brandName = brandEl.options[brandEl.selectedIndex]?.text?.trim();
+
+            if (activeCategory) {
+                const activeCategoryCard = document.querySelector(`.category-card[data-category="${activeCategory}"] span`);
+                if (activeCategoryCard) {
+                    parts.push(activeCategoryCard.textContent.trim());
+                }
+            }
+
+            if (brandEl.value && brandName) {
+                parts.push(brandName);
+            }
+
+            if (minPriceEl.value || maxPriceEl.value) {
+                const min = minPriceEl.value ? formatCompactPrice(minPriceEl.value) : '0';
+                const max = maxPriceEl.value ? formatCompactPrice(maxPriceEl.value) : 'tak terbatas';
+                parts.push(`${min} - ${max}`);
+            }
+
+            if (inStockOnlyEl.checked) {
+                parts.push('Stok tersedia');
+            }
+
+            if (perPageEl.value !== '10') {
+                parts.push(perPageEl.value === 'all' ? 'Semua produk' : `${perPageEl.value} produk`);
+            }
+
+            filterSummaryEl.textContent = parts.length ? parts.join(' • ') : 'Semua produk ditampilkan';
+        }
+
+        function closeMobileFilter() {
+            const filterBar = document.getElementById('filterBar');
+            const toggleFilterBtn = document.getElementById('toggleFilterBtn');
+
+            if (!filterBar || !toggleFilterBtn || !window.matchMedia('(max-width: 640px)').matches) {
+                return;
+            }
+
+            filterBar.classList.remove('is-open');
+            toggleFilterBtn.setAttribute('aria-expanded', 'false');
+        }
+
         async function loadProducts() {
             const perPageVal = perPageEl.value;
+            updateFilterSummary();
             container.innerHTML = skeleton(perPageVal === 'all' ? 12 : Math.min(Number(perPageVal) || 8, 12));
             emptyEl.style.display = 'none';
 
@@ -508,28 +759,47 @@
             pag.innerHTML = '';
             if (meta.last_page <= 1) return;
 
-            pag.innerHTML += `
-        <button ${meta.current_page === 1 ? 'disabled' : ''}
-            onclick="goPage(${meta.current_page - 1})"
-            style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;${meta.current_page === 1 ? 'color:#ccc;' : ''}">
-            ‹
-        </button>`;
+            const pages = [];
+            const current = meta.current_page;
+            const last = meta.last_page;
 
-            for (let i = 1; i <= meta.last_page; i++) {
-                pag.innerHTML += `
-            <button onclick="goPage(${i})"
-                style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);cursor:pointer;font-weight:700;
-                ${i === meta.current_page ? 'background:var(--primary);color:#fff;border-color:var(--primary);' : 'background:#fff;'}">
-                ${i}
-            </button>`;
+            pages.push(1);
+            for (let i = current - 1; i <= current + 1; i++) {
+                if (i > 1 && i < last) pages.push(i);
             }
+            if (last > 1) pages.push(last);
+
+            const uniquePages = [...new Set(pages)].sort((a, b) => a - b);
 
             pag.innerHTML += `
-        <button ${meta.current_page === meta.last_page ? 'disabled' : ''}
-            onclick="goPage(${meta.current_page + 1})"
-            style="padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;${meta.current_page === meta.last_page ? 'color:#ccc;' : ''}">
-            ›
-        </button>`;
+                <button ${current === 1 ? 'disabled' : ''}
+                    onclick="goPage(${current - 1})"
+                    class="pagination-btn"
+                    aria-label="Halaman sebelumnya">
+                    ‹
+                </button>`;
+
+            uniquePages.forEach((page, index) => {
+                const prevPage = uniquePages[index - 1];
+                if (prevPage && page - prevPage > 1) {
+                    pag.innerHTML += `<span class="pagination-ellipsis">...</span>`;
+                }
+
+                pag.innerHTML += `
+                    <button onclick="goPage(${page})"
+                        class="pagination-btn ${page === current ? 'is-active' : ''}"
+                        aria-label="Ke halaman ${page}">
+                        ${page}
+                    </button>`;
+            });
+
+            pag.innerHTML += `
+                <button ${current === last ? 'disabled' : ''}
+                    onclick="goPage(${current + 1})"
+                    class="pagination-btn"
+                    aria-label="Halaman berikutnya">
+                    ›
+                </button>`;
         }
 
         function goPage(page) {
@@ -549,7 +819,7 @@
                 ? `<button type="button" class="detail-btn" disabled style="display:flex;align-items:center;justify-content:center;opacity:.5;cursor:not-allowed;" aria-label="Sold"><i class="fa-solid fa-cart-plus"></i></button>`
                 : (isCustomerAuthed
                     ? `<button type="button" class="detail-btn add-cart-btn" data-product-id="${p.id}" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></button>`
-                    : `<a href="/akun/login?redirect=${encodeURIComponent('/produk/' + p.id)}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></a>`);
+                    : `<a href="/akun/login?redirect=${encodeURIComponent(p.url)}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Tambah ke keranjang"><i class="fa-solid fa-cart-plus"></i></a>`);
 
             const hasDiscount = p.strike_price && Number(p.strike_price) > Number(p.price);
             const strikeHtml = hasDiscount
@@ -558,7 +828,7 @@
 
             return `
             <article class="product-card ${isSold ? 'out-of-stock' : ''}">
-                <a href="/produk/${p.id}" style="display:block;">
+                <a href="${p.url}" style="display:block;">
                     <div class="product-image">
                         ${imageHtml}
                         ${isSold ? '<span class="out-of-stock-badge">Sold</span>' : ''}
@@ -573,7 +843,7 @@
                     </div>
                     <div style="display:flex;gap:6px;">
                         ${cartBtn}
-                        <a href="/produk/${p.id}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Lihat detail">
+                        <a href="${p.url}" class="detail-btn" style="display:flex;align-items:center;justify-content:center;" aria-label="Lihat detail">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                     </div>
@@ -609,6 +879,15 @@
         });
 
         function formatPrice(v) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(v);
+        }
+
+        function formatCompactPrice(v) {
             return new Intl.NumberFormat('id-ID', {
                 style: 'currency',
                 currency: 'IDR',

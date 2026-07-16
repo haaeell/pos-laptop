@@ -38,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
             'produk.index',
             'pages.service',
             'pages.about',
+            'pages.privacy',
+            'pages.security',
             'pages.articles',
             'pages.article-show',
             'cart.index',

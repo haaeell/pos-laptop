@@ -1016,7 +1016,7 @@
 
         @media(max-width:640px) {
             body {
-                padding-top: 112px;
+                padding-top: 84px;
                 padding-bottom: 78px;
                 background: #fff;
             }
@@ -1113,7 +1113,7 @@
             }
 
             section {
-                padding: 22px 0;
+                padding: 14px 0;
             }
 
             .section-head {
@@ -2066,7 +2066,7 @@
                         <span><i class="fa-solid fa-fire"></i> ${heading}</span>
                     </div>
                     ${items.map(p => `
-                        <a class="search-dd-item" href="/produk/${p.id}">
+                        <a class="search-dd-item" href="${p.url}">
                             <div class="search-dd-thumb">
                                 ${p.image ? `<img src="/storage/${p.image}" alt="">` : `<i class="fa-solid fa-image"></i>`}
                             </div>
