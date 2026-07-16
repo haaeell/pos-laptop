@@ -7,32 +7,108 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="google-site-verification" content="m9aNRYIi7-DHrJnPfbOawMfsSRFxJE8BqNZ8i30Jrzo">
     @php
-        $seoDescription = trim($__env->yieldContent('meta_description')) ?: (($navSettings['nama_toko'] ?? 'Barokah Computer') . ' - Toko komputer Subang terpercaya. Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas di Subang.');
+        $siteName = $navSettings['nama_toko'] ?? 'Barokah Computer';
+        $siteUrl = url('/');
+        $staticLogo = url('/barokah-logo.png');
+        $seoDescription = trim($__env->yieldContent('meta_description')) ?: ($siteName . ' - Toko komputer Subang terpercaya. Jual beli dan service laptop, komputer, aksesoris, serta perangkat elektronik berkualitas di Subang.');
         $seoKeywords = $navSettings['meta_keywords'] ?? 'Barokah Computer Subang, toko komputer Subang, jual laptop Subang, service laptop Subang, komputer Subang, aksesoris komputer Subang';
-        $seoImage = $navSettings['og_image'] ?? asset('storage/' . ($navSettings['logo'] ?? 'logo.jpeg'));
+        $seoImage = $navSettings['og_image'] ?? $staticLogo;
+        $navigationSchema = [
+            ['name' => 'Beranda', 'url' => url('/')],
+            ['name' => 'Produk', 'url' => route('catalog.listing')],
+            ['name' => 'Service', 'url' => route('pages.service')],
+            ['name' => 'Artikel', 'url' => route('pages.articles')],
+            ['name' => 'Tentang Kami', 'url' => route('pages.about')],
+            ['name' => 'Privacy', 'url' => route('pages.privacy')],
+            ['name' => 'Security', 'url' => route('pages.security')],
+        ];
+        $structuredData = [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'Organization',
+                    '@id' => $siteUrl . '#organization',
+                    'name' => $siteName,
+                    'alternateName' => [
+                        'Barokah Computer Subang',
+                        'Barokah Computer',
+                        'Toko Komputer Subang',
+                        'Service Laptop Subang',
+                    ],
+                    'url' => $siteUrl,
+                    'logo' => [
+                        '@type' => 'ImageObject',
+                        'url' => $staticLogo,
+                        'width' => 512,
+                        'height' => 512,
+                    ],
+                    'image' => $staticLogo,
+                    'description' => $seoDescription,
+                    'address' => [
+                        '@type' => 'PostalAddress',
+                        'streetAddress' => $alamat ?? ($navSettings['alamat'] ?? 'Subang'),
+                        'addressLocality' => 'Subang',
+                        'addressRegion' => 'Jawa Barat',
+                        'addressCountry' => 'ID',
+                    ],
+                ],
+                [
+                    '@type' => 'WebSite',
+                    '@id' => $siteUrl . '#website',
+                    'url' => $siteUrl,
+                    'name' => $siteName,
+                    'alternateName' => 'Barokah Computer Subang',
+                    'publisher' => ['@id' => $siteUrl . '#organization'],
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => url('/') . '?search={search_term_string}',
+                        'query-input' => 'required name=search_term_string',
+                    ],
+                ],
+                [
+                    '@type' => 'ItemList',
+                    '@id' => $siteUrl . '#site-navigation',
+                    'name' => 'Menu utama ' . $siteName,
+                    'itemListElement' => collect($navigationSchema)->map(fn ($item, $index) => [
+                        '@type' => 'SiteNavigationElement',
+                        'position' => $index + 1,
+                        'name' => $item['name'],
+                        'url' => $item['url'],
+                    ])->values()->all(),
+                ],
+            ],
+        ];
     @endphp
     <meta name="description" content="{{ $seoDescription }}">
     <meta name="keywords" content="{{ $seoKeywords }}">
     <meta name="robots" content="index, follow">
-    <meta name="author" content="{{ $navSettings['nama_toko'] ?? 'Barokah Computer' }}">
+    <meta name="author" content="{{ $siteName }}">
+    <meta name="application-name" content="{{ $siteName }}">
+    <meta name="apple-mobile-web-app-title" content="{{ $siteName }}">
     <link rel="canonical" href="{{ url()->current() }}">
-    <title>@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' | Toko Komputer Subang - Laptop, Aksesoris & Service')</title>
+    <title>@yield('title', $siteName . ' | Toko Komputer Subang - Laptop, Aksesoris & Service')</title>
 
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="{{ $navSettings['nama_toko'] ?? 'Barokah Computer' }}">
-    <meta property="og:title" content="@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer') . ' | Toko Komputer Subang')">
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:title" content="@yield('title', $siteName . ' | Toko Komputer Subang')">
     <meta property="og:description" content="{{ $seoDescription }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:image" content="@yield('og_image', $seoImage)">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('title', ($navSettings['nama_toko'] ?? 'Barokah Computer'))">
+    <meta name="twitter:title" content="@yield('title', $siteName)">
     <meta name="twitter:description" content="{{ $seoDescription }}">
     <meta name="twitter:image" content="@yield('og_image', $seoImage)">
 
-    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('storage/' . ($navSettings['favicon_512'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
-    <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('storage/' . ($navSettings['favicon_48'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('storage/' . ($navSettings['favicon_32'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
-    <link rel="apple-touch-icon" href="{{ asset('storage/' . ($navSettings['favicon_512'] ?? ($navSettings['logo'] ?? 'logo.jpeg'))) }}">
+    <link rel="icon" href="{{ url('/favicon.ico') }}" sizes="any">
+    <link rel="shortcut icon" href="{{ url('/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url('/favicon-512.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url('/favicon-192.png') }}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ url('/favicon-96.png') }}">
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ url('/favicon-48.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url('/favicon-32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url('/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url('/site.webmanifest') }}">
+    <script type="application/ld+json">{!! json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
