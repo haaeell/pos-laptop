@@ -45,4 +45,9 @@ class Customer extends Authenticatable
     {
         return $this->belongsToMany(Product::class, 'product_favorites')->withTimestamps();
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
 }

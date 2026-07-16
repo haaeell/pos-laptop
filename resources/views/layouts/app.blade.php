@@ -133,6 +133,12 @@
                     @endif
                 </a>
 
+                <a href="/customers"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('customers*') }}">
+                    <i class="fa-solid fa-users-viewfinder w-5"></i>
+                    Customer Online
+                </a>
+
                 <a href="/products"
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('products*') }}">
                     <i class="fa-solid fa-box-open w-5"></i>

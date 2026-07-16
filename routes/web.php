@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleCategoryController;
+use App\Http\Controllers\AdminCustomerController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CategoryController;
@@ -142,6 +143,12 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
         Route::post('/{id}/shipment', 'createShipment')->name('orders.shipment.create');
         Route::post('/{id}/shipment/refresh', 'refreshTracking')->name('orders.shipment.refresh');
         Route::get('/{id}/shipment/label', 'downloadShipmentLabel')->name('orders.shipment.label');
+    });
+
+    // Customer Online
+    Route::prefix('customers')->controller(AdminCustomerController::class)->group(function () {
+        Route::get('/', 'index')->name('customers.index');
+        Route::get('/{id}', 'show')->name('customers.show');
     });
 
     // Laporan

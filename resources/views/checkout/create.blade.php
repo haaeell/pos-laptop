@@ -1237,7 +1237,7 @@
                             </div>
 
                             <button type="submit" form="checkoutForm" class="btn btn-primary checkout-summary-submit-btn">
-                                Buat Pesanan
+                                <i class="fa-solid fa-bag-shopping"></i> Buat Pesanan
                             </button>
                         </div>
                     </aside>
@@ -1254,7 +1254,7 @@
                     {{ number_format($itemsSubtotal, 0, ',', '.') }}</div>
             </div>
             <button type="submit" form="checkoutForm" class="btn btn-primary" id="checkoutSubmitBtn">
-                Buat Pesanan
+                <i class="fa-solid fa-bag-shopping"></i> Buat Pesanan
             </button>
         </div>
     </div>
