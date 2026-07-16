@@ -239,7 +239,7 @@
         <table>
             <tr>
                 <td>
-                    <div class="company">Barokah Komputer</div>
+                    <div class="company">Barokah Computer</div>
                     <h1>Laporan Pengeluaran</h1>
                 </td>
                 <td class="right">

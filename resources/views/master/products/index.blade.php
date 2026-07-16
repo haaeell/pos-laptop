@@ -1006,7 +1006,7 @@
                     '<p style="font-size:11px;font-weight:bold;margin-top:4px;">' + (product.product_code || '') + '</p>' +
                     '<p style="font-size:11px;margin-top:2px;">' + (product.name || '') + '</p>' +
                     '<p style="font-size:10px;color:#666;margin-top:2px;">' + desc + '</p>' +
-                    '<p style="font-size:13px;font-weight:bold;color:#4f46e5;margin-top:4px;">Barokah Komputer</p>' +
+                    '<p style="font-size:13px;font-weight:bold;color:#4f46e5;margin-top:4px;">Barokah Computer</p>' +
                     '</p>'
                 );
 
@@ -1038,7 +1038,7 @@
                         .replace(/\s*\|\s*$/, '')    // buang separator di akhir
                         .trim()
                     : '-';
-                const price = 'Barokah Komputer';
+                const price = 'Barokah Computer';
 
                 // Buat SVG barcode sebagai string
                 const tmpSvg = document.createElement('svg');

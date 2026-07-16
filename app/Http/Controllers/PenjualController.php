@@ -22,11 +22,15 @@ class PenjualController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required']);
+        $request->validate([
+            'name' => 'required',
+            'fee' => 'nullable|numeric|min:0',
+        ]);
 
         SalesPerson::create([
             'name' => $request->name,
             'phone' => $request->phone,
+            'fee' => $request->fee ?? 0,
         ]);
 
         return redirect()->back()->with('success', 'Sales berhasil ditambahkan');
@@ -34,11 +38,15 @@ class PenjualController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate(['name' => 'required']);
+        $request->validate([
+            'name' => 'required',
+            'fee' => 'nullable|numeric|min:0',
+        ]);
 
         SalesPerson::findOrFail($id)->update([
             'name' => $request->name,
             'phone' => $request->phone,
+            'fee' => $request->fee ?? 0,
         ]);
 
         return redirect()->back()->with('success', 'Sales berhasil diperbarui');

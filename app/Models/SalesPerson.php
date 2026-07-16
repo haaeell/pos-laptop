@@ -11,8 +11,13 @@ class SalesPerson extends Model
     protected $fillable = [
         'name',
         'phone',
+        'fee',
         'active',
         'employee_id',
+    ];
+
+    protected $casts = [
+        'fee' => 'decimal:2',
     ];
 
     public function sales()
