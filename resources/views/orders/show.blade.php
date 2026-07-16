@@ -164,7 +164,9 @@
                                     <th class="px-5 py-3">Produk</th>
                                     <th class="px-5 py-3 text-center">Qty</th>
                                     <th class="px-5 py-3 text-right">Harga</th>
-                                    <th class="px-5 py-3 text-right">HPP</th>
+                                    @if (auth()->user()?->isSuperAdmin())
+                                        <th class="px-5 py-3 text-right">HPP</th>
+                                    @endif
                                     <th class="px-5 py-3 text-right">Subtotal</th>
                                 </tr>
                             </thead>
@@ -177,28 +179,30 @@
                                         </td>
                                         <td class="px-5 py-4 text-center font-semibold">{{ $item->qty }}</td>
                                         <td class="px-5 py-4 text-right">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
-                                        <td class="px-5 py-4 text-right text-slate-500">Rp {{ number_format($item->purchase_price, 0, ',', '.') }}</td>
+                                        @if (auth()->user()?->isSuperAdmin())
+                                            <td class="px-5 py-4 text-right text-slate-500">Rp {{ number_format($item->purchase_price, 0, ',', '.') }}</td>
+                                        @endif
                                         <td class="px-5 py-4 text-right font-bold text-slate-800">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="border-t border-slate-200 bg-slate-50 text-sm">
                                 <tr>
-                                    <td class="px-5 py-3 text-right text-slate-500" colspan="4">Subtotal Produk</td>
+                                    <td class="px-5 py-3 text-right text-slate-500" colspan="{{ auth()->user()?->isSuperAdmin() ? 4 : 3 }}">Subtotal Produk</td>
                                     <td class="px-5 py-3 text-right font-semibold">Rp {{ number_format($order->items_subtotal, 0, ',', '.') }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-5 py-3 text-right text-slate-500" colspan="4">Ongkos Kirim</td>
+                                    <td class="px-5 py-3 text-right text-slate-500" colspan="{{ auth()->user()?->isSuperAdmin() ? 4 : 3 }}">Ongkos Kirim</td>
                                     <td class="px-5 py-3 text-right font-semibold">Rp {{ number_format($order->shipping_cost ?? 0, 0, ',', '.') }}</td>
                                 </tr>
                                 @if ($order->referral_discount > 0)
                                     <tr>
-                                        <td class="px-5 py-3 text-right text-emerald-600" colspan="4">Diskon Referral</td>
+                                        <td class="px-5 py-3 text-right text-emerald-600" colspan="{{ auth()->user()?->isSuperAdmin() ? 4 : 3 }}">Diskon Referral</td>
                                         <td class="px-5 py-3 text-right font-semibold text-emerald-700">- Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</td>
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td class="px-5 py-4 text-right font-bold text-slate-800" colspan="4">Grand Total</td>
+                                    <td class="px-5 py-4 text-right font-bold text-slate-800" colspan="{{ auth()->user()?->isSuperAdmin() ? 4 : 3 }}">Grand Total</td>
                                     <td class="px-5 py-4 text-right text-lg font-black text-indigo-600">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</td>
                                 </tr>
                             </tfoot>
