@@ -1870,7 +1870,7 @@
             suggestEl.innerHTML = `<div class="search-dd-empty">${term ? 'Mencari...' : 'Memuat rekomendasi...'}</div>`;
 
             try {
-                const res = await fetch(`/data/catalog?search=${encodeURIComponent(term)}&page=1${term ? '' : '&per_page=all'}`);
+                const res = await fetch(`/data/catalog?search=${encodeURIComponent(term)}&page=1${term ? '' : '&per_page=all&in_stock_only=1'}`);
                 const data = await res.json();
                 let items = data.data || [];
 
