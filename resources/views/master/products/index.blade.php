@@ -249,7 +249,7 @@
                             <td class="text-nowrap">{{ $i + 1 }}</td>
                             <td>
                                 <div
-                                    class="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center">
+                                    class="w-16 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center">
                                     @if ($product->image)
                                         <img src="{{ asset('storage/' . $product->image) }}" class="w-full h-full object-cover">
                                     @else
@@ -358,7 +358,7 @@
                         <label class="text-xs font-semibold text-slate-600 mb-1 block">Foto Produk</label>
                         <div class="flex flex-col sm:flex-row items-center gap-4">
                             <div id="imagePreviewContainer"
-                                class="w-28 h-28 sm:w-20 sm:h-20 rounded-xl border-2 border-dashed border-slate-300 overflow-hidden flex items-center justify-center bg-slate-50">
+                                class="w-36 sm:w-28 aspect-[4/3] rounded-xl border-2 border-dashed border-slate-300 overflow-hidden flex items-center justify-center bg-slate-50">
                                 <img id="imagePreview" src="" class="hidden w-full h-full object-cover">
                                 <i id="imageIcon" class="fa-solid fa-image text-slate-300 text-2xl sm:text-xl"></i>
                             </div>

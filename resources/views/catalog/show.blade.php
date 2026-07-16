@@ -409,7 +409,7 @@
         }
 
         .product-image {
-            height: 160px;
+            aspect-ratio: 3 / 4;
             border-radius: 12px;
             background: #F6F8FB;
             display: grid;
