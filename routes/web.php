@@ -96,6 +96,7 @@ Route::middleware('auth:customers')->group(function () {
 
     Route::prefix('checkout')->name('checkout.')->controller(CheckoutController::class)->group(function () {
         Route::get('/', 'create')->name('create');
+        Route::post('/beli', 'buyNow')->name('buy');
         Route::post('/rates', 'rates')->name('rates');
         Route::post('/referral/validate', 'validateReferral')->name('referral.validate');
         Route::post('/', 'store')->name('store');

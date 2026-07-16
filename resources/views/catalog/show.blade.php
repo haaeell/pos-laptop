@@ -594,10 +594,14 @@
                                 <i class="fa-solid fa-ban"></i> Sold
                             </button>
                         @elseif (auth('customers')->check())
-                            <a href="{{ route('checkout.create', ['product_id' => $product->id, 'qty' => 1]) }}"
-                                class="btn btn-buy-now">
-                                <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
-                            </a>
+                            <form action="{{ route('checkout.buy') }}" method="POST" style="flex:1;min-width:180px;">
+                                @csrf
+                                <input type="hidden" name="product_slug" value="{{ $product->slug }}">
+                                <input type="hidden" name="qty" value="1">
+                                <button type="submit" class="btn btn-buy-now" style="width:100%;">
+                                    <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
+                                </button>
+                            </form>
                             <form action="{{ route('cart.add') }}" method="POST" style="flex:1;min-width:180px;">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">

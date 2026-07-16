@@ -38,6 +38,55 @@ class CheckoutController extends Controller
         return Auth::guard('customers')->id();
     }
 
+    protected function resolveBuyNowProduct(Request $request): ?Product
+    {
+        $buyNow = $request->session()->get('checkout_buy_now');
+
+        if (is_array($buyNow) && !empty($buyNow['product_id'])) {
+            return Product::findOrFail((int) $buyNow['product_id']);
+        }
+
+        if ($request->filled('product_id')) {
+            return Product::findOrFail($request->integer('product_id'));
+        }
+
+        return null;
+    }
+
+    protected function requestedQty(Request $request): int
+    {
+        $buyNow = $request->session()->get('checkout_buy_now');
+        if (is_array($buyNow) && !empty($buyNow['qty'])) {
+            return max(1, (int) $buyNow['qty']);
+        }
+
+        return max(
+            1,
+            (int) $request->integer('qty', 1)
+        );
+    }
+
+    public function buyNow(Request $request)
+    {
+        $data = $request->validate([
+            'product_slug' => 'required|string',
+            'qty' => 'nullable|integer|min:1',
+        ]);
+
+        $product = Product::where('slug', $data['product_slug'])->firstOrFail();
+
+        if (!$product->isAvailable()) {
+            abort(404);
+        }
+
+        $request->session()->flash('checkout_buy_now', [
+            'product_id' => $product->id,
+            'qty' => min(max(1, (int) ($data['qty'] ?? 1)), max(1, $product->stock)),
+        ]);
+
+        return redirect()->route('checkout.create');
+    }
+
     /**
      * Returns the customer's still-active pending_payment order, if any,
      * after lazily expiring it if it's actually past its payment window.
@@ -66,9 +115,8 @@ class CheckoutController extends Controller
      */
     protected function resolveLines(Request $request): array
     {
-        if ($request->filled('product_id')) {
-            $product = Product::findOrFail($request->integer('product_id'));
-            $qty = max(1, $request->integer('qty', 1));
+        if ($product = $this->resolveBuyNowProduct($request)) {
+            $qty = $this->requestedQty($request);
 
             if (!$product->isAvailable()) {
                 abort(404);
@@ -120,8 +168,8 @@ class CheckoutController extends Controller
             'lines' => $lines,
             'itemsSubtotal' => $itemsSubtotal,
             'addresses' => $addresses,
-            'buyNowProductId' => $request->integer('product_id') ?: null,
-            'buyNowQty' => $request->integer('qty') ?: null,
+            'buyNowProductId' => $this->resolveBuyNowProduct($request)?->id,
+            'buyNowQty' => $this->resolveBuyNowProduct($request) ? $this->requestedQty($request) : null,
             'referralDiscountSetting' => (float) Setting::get('referral_discount_amount', 0),
         ]);
     }
