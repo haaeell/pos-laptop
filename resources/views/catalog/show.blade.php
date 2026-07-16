@@ -60,7 +60,7 @@
         }
 
         .gallery-main {
-            height: 380px;
+            aspect-ratio: 3 / 4;
             border-radius: 16px;
             overflow: hidden;
             background: #F6F8FB;
@@ -74,9 +74,9 @@
         }
 
         .gallery-main img {
-            max-height: 100%;
-            width: auto;
-            object-fit: contain;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .gallery-thumbs {
@@ -445,7 +445,7 @@
             }
 
             .gallery-main {
-                height: 300px;
+                aspect-ratio: 4 / 3;
             }
 
             .product-title {
