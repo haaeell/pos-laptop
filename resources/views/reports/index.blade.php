@@ -102,6 +102,9 @@
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Fee Sales</p>
                         <h3 class="text-xl font-bold text-slate-800 mt-2">Rp{{ number_format($totalFeeSales, 0, ',', '.') }}
                         </h3>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            Diskon referral online: Rp{{ number_format($totalOnlineReferralDiscount ?? 0, 0, ',', '.') }}
+                        </p>
                     </div>
                     <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"

@@ -53,6 +53,7 @@ class ReportController extends Controller
         $onlineOrders ??= collect();
         $offlineFeeSales = $this->calcFeeSales($from, $to, $sales);
         $onlineMarketingFee = $this->onlineMarketingFee($onlineOrders);
+        $onlineReferralDiscount = $onlineOrders->sum('referral_discount');
         $feeSales   = $offlineFeeSales + $onlineMarketingFee;
         $totalOnlineSales = $onlineOrders->sum('grand_total');
         $totalOnlineProfit = $this->onlineProfit($onlineOrders);
@@ -82,6 +83,7 @@ class ReportController extends Controller
             'totalOnlineProfit'    => $totalOnlineProfit,
             'totalOnlineShipping'  => $totalOnlineShipping,
             'totalOnlineMarketingFee' => $onlineMarketingFee,
+            'totalOnlineReferralDiscount' => $onlineReferralDiscount,
             'totalFeeSales'        => $feeSales,
             'totalProfit'          => $sales->sum('benefit') + $totalOnlineProfit,
             'bonusLoss'            => SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit'),
