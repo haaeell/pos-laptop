@@ -79,7 +79,7 @@
             line-height: 1.5;
             overflow-x: hidden;
             max-width: 100vw;
-            padding-top: 154px;
+            padding-top: 98px;
         }
 
         img {
@@ -103,28 +103,6 @@
             margin: auto;
         }
 
-        /* ============ TOPBAR ============ */
-        .topbar {
-            background: var(--primary);
-            color: #fff;
-            font-size: 12px;
-        }
-
-        .topbar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 9px 0;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .top-links {
-            display: flex;
-            gap: 18px;
-            flex-wrap: wrap;
-        }
-
         /* ============ HEADER ============ */
         .header {
             background: rgba(255, 255, 255, .92);
@@ -140,10 +118,10 @@
 
         .header-main {
             display: grid;
-            grid-template-columns: 220px 1fr auto;
-            gap: 16px;
+            grid-template-columns: auto minmax(0, 1fr) minmax(260px, 360px) auto;
+            gap: 18px;
             align-items: center;
-            padding: 18px 0;
+            min-height: 84px;
         }
 
         .header-right {
@@ -189,6 +167,35 @@
         .brand-text span {
             font-size: 11px;
             color: var(--muted);
+        }
+
+        .desktop-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .desktop-nav a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475467;
+            white-space: nowrap;
+            transition: background .2s ease, color .2s ease, transform .2s ease;
+        }
+
+        .desktop-nav a.active,
+        .desktop-nav a:hover {
+            background: rgba(23, 92, 211, .08);
+            color: var(--primary);
+            transform: translateY(-1px);
         }
 
         .mobile-brand-title {
@@ -348,6 +355,7 @@
         /* ============ SEARCH DROPDOWN (history + suggestions) ============ */
         .search-wrap {
             position: relative;
+            min-width: 0;
         }
 
         .search-dropdown {
@@ -729,97 +737,6 @@
             }
         }
 
-        .mobile-toggle {
-            display: none;
-            border: 0;
-            background: transparent;
-            font-size: 20px;
-            color: var(--text);
-            cursor: pointer;
-        }
-
-        .nav {
-            border-top: 1px solid var(--line);
-        }
-
-        .nav .container {
-            padding: 12px 0 16px;
-        }
-
-        .nav-shell {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 18px;
-            padding: 10px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(23, 92, 211, .10);
-            background:
-                radial-gradient(circle at top right, rgba(59, 130, 246, .12), transparent 34%),
-                linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(247, 250, 255, .92));
-            box-shadow: 0 16px 34px rgba(15, 76, 184, .08);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            min-width: 0;
-        }
-
-        .nav a {
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
-            color: #475467;
-            padding: 10px 14px;
-            border-radius: 999px;
-            transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
-        }
-
-        .nav a.active,
-        .nav a:hover {
-            color: var(--primary);
-            background: rgba(23, 92, 211, .08);
-            box-shadow: inset 0 0 0 1px rgba(23, 92, 211, .12);
-            transform: translateY(-1px);
-        }
-
-        .nav-accent {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #175CD3, #3B82F6);
-            color: #fff !important;
-            box-shadow: 0 14px 28px rgba(23, 92, 211, .24);
-            flex-shrink: 0;
-        }
-
-        .nav-accent:hover {
-            transform: translateY(-1px);
-            background: linear-gradient(135deg, #0F4CB8, #2563EB) !important;
-            box-shadow: 0 18px 34px rgba(23, 92, 211, .30) !important;
-        }
-
-        .nav-accent-copy {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-
-        .nav-accent-copy strong {
-            font-size: 12px;
-            font-weight: 800;
-        }
-
-        .nav-accent-copy span {
-            font-size: 10px;
-            opacity: .9;
-        }
-
         /* ============ BUTTONS ============ */
         .btn {
             display: inline-flex;
@@ -965,64 +882,25 @@
 
         @media(max-width:960px) {
             .header-main {
-                grid-template-columns: 1fr auto;
+                grid-template-columns: auto 1fr auto;
+                min-height: 74px;
             }
 
-            .search-bar {
-                grid-column: 1/-1;
-                grid-row: 2;
+            .desktop-nav,
+            .search-wrap {
+                display: none;
             }
 
             .footer-grid {
                 grid-template-columns: 1fr;
             }
-
-            .mobile-toggle {
-                display: block;
-            }
-
-            .nav {
-                display: none;
-            }
-
-            .nav.open {
-                display: block;
-            }
-
-            .nav.open .container {
-                padding: 16px 0;
-            }
-
-            .nav.open .nav-shell {
-                flex-direction: column;
-                align-items: stretch;
-                border-radius: 18px;
-            }
-
-            .nav.open .nav-links {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .nav.open .nav-links a {
-                width: 100%;
-            }
-
-            .nav.open .nav-accent {
-                width: 100%;
-                justify-content: center;
-            }
         }
 
         @media(max-width:640px) {
             body {
-                padding-top: 84px;
+                padding-top: 72px;
                 padding-bottom: 78px;
                 background: #fff;
-            }
-
-            .topbar {
-                display: none;
             }
 
             .header {
@@ -1084,31 +962,6 @@
             }
 
             .header-actions .header-action-btn:not(:first-child) {
-                display: none;
-            }
-
-            .search-bar {
-                grid-column: 1/-1;
-                grid-row: 2;
-                grid-template-columns: 1fr 44px;
-                border-radius: 999px;
-                border-color: var(--line);
-            }
-
-            .search-bar input {
-                padding: 10px 4px 10px 14px;
-                font-size: 13px;
-            }
-
-            .search-bar button {
-                border-radius: 0 999px 999px 0;
-            }
-
-            .mobile-toggle {
-                display: none;
-            }
-
-            .nav {
                 display: none;
             }
 
@@ -1497,15 +1350,6 @@
 </head>
 
 <body>
-
-    <div class="topbar">
-        <div class="container">
-            <span>Gratis konsultasi untuk pembelian dan service perangkat</span>
-            <div class="top-links"><span>Garansi Resmi</span><span>Produk Original</span><span>Pelayanan
-                    Terpercaya</span></div>
-        </div>
-    </div>
-
     <header class="header">
         <div class="container header-main">
             <a href="{{ url('/') }}" class="brand">
@@ -1516,6 +1360,14 @@
             </a>
 
             <div class="mobile-brand-title">Barokah Computer</div>
+
+            <nav class="desktop-nav" aria-label="Navigasi utama">
+                <a class="{{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Beranda</a>
+                <a class="{{ request()->is('produk*') ? 'active' : '' }}" href="{{ route('catalog.listing') }}">Produk</a>
+                <a class="{{ request()->is('service') ? 'active' : '' }}" href="{{ route('pages.service') }}">Service</a>
+                <a class="{{ request()->is('artikel*') ? 'active' : '' }}" href="{{ route('pages.articles') }}">Artikel</a>
+                <a class="{{ request()->is('tentang-kami') ? 'active' : '' }}" href="{{ route('pages.about') }}">Tentang Kami</a>
+            </nav>
 
             <div class="search-wrap">
                 <form class="search-bar" action="{{ url('/') }}" method="GET" id="searchForm" autocomplete="off">
@@ -1574,31 +1426,8 @@
                         </a>
                     @endauth
                 </div>
-
-                <button class="mobile-toggle" id="mobileToggle" aria-label="Buka menu"><i
-                        class="fa-solid fa-bars"></i></button>
             </div>
         </div>
-        <nav class="nav" id="nav">
-            <div class="container">
-                <div class="nav-shell">
-                    <div class="nav-links">
-                        <a class="{{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Beranda</a>
-                        <a class="{{ request()->is('produk*') ? 'active' : '' }}" href="{{ route('catalog.listing') }}">Produk</a>
-                        <a class="{{ request()->is('service') ? 'active' : '' }}" href="{{ route('pages.service') }}">Service</a>
-                        <a class="{{ request()->is('artikel') ? 'active' : '' }}" href="{{ route('pages.articles') }}">Artikel</a>
-                        <a class="{{ request()->is('tentang-kami') ? 'active' : '' }}" href="{{ route('pages.about') }}">Tentang Kami</a>
-                    </div>
-                    <a class="nav-accent" href="{{ route('pages.service') }}">
-                        <i class="fa-solid fa-screwdriver-wrench"></i>
-                        <span class="nav-accent-copy">
-                            <strong>Butuh Servis Cepat?</strong>
-                            <span>Konsultasi teknisi toko</span>
-                        </span>
-                    </a>
-                </div>
-            </div>
-        </nav>
     </header>
 
     @yield('content')
@@ -1762,13 +1591,6 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        const navEl = document.getElementById('nav');
-        const mobileToggleEl = document.getElementById('mobileToggle');
-        if (mobileToggleEl) {
-            mobileToggleEl.addEventListener('click', () => navEl.classList.toggle('open'));
-            navEl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navEl.classList.remove('open')));
-        }
-
         window.applyScrollReveal = function (root = document) {
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 return;
