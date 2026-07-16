@@ -1738,6 +1738,13 @@
                 </div>
 
                 <div class="footer-col">
+                    <h4>Informasi</h4>
+                    <a href="{{ route('pages.about') }}"><i class="fa-solid fa-circle-info"></i> Tentang Kami</a>
+                    <a href="{{ route('pages.privacy') }}"><i class="fa-solid fa-user-shield"></i> Privacy</a>
+                    <a href="{{ route('pages.security') }}"><i class="fa-solid fa-shield-halved"></i> Security</a>
+                </div>
+
+                <div class="footer-col">
                     <h4>Lokasi Toko</h4>
                     <div class="footer-map">
                         <iframe

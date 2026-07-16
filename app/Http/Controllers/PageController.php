@@ -23,6 +23,16 @@ class PageController extends Controller
         ]);
     }
 
+    public function privacy()
+    {
+        return view('pages.privacy');
+    }
+
+    public function security()
+    {
+        return view('pages.security');
+    }
+
     public function articles(Request $request)
     {
         $query = Article::published()->with('category')->latest('published_at');

@@ -42,6 +42,8 @@ Route::get('/produk', [CatalogController::class, 'listing'])->name('catalog.list
 Route::get('/produk/{id}', [CatalogController::class, 'show'])->name('catalog.show');
 Route::get('/service', [PageController::class, 'service'])->name('pages.service');
 Route::get('/tentang-kami', [PageController::class, 'about'])->name('pages.about');
+Route::get('/privacy', [PageController::class, 'privacy'])->name('pages.privacy');
+Route::get('/security', [PageController::class, 'security'])->name('pages.security');
 Route::get('/artikel', [PageController::class, 'articles'])->name('pages.articles');
 Route::get('/artikel/{slug}', [PageController::class, 'articleShow'])->name('pages.article-show');
 

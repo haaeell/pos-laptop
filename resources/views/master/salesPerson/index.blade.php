@@ -2,6 +2,135 @@
 
 @section('title', 'Kategori')
 
+@push('styles')
+    <style>
+        #datatable_wrapper .dataTables_length,
+        #datatable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        #datatable_wrapper .dataTables_length select,
+        #datatable_wrapper .dataTables_filter input {
+            border: 1px solid #cbd5e1;
+            border-radius: 0.75rem;
+            padding: 0.55rem 0.85rem;
+            background: #fff;
+            color: #0f172a;
+        }
+
+        #datatable_wrapper .dataTables_filter input {
+            min-width: 220px;
+        }
+
+        #datatable_wrapper .dataTables_info,
+        #datatable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+            color: #475569;
+        }
+
+        #datatable_wrapper .paginate_button {
+            border-radius: 0.75rem !important;
+        }
+
+        #datatable_wrapper .paginate_button.current {
+            background: #eef2ff !important;
+            border: 1px solid #c7d2fe !important;
+            color: #4338ca !important;
+        }
+
+        #datatable thead th {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        #datatable tbody td {
+            vertical-align: middle;
+        }
+
+        .marketing-table td,
+        .marketing-table th {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .marketing-name {
+            min-width: 180px;
+        }
+
+        .marketing-phone {
+            min-width: 130px;
+            color: #475569;
+        }
+
+        .marketing-referral {
+            max-width: 320px;
+        }
+
+        .marketing-referral-code {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: 0.45rem 0.7rem;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            font-size: 0.78rem;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .marketing-actions {
+            min-width: 220px;
+        }
+
+        .marketing-actions-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: nowrap;
+        }
+
+        .marketing-action-btn {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .marketing-employee-badge {
+            display: inline-flex;
+            align-items: center;
+            height: 42px;
+            padding: 0 0.9rem;
+            border-radius: 0.85rem;
+            background: #f1f5f9;
+            color: #94a3b8;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 1024px) {
+            #datatable_wrapper .dataTables_filter input {
+                min-width: 160px;
+            }
+
+            .marketing-referral {
+                max-width: 240px;
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="mx-auto bg-white rounded-xl">
 
@@ -29,7 +158,7 @@
 
         <!-- TABLE -->
         <div class="bg-white rounded-xl shadow border overflow-x-auto px-4 py-5">
-            <table id="datatable" class="w-full text-sm">
+            <table id="datatable" class="marketing-table w-full text-sm">
                 <thead class="bg-slate-100 text-slate-700">
                     <tr>
                         <th class="px-4 py-3">No</th>
@@ -45,14 +174,16 @@
                 <tbody>
                     @foreach ($salesPerson as $i => $sales)
                         <tr>
-                            <td>{{ $i + 1 }}</td>
-                            <td class="font-medium">{{ $sales->name }}</td>
+                            <td class="font-semibold text-slate-600">{{ $i + 1 }}</td>
+                            <td class="marketing-name font-semibold text-slate-800">{{ $sales->name }}</td>
 
-                            <td class="px-4 py-3">
-                                {{ $sales->phone }}
+                            <td class="marketing-phone px-4 py-3">
+                                {{ $sales->phone ?: '-' }}
                             </td>
-                            <td class="px-4 py-3 font-mono text-xs uppercase">
-                                {{ $sales->referral_code }}
+                            <td class="marketing-referral px-4 py-3">
+                                <span class="marketing-referral-code font-mono uppercase" title="{{ $sales->referral_code }}">
+                                    {{ $sales->referral_code }}
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-right font-medium">
                                 Rp {{ number_format((float) $sales->fee, 0, ',', '.') }}
@@ -65,28 +196,30 @@
                             <td class="px-4 py-3 text-center font-semibold text-indigo-600">
                                 {{ $sales->total_penjualan }}
                             </td>
-                            <td class=" space-x-2">
+                            <td class="marketing-actions px-4 py-3">
+                                <div class="marketing-actions-wrap">
                                 <button onclick='openEditModal(@json($sales))'
-                                    class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500 transition">
+                                    class="marketing-action-btn bg-yellow-400 rounded hover:bg-yellow-500 transition">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
 
                                 @if (!$sales->employee_id)
                                     <button onclick='openPromoteModal(@json($sales))'
-                                        class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                                        class="marketing-action-btn bg-green-500 text-white rounded hover:bg-green-600 transition"
                                         title="Angkat jadi karyawan">
                                         <i class="fa-solid fa-user-tie"></i>
                                     </button>
                                 @else
-                                    <span class="px-3 py-1 bg-slate-100 text-slate-400 rounded text-xs">
+                                    <span class="marketing-employee-badge">
                                         <i class="fa-solid fa-check"></i> Karyawan
                                     </span>
                                 @endif
 
                                 <button onclick="deleteSales({{ $sales->id }})"
-                                    class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">
+                                    class="marketing-action-btn bg-red-500 text-white rounded hover:bg-red-600 transition">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
