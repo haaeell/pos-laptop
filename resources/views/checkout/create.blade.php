@@ -16,6 +16,10 @@
             display: none !important;
         }
 
+        footer {
+            display: none !important;
+        }
+
         .checkout-section {
             padding: 24px 0 170px;
         }
@@ -30,20 +34,13 @@
             margin-bottom: 14px;
         }
 
-        .checkout-summary-submit-btn,
-        .checkout-summary-trust-badge {
+        .checkout-summary-submit-btn {
             display: none;
         }
 
         .checkout-summary-submit-btn {
             width: 100%;
             margin-top: 16px;
-        }
-
-        .checkout-summary-trust-badge {
-            justify-content: center;
-            width: 100%;
-            margin-top: 8px;
         }
 
         @media(min-width:900px) {
@@ -63,16 +60,14 @@
             }
 
             .checkout-summary-sidebar {
-                position: sticky;
-                top: 90px;
+                align-self: start;
             }
 
             .checkout-bottom-bar {
                 display: none;
             }
 
-            .checkout-summary-submit-btn,
-            .checkout-summary-trust-badge {
+            .checkout-summary-submit-btn {
                 display: block;
             }
         }
@@ -88,6 +83,7 @@
             border-radius: 16px;
             padding: 18px;
             margin-bottom: 14px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, .04);
         }
 
         .checkout-card h3 {
@@ -109,6 +105,103 @@
 
         .checkout-item-row:last-child {
             border-bottom: 0;
+        }
+
+        .checkout-product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkout-product-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff, #fbfdff);
+        }
+
+        .checkout-product-thumb {
+            width: 72px;
+            height: 72px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #f1f5f9;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            color: #cbd5e1;
+        }
+
+        .checkout-product-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .checkout-product-copy {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .checkout-product-title {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.45;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .checkout-product-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .checkout-product-pricing {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .checkout-product-unit-price {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .checkout-product-strike {
+            font-size: 11.5px;
+            color: #98a2b3;
+            text-decoration: line-through;
+        }
+
+        .checkout-product-price {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .checkout-product-subtotal {
+            text-align: right;
+        }
+
+        .checkout-product-subtotal-label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+
+        .checkout-product-subtotal-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
         }
 
         /* --- selected address summary card --- */
@@ -157,36 +250,124 @@
         }
 
         .courier-card {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 12px 14px;
+            border: 1px solid #dbe4ef;
+            border-radius: 18px;
+            padding: 14px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 10px;
+            align-items: flex-start;
+            gap: 14px;
+            background: linear-gradient(180deg, #ffffff, #fcfdff);
+            transition: .2s ease;
         }
 
         .courier-card.selected {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-soft);
+            box-shadow: 0 0 0 3px var(--primary-soft), 0 16px 30px rgba(23, 92, 211, .12);
+        }
+
+        .courier-card:hover {
+            transform: translateY(-2px);
+            border-color: #bfd3fb;
+        }
+
+        .courier-card-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .courier-card-logo {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: #fff;
+            border: 1px solid #e5edf6;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            color: #94a3b8;
+        }
+
+        .courier-card-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 7px;
+        }
+
+        .courier-card-copy {
+            min-width: 0;
         }
 
         .courier-card .name {
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 4px;
         }
 
         .courier-card .duration {
-            font-size: 11.5px;
+            font-size: 12px;
             color: var(--muted);
         }
 
+        .courier-card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .courier-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #b45309;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .courier-card-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
         .courier-card .price {
-            font-size: 13.5px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--primary);
             white-space: nowrap;
+        }
+
+        .courier-card-check {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1.5px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            background: #fff;
+            transition: .2s ease;
+        }
+
+        .courier-card.selected .courier-card-check {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #fff;
         }
 
         .courier-hint {
@@ -198,40 +379,171 @@
         .delivery-options {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            gap: 14px;
+            margin-top: 14px;
         }
 
         .delivery-option {
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 14px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 196px;
+            border: 1px solid #dbe4ef;
+            border-radius: 20px;
+            padding: 16px;
             cursor: pointer;
-            background: #fff;
-            transition: .2s;
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, .08), transparent 34%),
+                linear-gradient(180deg, #ffffff, #f8fbff);
+            transition: .22s ease;
+            overflow: hidden;
+        }
+
+        .delivery-option:hover {
+            transform: translateY(-2px);
+            border-color: #bfd3fb;
+            box-shadow: 0 18px 34px rgba(23, 92, 211, .08);
         }
 
         .delivery-option.selected {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-soft);
+            box-shadow: 0 0 0 3px var(--primary-soft), 0 20px 38px rgba(23, 92, 211, .14);
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, .16), transparent 36%),
+                linear-gradient(180deg, #ffffff, #f4f8ff);
         }
 
-        .delivery-option strong {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 13.5px;
+        .delivery-option-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
         }
 
-        .delivery-option span {
+        .delivery-option-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #eef4ff;
+            color: var(--primary);
+            font-size: 20px;
+            box-shadow: inset 0 0 0 1px rgba(23, 92, 211, .08);
+        }
+
+        .delivery-option.selected .delivery-option-icon {
+            background: linear-gradient(135deg, #175CD3, #3B82F6);
+            color: #fff;
+            box-shadow: 0 12px 24px rgba(23, 92, 211, .22);
+        }
+
+        .delivery-option-check {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1.5px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            background: #fff;
+            transition: .2s ease;
+            flex-shrink: 0;
+        }
+
+        .delivery-option.selected .delivery-option-check {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .delivery-option-copy strong {
             display: block;
-            font-size: 12px;
+            margin-bottom: 6px;
+            font-size: 15px;
+            line-height: 1.3;
+        }
+
+        .delivery-option-copy span {
+            display: block;
+            font-size: 12.5px;
             color: var(--muted);
-            line-height: 1.4;
+            line-height: 1.6;
+        }
+
+        .delivery-option-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .delivery-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 30px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid #dbe4ef;
+            color: #475467;
+            font-size: 11.5px;
+            font-weight: 700;
+        }
+
+        .delivery-option.selected .delivery-badge {
+            border-color: #bfd3fb;
+            color: var(--primary);
+            background: #f8fbff;
+        }
+
+        .delivery-heading-copy p {
+            margin-top: 6px;
+            font-size: 12.5px;
+            color: var(--muted);
         }
 
         .delivery-note {
-            margin-top: 10px;
-            font-size: 12px;
+            margin-top: 12px;
+            font-size: 12.5px;
             color: var(--muted);
+            line-height: 1.6;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+        }
+
+        .pickup-map-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .pickup-map-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 0 14px;
+            border-radius: 12px;
+            border: 1px solid #dbe4ef;
+            background: #fff;
+            color: var(--text);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .pickup-map-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fbff;
         }
 
         .referral-inline {
@@ -288,8 +600,7 @@
             display: none;
         }
 
-        .shipping-trust-badge,
-        .payment-trust-badge {
+        .shipping-trust-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -297,10 +608,6 @@
             font-weight: 700;
             color: #16a34a;
             margin: 4px 0 10px;
-        }
-
-        .payment-trust-badge {
-            margin: 2px 0 0;
         }
 
         .courier-selected-logo {
@@ -465,6 +772,41 @@
             padding: 13px 26px;
             font-size: 13.5px;
             white-space: nowrap;
+        }
+
+        .summary-kicker {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #98a2b3;
+            margin-bottom: 6px;
+        }
+
+        .summary-total-panel {
+            margin-top: 12px;
+            padding: 16px;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at top right, rgba(255,255,255,.18), transparent 28%),
+                linear-gradient(135deg, #175CD3, #0f1176);
+            color: #fff;
+            box-shadow: 0 18px 34px rgba(23, 92, 211, .18);
+        }
+
+        .summary-total-label {
+            display: block;
+            font-size: 12px;
+            color: rgba(255, 255, 255, .78);
+            margin-bottom: 6px;
+        }
+
+        .summary-total-value {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -.03em;
         }
 
         /* --- address picker modal / bottom sheet --- */
@@ -637,6 +979,51 @@
         }
 
         @media(max-width:520px) {
+            .courier-card {
+                padding: 12px;
+                border-radius: 16px;
+            }
+
+            .courier-card-logo {
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+            }
+
+            .courier-card .price {
+                font-size: 14px;
+            }
+
+            .checkout-product-item {
+                padding: 10px;
+                border-radius: 14px;
+            }
+
+            .checkout-product-thumb {
+                width: 58px;
+                height: 58px;
+                border-radius: 12px;
+            }
+
+            .checkout-product-title {
+                font-size: 13px;
+            }
+
+            .checkout-product-price,
+            .checkout-product-subtotal-value {
+                font-size: 12.5px;
+            }
+
+            .delivery-options {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .delivery-option {
+                min-height: auto;
+                border-radius: 18px;
+            }
+
             .addr-form-grid,
             .addr-form-grid.cols-3,
             .coord-grid {
@@ -674,28 +1061,81 @@
 
                         <div class="checkout-card">
                             <h3><i class="fa-solid fa-box"></i> Produk Dipesan</h3>
-                            @foreach ($lines as $line)
-                                <div class="checkout-item-row">
-                                    <span>{{ $line['product']->name }} × {{ $line['qty'] }}</span>
-                                    <strong>Rp
-                                        {{ number_format($line['qty'] * $line['product']->selling_price, 0, ',', '.') }}</strong>
-                                </div>
-                            @endforeach
+                            <div class="checkout-product-list">
+                                @foreach ($lines as $line)
+                                    @php
+                                        $product = $line['product'];
+                                        $qty = $line['qty'];
+                                        $lineSubtotal = $qty * $product->selling_price;
+                                        $hasStrikePrice = $product->strike_price && (float) $product->strike_price > (float) $product->selling_price;
+                                    @endphp
+                                    <div class="checkout-product-item">
+                                        <div class="checkout-product-thumb">
+                                            @if ($product->image)
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" loading="lazy" decoding="async">
+                                            @else
+                                                <i class="fa-solid fa-image" style="font-size:26px;"></i>
+                                            @endif
+                                        </div>
+                                        <div class="checkout-product-copy">
+                                            <span class="checkout-product-title">{{ $product->name }}</span>
+                                            <div class="checkout-product-meta">Qty {{ $qty }}</div>
+                                            <div class="checkout-product-pricing">
+                                                <div class="checkout-product-unit-price">
+                                                    @if ($hasStrikePrice)
+                                                        <span class="checkout-product-strike">Rp {{ number_format($product->strike_price, 0, ',', '.') }}</span>
+                                                    @endif
+                                                    <span class="checkout-product-price">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</span>
+                                                </div>
+                                                <div class="checkout-product-subtotal">
+                                                    <span class="checkout-product-subtotal-label">Subtotal</span>
+                                                    <span class="checkout-product-subtotal-value">Rp {{ number_format($lineSubtotal, 0, ',', '.') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
 
                         <div class="checkout-card">
                             <h3><i class="fa-solid fa-truck-fast"></i> Metode Pengambilan</h3>
+                            <div class="delivery-heading-copy">
+                                <p>Pilih cara paling nyaman untuk menerima pesanan Anda.</p>
+                            </div>
                             <div class="delivery-options" id="deliveryOptions">
                                 <div class="delivery-option selected" data-method="shipping">
-                                    <strong>Pengiriman</strong>
-                                    <span>Pesanan dikirim ke alamat pilihan Anda melalui kurir.</span>
+                                    <div class="delivery-option-top">
+                                        <span class="delivery-option-icon"><i class="fa-solid fa-truck-fast"></i></span>
+                                        <span class="delivery-option-check"><i class="fa-solid fa-check"></i></span>
+                                    </div>
+                                    <div class="delivery-option-copy">
+                                        <strong>Pengiriman ke Alamat</strong>
+                                        <span>Pesanan dikirim ke alamat pilihan Anda melalui kurir yang tersedia.</span>
+                                    </div>
+                                    <div class="delivery-option-meta">
+                                        <span class="delivery-badge"><i class="fa-solid fa-shield-halved"></i> Aman & terlacak</span>
+                                        <span class="delivery-badge"><i class="fa-solid fa-box-open"></i> Praktis dari rumah</span>
+                                    </div>
                                 </div>
                                 <div class="delivery-option" data-method="pickup">
-                                    <strong>Pickup Sendiri</strong>
-                                    <span>Ambil pesanan langsung di toko tanpa ongkir dan tanpa resi.</span>
+                                    <div class="delivery-option-top">
+                                        <span class="delivery-option-icon"><i class="fa-solid fa-store"></i></span>
+                                        <span class="delivery-option-check"><i class="fa-solid fa-check"></i></span>
+                                    </div>
+                                    <div class="delivery-option-copy">
+                                        <strong>Ambil di Toko</strong>
+                                        <span>Ambil pesanan langsung di toko tanpa ongkir dan tanpa proses pengiriman.</span>
+                                    </div>
+                                    <div class="delivery-option-meta">
+                                        <span class="delivery-badge"><i class="fa-solid fa-money-bill-wave"></i> Tanpa ongkir</span>
+                                        <span class="delivery-badge"><i class="fa-solid fa-clock"></i> Lebih fleksibel</span>
+                                    </div>
                                 </div>
                             </div>
-                            <p class="delivery-note">Pilih pickup jika Anda ingin datang langsung ke toko untuk mengambil pesanan.</p>
+                            <p class="delivery-note">
+                                Jika Anda ingin datang langsung ke toko, pilih <strong>Ambil di Toko</strong>. Jika ingin pesanan sampai ke alamat Anda, pilih <strong>Pengiriman ke Alamat</strong>.
+                            </p>
                         </div>
 
                         <div class="checkout-card" id="shippingAddressCard">
@@ -732,17 +1172,29 @@
                                 <strong>{{ $namaToko }}</strong>
                                 <p>{{ $alamat }}</p>
                             </div>
+                            <div class="pickup-map-actions">
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode(trim($namaToko . ' ' . $alamat)) }}"
+                                    target="_blank" rel="noopener noreferrer" class="pickup-map-btn">
+                                    <i class="fa-solid fa-map-location-dot"></i> Buka Maps
+                                </a>
+                                <button type="button" class="pickup-map-btn" data-copy-text="https://www.google.com/maps/search/?api=1&query={{ urlencode(trim($namaToko . ' ' . $alamat)) }}">
+                                    <i class="fa-regular fa-copy"></i> Salin Link Maps
+                                </button>
+                            </div>
                             <p class="delivery-note" style="margin-top:12px;">
                                 Pembayaran tetap dilakukan seperti biasa. Setelah lunas, customer tinggal datang ke toko dan konfirmasi ke admin.
                             </p>
                         </div>
 
+                    </form>
+
+                    <aside class="checkout-summary-sidebar">
                         <div class="checkout-card">
                             <h3><i class="fa-solid fa-ticket"></i> Kode Referral</h3>
                             <div class="referral-inline">
                                 <div class="form-group">
                                     <label for="referralCode">Kode Referral</label>
-                                    <input type="text" id="referralCode" name="referral_code" value="{{ old('referral_code') }}"
+                                    <input type="text" id="referralCode" name="referral_code" form="checkoutForm" value="{{ old('referral_code') }}"
                                         placeholder="Contoh: SALES-ANDI" style="text-transform:uppercase;">
                                 </div>
                                 <button type="button" class="referral-apply-btn" id="applyReferralBtn">
@@ -760,14 +1212,13 @@
                         <div class="checkout-card">
                             <div class="form-group">
                                 <label for="notes">Catatan (opsional)</label>
-                                <textarea id="notes" name="notes" rows="2">{{ old('notes') }}</textarea>
+                                <textarea id="notes" name="notes" form="checkoutForm" rows="2">{{ old('notes') }}</textarea>
                             </div>
                         </div>
-                    </form>
 
-                    <aside class="checkout-summary-sidebar">
                         <div class="checkout-card">
                             <h3><i class="fa-solid fa-receipt"></i> Ringkasan Belanja</h3>
+                            <span class="summary-kicker">Order Summary</span>
                             <div class="checkout-item-row">
                                 <span>Subtotal Produk</span>
                                 <strong id="summaryItemsSubtotal">Rp {{ number_format($itemsSubtotal, 0, ',', '.') }}</strong>
@@ -780,15 +1231,14 @@
                                 <span>Diskon Referral</span>
                                 <strong id="summaryReferralDiscount">- Rp 0</strong>
                             </div>
-                            <div class="checkout-item-row" style="font-weight:800;color:var(--primary);border-top:1px solid var(--line);padding-top:12px;margin-top:4px;">
-                                <span>Total</span>
-                                <strong id="summaryGrandTotalCard">Rp {{ number_format($itemsSubtotal, 0, ',', '.') }}</strong>
+                            <div class="summary-total-panel">
+                                <span class="summary-total-label">Total Pembayaran</span>
+                                <strong id="summaryGrandTotalCard" class="summary-total-value">Rp {{ number_format($itemsSubtotal, 0, ',', '.') }}</strong>
                             </div>
 
                             <button type="submit" form="checkoutForm" class="btn btn-primary checkout-summary-submit-btn">
                                 Buat Pesanan
                             </button>
-                            <p class="payment-trust-badge checkout-summary-trust-badge"><i class="fa-solid fa-lock"></i> Pembayaran Aman</p>
                         </div>
                     </aside>
                 </div>
@@ -802,7 +1252,6 @@
                 <div class="checkout-bottom-total-label">Total Pembayaran</div>
                 <div class="checkout-bottom-total-value" id="summaryGrandTotal">Rp
                     {{ number_format($itemsSubtotal, 0, ',', '.') }}</div>
-                <p class="payment-trust-badge"><i class="fa-solid fa-lock"></i> Pembayaran Aman</p>
             </div>
             <button type="submit" form="checkoutForm" class="btn btn-primary" id="checkoutSubmitBtn">
                 Buat Pesanan
@@ -948,6 +1397,35 @@
 
         function formatRupiah(v) {
             return 'Rp ' + new Intl.NumberFormat('id-ID').format(v || 0);
+        }
+
+        async function copyTextValue(text) {
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const tempInput = document.createElement('input');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    tempInput.remove();
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Link maps berhasil disalin.',
+                    timer: 1400,
+                    showConfirmButton: false,
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Link maps belum bisa disalin. Silakan coba lagi.',
+                });
+            }
         }
 
         function normalizedReferralCode() {
@@ -1252,14 +1730,28 @@
                     return;
                 }
 
-                courierListEl.innerHTML = pricing.map((p) => `
+                const lowestPrice = Number(pricing[0]?.price || 0);
+
+                courierListEl.innerHTML = pricing.map((p, index) => `
                     <div class="courier-card" data-company="${p.courier_code}" data-type="${p.type}" data-price="${p.price}"
                         data-label="${p.courier_name} - ${p.courier_service_name}" data-logo="${p.courier_logo_url || ''}">
-                        <div>
-                            <div class="name">${p.courier_name} - ${p.courier_service_name}</div>
-                            <div class="duration">Estimasi ${p.duration || '-'}</div>
+                        <div class="courier-card-main">
+                            <div class="courier-card-logo">
+                                ${p.courier_logo_url ? `<img src="${p.courier_logo_url}" alt="${p.courier_name}">` : `<i class="fa-solid fa-truck"></i>`}
+                            </div>
+                            <div class="courier-card-copy">
+                                <div class="name">${p.courier_name} - ${p.courier_service_name}</div>
+                                <div class="duration">Estimasi ${p.duration || '-'}</div>
+                                <div class="courier-card-meta">
+                                    ${Number(p.price || 0) === lowestPrice ? '<span class="courier-chip"><i class="fa-solid fa-tag"></i> Termurah</span>' : ''}
+                                    ${index === 0 ? '<span class="courier-chip"><i class="fa-solid fa-star"></i> Rekomendasi</span>' : ''}
+                                </div>
+                            </div>
                         </div>
-                        <div class="price">${formatRupiah(p.price)}</div>
+                        <div class="courier-card-side">
+                            <div class="price">${formatRupiah(p.price)}</div>
+                            <span class="courier-card-check"><i class="fa-solid fa-check"></i></span>
+                        </div>
                     </div>
                 `).join('');
 
@@ -1581,6 +2073,12 @@
         document.querySelectorAll('.delivery-option').forEach(option => {
             option.addEventListener('click', function () {
                 setDeliveryMethod(this.dataset.method);
+            });
+        });
+
+        document.querySelectorAll('[data-copy-text]').forEach((button) => {
+            button.addEventListener('click', function () {
+                copyTextValue(this.dataset.copyText);
             });
         });
 

@@ -258,6 +258,34 @@
             margin-bottom: 4px;
         }
 
+        .pickup-map-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .pickup-map-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 12px;
+            border: 1px solid #dbe4ef;
+            background: #fff;
+            color: var(--text);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .pickup-map-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fbff;
+        }
+
         .address-box .muted {
             color: var(--muted);
             font-size: 12px;
@@ -370,8 +398,19 @@
                     <div class="order-card address-box">
                         <h3><i class="fa-solid fa-location-dot"></i> {{ $order->delivery_method === 'pickup' ? 'Info Pickup' : 'Alamat Pengiriman' }}</h3>
                         @if ($order->delivery_method === 'pickup')
+                            @php
+                                $pickupMapsUrl = 'https://www.google.com/maps/search/?api=1&query=' . urlencode(trim($namaToko . ' ' . $alamat));
+                            @endphp
                             <p><strong>{{ $namaToko }}</strong></p>
                             <p>{{ $alamat }}</p>
+                            <div class="pickup-map-actions">
+                                <a href="{{ $pickupMapsUrl }}" target="_blank" rel="noopener noreferrer" class="pickup-map-btn">
+                                    <i class="fa-solid fa-map-location-dot"></i> Buka Maps
+                                </a>
+                                <button type="button" class="pickup-map-btn" data-copy-text="{{ $pickupMapsUrl }}">
+                                    <i class="fa-regular fa-copy"></i> Salin Link Maps
+                                </button>
+                            </div>
                             <p class="muted">Pesanan diambil sendiri di toko setelah pembayaran selesai.</p>
                         @else
                             <p><strong>{{ $order->recipient_name }}</strong> ({{ $order->recipient_phone }})</p>
@@ -418,6 +457,14 @@
                             <p style="font-size:13px;margin-bottom:4px;">
                                 <strong>Pesanan siap diambil setelah status pembayaran lunas.</strong>
                             </p>
+                            <div class="pickup-map-actions">
+                                <a href="{{ $pickupMapsUrl ?? ('https://www.google.com/maps/search/?api=1&query=' . urlencode(trim($namaToko . ' ' . $alamat))) }}" target="_blank" rel="noopener noreferrer" class="pickup-map-btn">
+                                    <i class="fa-solid fa-map-location-dot"></i> Buka Maps
+                                </a>
+                                <button type="button" class="pickup-map-btn" data-copy-text="{{ $pickupMapsUrl ?? ('https://www.google.com/maps/search/?api=1&query=' . urlencode(trim($namaToko . ' ' . $alamat))) }}">
+                                    <i class="fa-regular fa-copy"></i> Salin Link Maps
+                                </button>
+                            </div>
                             <p style="font-size:12.5px;color:var(--muted);margin-bottom:0;">
                                 Tidak ada resi, tracking, atau pengiriman kurir untuk pesanan ini.
                             </p>
@@ -477,6 +524,41 @@
 
 @push('scripts')
     <script>
+        async function copyTextValue(text) {
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const tempInput = document.createElement('input');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    tempInput.remove();
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Link maps berhasil disalin.',
+                    timer: 1400,
+                    showConfirmButton: false,
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Link maps belum bisa disalin. Silakan coba lagi.',
+                });
+            }
+        }
+
+        document.querySelectorAll('[data-copy-text]').forEach((button) => {
+            button.addEventListener('click', function () {
+                copyTextValue(this.dataset.copyText);
+            });
+        });
+
         // ===== Product review modal =====
         let reviewOrderItemId = null;
         let reviewRating = 0;
