@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\ArticleCategory;
 use App\Models\Contact;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
@@ -31,6 +32,80 @@ class PageController extends Controller
     public function security()
     {
         return view('pages.security');
+    }
+
+    public function sitemap()
+    {
+        $staticPages = collect([
+            [
+                'loc' => url('/'),
+                'lastmod' => now(),
+                'changefreq' => 'daily',
+                'priority' => '1.0',
+            ],
+            [
+                'loc' => route('catalog.listing'),
+                'lastmod' => now(),
+                'changefreq' => 'daily',
+                'priority' => '0.9',
+            ],
+            [
+                'loc' => route('pages.service'),
+                'lastmod' => now(),
+                'changefreq' => 'weekly',
+                'priority' => '0.8',
+            ],
+            [
+                'loc' => route('pages.about'),
+                'lastmod' => now(),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
+            ],
+            [
+                'loc' => route('pages.privacy'),
+                'lastmod' => now(),
+                'changefreq' => 'monthly',
+                'priority' => '0.4',
+            ],
+            [
+                'loc' => route('pages.security'),
+                'lastmod' => now(),
+                'changefreq' => 'monthly',
+                'priority' => '0.4',
+            ],
+            [
+                'loc' => route('pages.articles'),
+                'lastmod' => Article::published()->max('updated_at') ?? now(),
+                'changefreq' => 'daily',
+                'priority' => '0.8',
+            ],
+        ]);
+
+        $products = Product::query()
+            ->whereIn('status', ['available', 'sold'])
+            ->where('is_active', true)
+            ->get(['slug', 'updated_at'])
+            ->map(fn ($product) => [
+                'loc' => route('catalog.show', $product->slug),
+                'lastmod' => $product->updated_at ?? now(),
+                'changefreq' => 'weekly',
+                'priority' => '0.7',
+            ]);
+
+        $articles = Article::published()
+            ->get(['slug', 'updated_at', 'published_at'])
+            ->map(fn ($article) => [
+                'loc' => route('pages.article-show', $article->slug),
+                'lastmod' => $article->updated_at ?? $article->published_at ?? now(),
+                'changefreq' => 'weekly',
+                'priority' => '0.7',
+            ]);
+
+        return response()
+            ->view('pages.sitemap', [
+                'urls' => $staticPages->concat($products)->concat($articles),
+            ])
+            ->header('Content-Type', 'application/xml');
     }
 
     public function articles(Request $request)

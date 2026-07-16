@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CatalogController::class, 'index']);
+Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('pages.sitemap');
 Route::get('/data/catalog', [CatalogController::class, 'data'])->name('catalog.data');
 Route::get('/produk', [CatalogController::class, 'listing'])->name('catalog.listing');
 Route::get('/produk/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
