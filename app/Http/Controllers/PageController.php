@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
+    private const SITEMAP_MAX_URLS = 140;
+
     public function service()
     {
         return view('pages.service', [
@@ -81,9 +83,13 @@ class PageController extends Controller
             ],
         ]);
 
+        $remainingSlots = max(self::SITEMAP_MAX_URLS - $staticPages->count(), 0);
+
         $products = Product::query()
             ->where('status', 'available')
             ->where('is_active', true)
+            ->latest('updated_at')
+            ->take($remainingSlots)
             ->get(['slug', 'updated_at'])
             ->map(fn ($product) => [
                 'loc' => route('catalog.show', $product->slug),
@@ -92,7 +98,11 @@ class PageController extends Controller
                 'priority' => '0.7',
             ]);
 
+        $remainingSlots -= $products->count();
+
         $articles = Article::published()
+            ->latest('updated_at')
+            ->take(max($remainingSlots, 0))
             ->get(['slug', 'updated_at', 'published_at'])
             ->map(fn ($article) => [
                 'loc' => route('pages.article-show', $article->slug),
