@@ -4,6 +4,28 @@
 
 @section('content')
     <div class="bg-white rounded-xl space-y-6">
+        <style>
+            .metric-breakdown {
+                display: grid;
+                gap: 0.35rem;
+                margin-top: 0.75rem;
+            }
+
+            .metric-breakdown-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                font-size: 11px;
+                color: #94a3b8;
+            }
+
+            .metric-breakdown-row span:last-child {
+                font-weight: 700;
+                color: #64748b;
+                text-align: right;
+            }
+        </style>
 
         <h1 class="text-2xl font-semibold text-slate-800">Laporan Keuangan</h1>
 
@@ -82,10 +104,16 @@
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Penjualan</p>
                         <h3 class="text-xl font-bold text-slate-800 mt-2">Rp{{ number_format($totalSales, 0, ',', '.') }}
                         </h3>
-                        <p class="text-[11px] text-slate-400 mt-1">
-                            Offline: Rp{{ number_format($totalOfflineSales ?? 0, 0, ',', '.') }} &middot;
-                            Online: Rp{{ number_format(($totalOnlineSales ?? 0) - ($totalOnlineMarketingFee ?? 0), 0, ',', '.') }}
-                        </p>
+                        <div class="metric-breakdown">
+                            <div class="metric-breakdown-row">
+                                <span>Offline</span>
+                                <span>Rp{{ number_format($totalOfflineSales ?? 0, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="metric-breakdown-row">
+                                <span>Online</span>
+                                <span>Rp{{ number_format(($totalOnlineSales ?? 0) - ($totalOnlineMarketingFee ?? 0), 0, ',', '.') }}</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -171,10 +199,16 @@
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profit</p>
                         <h3 class="text-xl font-bold text-emerald-600 mt-2">Rp{{ number_format($totalProfit, 0, ',', '.') }}
                         </h3>
-                        <p class="text-[11px] text-slate-400 mt-1">
-                            Offline: Rp{{ number_format($totalOfflineProfit ?? 0, 0, ',', '.') }} &middot;
-                            Online: Rp{{ number_format($totalOnlineProfit ?? 0, 0, ',', '.') }}
-                        </p>
+                        <div class="metric-breakdown">
+                            <div class="metric-breakdown-row">
+                                <span>Offline</span>
+                                <span>Rp{{ number_format($totalOfflineProfit ?? 0, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="metric-breakdown-row">
+                                <span>Online</span>
+                                <span>Rp{{ number_format($totalOnlineProfit ?? 0, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -562,8 +596,8 @@
                     {
                         label: 'Online',
                         data: reportChartData.daily.online,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, .08)',
+                        borderColor: '#eab308',
+                        backgroundColor: 'rgba(234, 179, 8, .12)',
                         tension: .35,
                         fill: true,
                         pointRadius: 3,
