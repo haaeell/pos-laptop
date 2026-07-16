@@ -9,11 +9,18 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'customer_id',
+        'sales_person_id',
         'delivery_method',
         'status',
         'grand_total',
         'items_subtotal',
         'shipping_cost',
+        'referral_code',
+        'marketing_name',
+        'referral_discount',
+        'marketing_fee_before_discount',
+        'marketing_fee_discount',
+        'marketing_fee_after_discount',
         'recipient_name',
         'recipient_phone',
         'province',
@@ -44,6 +51,10 @@ class Order extends Model
         'grand_total' => 'decimal:2',
         'items_subtotal' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
+        'referral_discount' => 'decimal:2',
+        'marketing_fee_before_discount' => 'decimal:2',
+        'marketing_fee_discount' => 'decimal:2',
+        'marketing_fee_after_discount' => 'decimal:2',
         'expires_at' => 'datetime',
         'paid_at' => 'datetime',
         'shipped_at' => 'datetime',
@@ -70,6 +81,11 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function salesPerson()
+    {
+        return $this->belongsTo(SalesPerson::class, 'sales_person_id');
     }
 
     public function items()
@@ -106,5 +122,4 @@ class Order extends Model
     {
         return self::DELIVERY_LABELS[$this->delivery_method] ?? 'Pengiriman';
     }
-
 }

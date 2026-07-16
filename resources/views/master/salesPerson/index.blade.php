@@ -35,7 +35,9 @@
                         <th class="px-4 py-3">No</th>
                         <th class="px-4 py-3">Nama</th>
                         <th class="px-4 py-3">No telepon</th>
+                        <th class="px-4 py-3">Kode Referral</th>
                         <th class="px-4 py-3">Fee</th>
+                        <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Jumlah Penjualan</th>
                         <th class="px-4 py-3">Aksi</th>
                     </tr>
@@ -49,8 +51,16 @@
                             <td class="px-4 py-3">
                                 {{ $sales->phone }}
                             </td>
+                            <td class="px-4 py-3 font-mono text-xs uppercase">
+                                {{ $sales->referral_code }}
+                            </td>
                             <td class="px-4 py-3 text-right font-medium">
                                 Rp {{ number_format((float) $sales->fee, 0, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $sales->active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">
+                                    {{ $sales->active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-center font-semibold text-indigo-600">
                                 {{ $sales->total_penjualan }}
@@ -94,7 +104,7 @@
                 <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
                     <i class="fa-solid fa-layer-group"></i>
                 </div>
-                <h2 class="text-base font-bold text-slate-800">Tambah Sales</h2>
+                <h2 id="modalTitle" class="text-base font-bold text-slate-800">Tambah Sales</h2>
             </div>
 
             <!-- BODY -->
@@ -128,6 +138,18 @@
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                        Kode Referral
+                    </label>
+                    <div class="relative mt-1">
+                        <i class="fa-solid fa-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" name="referral_code" id="salesReferralCode" placeholder="SALES-ANDI"
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm uppercase
+                                                                                                        focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500">
+                    </div>
+                    <p class="mt-1 text-[11px] text-slate-500">Kosongkan jika ingin dibuat otomatis dari nama marketing.</p>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">
                         Fee
                     </label>
                     <div class="relative mt-1">
@@ -140,6 +162,12 @@
                         <input type="hidden" name="fee" id="salesFee" value="0">
                     </div>
                 </div>
+                <div class="flex items-center gap-2">
+                    <input type="hidden" name="active" value="0">
+                    <input type="checkbox" name="active" id="salesActive" value="1" checked
+                        class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="salesActive" class="text-sm text-slate-700">Kode referral aktif</label>
+                </div>
 
                 <!-- FOOTER -->
                 <div class="flex justify-end gap-2 pt-4">
@@ -149,8 +177,12 @@
                     </button>
 
                     <button type="submit"
+                        id="submitBtn"
                         class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">
-                        Simpan
+                        <span id="btnText">Simpan</span>
+                        <span id="loader" class="hidden ml-2">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                        </span>
                     </button>
                 </div>
             </form>
@@ -290,8 +322,10 @@
                 const form = $('#salesForm')
                 const title = $('#modalTitle')
                 const phone = $('#salesPhone')
+                const referralCode = $('#salesReferralCode')
                 const feeText = $('#salesFeeText')
                 const fee = $('#salesFee')
+                const active = $('#salesActive')
 
                 const name = $('#salesName')
                 const method = $('#methodField')
@@ -306,6 +340,10 @@
                     this.value = raw ? formatRupiah(raw) : ''
                 })
 
+                referralCode.on('input', function () {
+                    this.value = this.value.toUpperCase()
+                })
+
                 window.openCreateModal = function () {
                     modal.removeClass('hidden')
                     title.text('Tambah Sales')
@@ -314,8 +352,13 @@
                     method.val('')
                     name.val('')
                     phone.val('')
+                    referralCode.val('')
                     fee.val(0)
                     feeText.val('')
+                    active.prop('checked', true)
+                    btn.prop('disabled', false).removeClass('opacity-70')
+                    btnText.text('Simpan')
+                    loader.addClass('hidden')
                 }
 
                 window.openEditModal = function (data) {
@@ -326,8 +369,13 @@
                     method.val('PUT')
                     name.val(data.name)
                     phone.val(data.phone)
+                    referralCode.val(data.referral_code ?? '')
                     fee.val(data.fee ?? 0)
                     feeText.val((data.fee && Number(data.fee) > 0) ? formatRupiah(data.fee) : '')
+                    active.prop('checked', Boolean(Number(data.active)))
+                    btn.prop('disabled', false).removeClass('opacity-70')
+                    btnText.text('Simpan')
+                    loader.addClass('hidden')
                 }
 
                 window.closeModal = function () {

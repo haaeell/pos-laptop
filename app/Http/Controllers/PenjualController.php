@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\SalesPerson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PenjualController extends Controller
 {
@@ -24,13 +25,20 @@ class PenjualController extends Controller
     {
         $request->validate([
             'name' => 'required',
+            'phone' => 'required',
             'fee' => 'nullable|numeric|min:0',
+            'referral_code' => 'nullable|string|max:100|unique:sales_peoples,referral_code',
+            'active' => 'nullable|boolean',
         ]);
 
         SalesPerson::create([
             'name' => $request->name,
             'phone' => $request->phone,
             'fee' => $request->fee ?? 0,
+            'referral_code' => $request->filled('referral_code')
+                ? Str::upper(Str::slug($request->referral_code, '-'))
+                : SalesPerson::generateReferralCode($request->name),
+            'active' => $request->boolean('active', true),
         ]);
 
         return redirect()->back()->with('success', 'Sales berhasil ditambahkan');
@@ -38,15 +46,24 @@ class PenjualController extends Controller
 
     public function update(Request $request, $id)
     {
+        $salesPerson = SalesPerson::findOrFail($id);
+
         $request->validate([
             'name' => 'required',
+            'phone' => 'required',
             'fee' => 'nullable|numeric|min:0',
+            'referral_code' => 'nullable|string|max:100|unique:sales_peoples,referral_code,' . $salesPerson->id,
+            'active' => 'nullable|boolean',
         ]);
 
-        SalesPerson::findOrFail($id)->update([
+        $salesPerson->update([
             'name' => $request->name,
             'phone' => $request->phone,
             'fee' => $request->fee ?? 0,
+            'referral_code' => $request->filled('referral_code')
+                ? Str::upper(Str::slug($request->referral_code, '-'))
+                : SalesPerson::generateReferralCode($request->name, $salesPerson->id),
+            'active' => $request->boolean('active', false),
         ]);
 
         return redirect()->back()->with('success', 'Sales berhasil diperbarui');

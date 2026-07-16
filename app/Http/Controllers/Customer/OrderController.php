@@ -49,7 +49,7 @@ class OrderController extends Controller
         $order = $this->customerOrder($orderNumber);
         $order = $this->orderExpiry->expireIfDue($order);
 
-        $order->load(['items.product', 'items.review', 'statusHistories', 'trackingHistories']);
+        $order->load(['items.product', 'items.review', 'statusHistories', 'trackingHistories', 'salesPerson']);
 
         return view('customer.orders.show', ['order' => $order]);
     }

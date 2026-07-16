@@ -93,6 +93,7 @@ Route::middleware('auth:customers')->group(function () {
     Route::prefix('checkout')->name('checkout.')->controller(CheckoutController::class)->group(function () {
         Route::get('/', 'create')->name('create');
         Route::post('/rates', 'rates')->name('rates');
+        Route::post('/referral/validate', 'validateReferral')->name('referral.validate');
         Route::post('/', 'store')->name('store');
         Route::get('/{orderNumber}/pay', 'pay')->name('pay');
     });

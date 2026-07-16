@@ -20,6 +20,10 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        $request->validate([
+            'referral_discount_amount' => 'nullable|numeric|min:0',
+        ]);
+
         $data = $request->except('_token');
         $fileFields = ['logo', 'favicon_512', 'favicon_48', 'favicon_32'];
 

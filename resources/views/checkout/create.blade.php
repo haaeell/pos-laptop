@@ -234,6 +234,56 @@
             color: var(--muted);
         }
 
+        .referral-inline {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .referral-inline .form-group {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .referral-apply-btn {
+            border: 1px solid var(--primary);
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 11px 16px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .referral-apply-btn:hover {
+            background: #dbeafe;
+        }
+
+        .referral-note-box {
+            margin-top: 12px;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 12.5px;
+            line-height: 1.55;
+            display: none;
+        }
+
+        .referral-note-box.success {
+            display: block;
+            background: #ecfdf3;
+            border: 1px solid #abefc6;
+            color: #067647;
+        }
+
+        .referral-note-box.error {
+            display: block;
+            background: #fef3f2;
+            border: 1px solid #fecdca;
+            color: #b42318;
+        }
+
         .delivery-hidden {
             display: none;
         }
@@ -688,6 +738,26 @@
                         </div>
 
                         <div class="checkout-card">
+                            <h3><i class="fa-solid fa-ticket"></i> Kode Referral</h3>
+                            <div class="referral-inline">
+                                <div class="form-group">
+                                    <label for="referralCode">Kode Referral</label>
+                                    <input type="text" id="referralCode" name="referral_code" value="{{ old('referral_code') }}"
+                                        placeholder="Contoh: SALES-ANDI" style="text-transform:uppercase;">
+                                </div>
+                                <button type="button" class="referral-apply-btn" id="applyReferralBtn">
+                                    Cek Kode
+                                </button>
+                            </div>
+                            <p class="delivery-note">
+                                Masukkan kode referral yang Anda miliki untuk mendapatkan potongan harga hingga
+                                <strong>Rp {{ number_format($referralDiscountSetting, 0, ',', '.') }}</strong>,
+                                sesuai ketentuan yang berlaku.
+                            </p>
+                            <div id="referralFeedback" class="referral-note-box"></div>
+                        </div>
+
+                        <div class="checkout-card">
                             <div class="form-group">
                                 <label for="notes">Catatan (opsional)</label>
                                 <textarea id="notes" name="notes" rows="2">{{ old('notes') }}</textarea>
@@ -705,6 +775,10 @@
                             <div class="checkout-item-row">
                                 <span>Ongkos Kirim</span>
                                 <strong id="summaryShippingCostRow">Rp 0</strong>
+                            </div>
+                            <div class="checkout-item-row" id="summaryReferralRow" style="display:none;color:#067647;">
+                                <span>Diskon Referral</span>
+                                <strong id="summaryReferralDiscount">- Rp 0</strong>
                             </div>
                             <div class="checkout-item-row" style="font-weight:800;color:var(--primary);border-top:1px solid var(--line);padding-top:12px;margin-top:4px;">
                                 <span>Total</span>
@@ -846,6 +920,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const itemsSubtotal = {{ (float) $itemsSubtotal }};
+        const referralDiscountSetting = {{ (float) $referralDiscountSetting }};
         const storeName = @json($namaToko);
         const storeAddress = @json($alamat);
         const selectedAddressIdInput = document.getElementById('selectedAddressId');
@@ -856,6 +931,9 @@
         const shippingAddressCard = document.getElementById('shippingAddressCard');
         const shippingCourierCard = document.getElementById('shippingCourierCard');
         const pickupInfoCard = document.getElementById('pickupInfoCard');
+        const referralCodeInput = document.getElementById('referralCode');
+        const applyReferralBtn = document.getElementById('applyReferralBtn');
+        const referralFeedback = document.getElementById('referralFeedback');
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const WILAYAH_BASE = 'https://www.emsifa.com/api-wilayah-indonesia/api';
         const DEFAULT_MAP_CENTER = [-6.563246, 107.760467];
@@ -864,11 +942,41 @@
         let selectedCourierLabel = '';
         let selectedShippingCost = 0;
         let selectedDeliveryMethod = 'shipping';
+        let selectedReferralData = null;
         let naMap = null;
         let naMarker = null;
 
         function formatRupiah(v) {
             return 'Rp ' + new Intl.NumberFormat('id-ID').format(v || 0);
+        }
+
+        function normalizedReferralCode() {
+            return (referralCodeInput.value || '').trim().toUpperCase();
+        }
+
+        function currentReferralDiscount() {
+            if (!selectedReferralData?.valid) {
+                return 0;
+            }
+
+            const totalBeforeDiscount = itemsSubtotal + selectedShippingCost;
+            return Math.min(
+                Number(selectedReferralData.discount_setting || 0),
+                Number(selectedReferralData.fee_before_discount || 0),
+                Math.max(0, totalBeforeDiscount)
+            );
+        }
+
+        function renderReferralFeedback(type, html = '') {
+            referralFeedback.className = 'referral-note-box';
+            referralFeedback.innerHTML = '';
+
+            if (!type) {
+                return;
+            }
+
+            referralFeedback.classList.add(type);
+            referralFeedback.innerHTML = html;
         }
 
         function normalizeRegionName(value) {
@@ -917,10 +1025,82 @@
 
         function updateSummary(shippingCost) {
             selectedShippingCost = shippingCost;
-            const grandTotal = itemsSubtotal + shippingCost;
+            const referralDiscount = currentReferralDiscount();
+            const grandTotal = Math.max(0, (itemsSubtotal + shippingCost) - referralDiscount);
             document.getElementById('summaryGrandTotal').innerText = formatRupiah(grandTotal);
             document.getElementById('summaryShippingCostRow').innerText = formatRupiah(shippingCost);
             document.getElementById('summaryGrandTotalCard').innerText = formatRupiah(grandTotal);
+            document.getElementById('summaryReferralRow').style.display = referralDiscount > 0 ? 'flex' : 'none';
+            document.getElementById('summaryReferralDiscount').innerText = '- ' + formatRupiah(referralDiscount);
+        }
+
+        async function applyReferralCode() {
+            const code = normalizedReferralCode();
+
+            if (!code) {
+                selectedReferralData = null;
+                renderReferralFeedback(null);
+                updateSummary(selectedShippingCost);
+                return;
+            }
+
+            applyReferralBtn.disabled = true;
+            applyReferralBtn.innerText = 'Memeriksa...';
+
+            try {
+                const res = await fetch('{{ route('checkout.referral.validate', [], false) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        referral_code: code,
+                        delivery_method: selectedDeliveryMethod,
+                        address_id: selectedAddressIdInput.value || null,
+                        courier_company: selectedCourierCompanyInput.value || null,
+                        courier_type: selectedCourierTypeInput.value || null,
+                        shipping_cost: selectedShippingCost,
+                        ...extraParams(),
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    selectedReferralData = null;
+                    renderReferralFeedback('error', data.message || 'Kode referral tidak valid.');
+                    updateSummary(selectedShippingCost);
+                    return;
+                }
+
+                selectedReferralData = {
+                    ...data,
+                    valid: true,
+                };
+
+                const actualDiscount = Math.min(
+                    Number(data.discount_setting || 0),
+                    Number(data.fee_before_discount || 0),
+                    itemsSubtotal + selectedShippingCost
+                );
+
+                renderReferralFeedback('success', `
+                    <strong>${data.marketing_name}</strong><br>
+                    Kode <strong>${data.referral_code}</strong> aktif.
+                    Customer mendapat diskon <strong>${formatRupiah(actualDiscount)}</strong>.
+                `);
+                referralCodeInput.value = data.referral_code;
+                updateSummary(selectedShippingCost);
+            } catch (error) {
+                selectedReferralData = null;
+                renderReferralFeedback('error', 'Gagal memeriksa kode referral. Silakan coba lagi.');
+                updateSummary(selectedShippingCost);
+            } finally {
+                applyReferralBtn.disabled = false;
+                applyReferralBtn.innerText = 'Cek Kode';
+            }
         }
 
         function setDeliveryMethod(method) {
@@ -1384,6 +1564,19 @@
             }
         });
 
+        referralCodeInput.addEventListener('input', function () {
+            this.value = this.value.toUpperCase();
+            selectedReferralData = null;
+            renderReferralFeedback(null);
+            updateSummary(selectedShippingCost);
+        });
+
+        referralCodeInput.addEventListener('blur', function () {
+            this.value = normalizedReferralCode();
+        });
+
+        applyReferralBtn.addEventListener('click', applyReferralCode);
+
         // --- init ---
         document.querySelectorAll('.delivery-option').forEach(option => {
             option.addEventListener('click', function () {
@@ -1400,15 +1593,20 @@
         }
         setDeliveryMethod('shipping');
 
+        if (normalizedReferralCode()) {
+            applyReferralCode();
+        }
+
         window.applyScrollReveal?.();
 
         // --- validation + confirmation before real submit (AJAX) ---
         document.getElementById('checkoutForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const grandTotal = itemsSubtotal + selectedShippingCost;
+            const grandTotal = Math.max(0, (itemsSubtotal + selectedShippingCost) - currentReferralDiscount());
             const isPickup = selectedDeliveryMethod === 'pickup';
             const selectedAddress = !isPickup ? addresses.find(a => String(a.id) === String(selectedAddressIdInput.value)) : null;
+            const referralCode = normalizedReferralCode();
 
             if (!isPickup && !selectedAddressIdInput.value) {
                 Swal.fire({ icon: 'warning', title: 'Alamat Belum Dipilih', text: 'Mohon pilih atau tambahkan alamat pengiriman terlebih dahulu.' });
@@ -1416,6 +1614,10 @@
             }
             if (!isPickup && !selectedCourierCompanyInput.value) {
                 Swal.fire({ icon: 'warning', title: 'Kurir Belum Dipilih', text: 'Mohon pilih kurir pengiriman terlebih dahulu.' });
+                return;
+            }
+            if (referralCode && (!selectedReferralData?.valid || selectedReferralData.referral_code !== referralCode)) {
+                Swal.fire({ icon: 'warning', title: 'Cek Kode Referral', text: 'Silakan cek kode referral terlebih dahulu sebelum membuat pesanan.' });
                 return;
             }
 
@@ -1428,6 +1630,10 @@
                             ? `<p style="margin-bottom:8px;"><strong>Pickup:</strong><br>${storeName}<br>${storeAddress}</p>`
                             : `<p style="margin-bottom:8px;"><strong>Alamat:</strong><br>${selectedAddress.label} — ${selectedAddress.recipient_name}<br>${selectedAddress.address_detail}, ${selectedAddress.district}, ${selectedAddress.city}</p>
                                <p style="margin-bottom:8px;"><strong>Kurir:</strong><br>${selectedCourierLabel}</p>`
+                        }
+                        ${selectedReferralData?.valid
+                            ? `<p style="margin-bottom:8px;"><strong>Referral:</strong><br>${selectedReferralData.referral_code} (${selectedReferralData.marketing_name})<br>Diskon ${formatRupiah(currentReferralDiscount())}</p>`
+                            : ''
                         }
                         <p><strong>Total Bayar:</strong> ${formatRupiah(grandTotal)}</p>
                         <p style="color:#B42318;font-size:12px;margin-top:10px;">Selesaikan pembayaran dalam 30 menit setelah pesanan dibuat, atau pesanan otomatis dibatalkan.</p>

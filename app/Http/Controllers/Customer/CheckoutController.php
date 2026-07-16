@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
 use App\Models\Product;
+use App\Models\SalesPerson;
 use App\Models\Setting;
 use App\Services\BiteshipService;
 use App\Services\MidtransService;
@@ -121,6 +122,7 @@ class CheckoutController extends Controller
             'addresses' => $addresses,
             'buyNowProductId' => $request->integer('product_id') ?: null,
             'buyNowQty' => $request->integer('qty') ?: null,
+            'referralDiscountSetting' => (float) Setting::get('referral_discount_amount', 0),
         ]);
     }
 
@@ -181,6 +183,109 @@ class CheckoutController extends Controller
         return $redirectRoute ? redirect()->route($redirectRoute)->with('error', $message) : back()->with('error', $message);
     }
 
+    protected function resolveReferral(?string $referralCode, float $currentTotal): array
+    {
+        $normalizedCode = Str::upper(trim((string) $referralCode));
+
+        if ($normalizedCode === '') {
+            return [
+                'valid' => false,
+                'message' => null,
+                'salesPerson' => null,
+                'referral_code' => null,
+                'discount_setting' => (float) Setting::get('referral_discount_amount', 0),
+                'discount' => 0,
+                'fee_before_discount' => 0,
+                'fee_cut' => 0,
+                'fee_after_discount' => 0,
+            ];
+        }
+
+        $salesPerson = SalesPerson::query()
+            ->where('referral_code', $normalizedCode)
+            ->where('active', true)
+            ->first();
+
+        if (!$salesPerson) {
+            return [
+                'valid' => false,
+                'message' => 'Kode referral tidak valid atau sudah tidak aktif.',
+                'salesPerson' => null,
+                'referral_code' => $normalizedCode,
+                'discount_setting' => (float) Setting::get('referral_discount_amount', 0),
+                'discount' => 0,
+                'fee_before_discount' => 0,
+                'fee_cut' => 0,
+                'fee_after_discount' => 0,
+            ];
+        }
+
+        $discountSetting = max(0, (float) Setting::get('referral_discount_amount', 0));
+        $feeBeforeDiscount = max(0, (float) $salesPerson->fee);
+        $discount = min($discountSetting, $feeBeforeDiscount, max(0, $currentTotal));
+        $feeAfterDiscount = max(0, $feeBeforeDiscount - $discount);
+
+        return [
+            'valid' => true,
+            'message' => $discount > 0
+                ? 'Kode referral aktif dan diskon berhasil diterapkan.'
+                : 'Kode referral aktif, tetapi diskon saat ini bernilai Rp 0.',
+            'salesPerson' => $salesPerson,
+            'referral_code' => $normalizedCode,
+            'discount_setting' => $discountSetting,
+            'discount' => $discount,
+            'fee_before_discount' => $feeBeforeDiscount,
+            'fee_cut' => $discount,
+            'fee_after_discount' => $feeAfterDiscount,
+        ];
+    }
+
+    public function validateReferral(Request $request)
+    {
+        $data = $request->validate([
+            'referral_code' => 'nullable|string|max:100',
+            'delivery_method' => 'nullable|in:shipping,pickup',
+            'address_id' => 'nullable|exists:customer_addresses,id',
+            'courier_company' => 'nullable|string',
+            'courier_type' => 'nullable|string',
+            'product_id' => 'nullable|integer',
+            'qty' => 'nullable|integer|min:1',
+            'shipping_cost' => 'nullable|numeric|min:0',
+        ]);
+
+        $lines = $this->resolveLines($request);
+        if (empty($lines)) {
+            return response()->json(['valid' => false, 'message' => 'Keranjang Anda kosong.'], 422);
+        }
+
+        $itemsSubtotal = collect($lines)->sum(fn ($line) => $line['qty'] * $line['product']->selling_price);
+        $shippingCost = max(0, (float) ($data['shipping_cost'] ?? 0));
+        $currentTotal = $itemsSubtotal + $shippingCost;
+        $referral = $this->resolveReferral($data['referral_code'] ?? null, $currentTotal);
+
+        if (!$referral['valid']) {
+            return response()->json([
+                'valid' => false,
+                'message' => $referral['message'],
+                'discount' => 0,
+                'grand_total' => $currentTotal,
+            ], 422);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'message' => $referral['message'],
+            'referral_code' => $referral['referral_code'],
+            'marketing_name' => $referral['salesPerson']->name,
+            'discount_setting' => $referral['discount_setting'],
+            'discount' => $referral['discount'],
+            'fee_before_discount' => $referral['fee_before_discount'],
+            'fee_cut' => $referral['fee_cut'],
+            'fee_after_discount' => $referral['fee_after_discount'],
+            'grand_total' => max(0, $currentTotal - $referral['discount']),
+        ]);
+    }
+
     public function store(Request $request, MidtransService $midtrans, BiteshipService $biteship)
     {
         if ($pending = $this->activePendingOrder()) {
@@ -199,6 +304,7 @@ class CheckoutController extends Controller
             'courier_company' => 'nullable|string',
             'courier_type' => 'nullable|string',
             'notes' => 'nullable|string|max:500',
+            'referral_code' => 'nullable|string|max:100',
             'product_id' => 'nullable|integer',
             'qty' => 'nullable|integer|min:1',
         ]);
@@ -239,13 +345,20 @@ class CheckoutController extends Controller
             $shippingCost = (float) $chosen['price'];
         }
 
-        $grandTotal = $itemsSubtotal + $shippingCost;
+        $beforeDiscountTotal = $itemsSubtotal + $shippingCost;
+        $referral = $this->resolveReferral($data['referral_code'] ?? null, $beforeDiscountTotal);
+
+        if (filled($data['referral_code']) && !$referral['valid']) {
+            return $this->checkoutError($request, $referral['message'] ?? 'Kode referral tidak valid.');
+        }
+
+        $grandTotal = max(0, $beforeDiscountTotal - $referral['discount']);
         $customer = Auth::guard('customers')->user();
         $storeName = Setting::get('nama_toko', 'Barokah Computer');
         $storeAddress = Setting::get('alamat', 'Alamat toko belum diatur');
 
         try {
-            $order = DB::transaction(function () use ($data, $lines, $request, $address, $chosen, $shippingCost, $itemsSubtotal, $grandTotal, $originAreaId, $customer, $storeName, $storeAddress) {
+            $order = DB::transaction(function () use ($data, $lines, $request, $address, $chosen, $shippingCost, $itemsSubtotal, $grandTotal, $originAreaId, $customer, $storeName, $storeAddress, $referral) {
                 // Locks and decrements product stock for these lines — must run
                 // inside this same transaction so the row locks it takes are
                 // held until the order itself commits, closing the window where
@@ -257,11 +370,18 @@ class CheckoutController extends Controller
                 $order = Order::create([
                     'order_number' => 'ORD-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
                     'customer_id' => $this->customerId(),
+                    'sales_person_id' => $referral['salesPerson']?->id,
                     'delivery_method' => $data['delivery_method'],
                     'status' => 'pending_payment',
                     'grand_total' => $grandTotal,
                     'items_subtotal' => $itemsSubtotal,
                     'shipping_cost' => $shippingCost,
+                    'referral_code' => $referral['referral_code'],
+                    'marketing_name' => $referral['salesPerson']?->name,
+                    'referral_discount' => $referral['discount'],
+                    'marketing_fee_before_discount' => $referral['fee_before_discount'],
+                    'marketing_fee_discount' => $referral['fee_cut'],
+                    'marketing_fee_after_discount' => $referral['fee_after_discount'],
                     'recipient_name' => $isPickup ? $customer->name : $address->recipient_name,
                     'recipient_phone' => $isPickup ? ($customer->phone ?: $address->recipient_phone) : $address->recipient_phone,
                     'province' => $isPickup ? 'Pickup di Toko' : $address->province,

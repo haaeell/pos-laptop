@@ -181,6 +181,27 @@
                 </div>
             </div>
 
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-1">Referral Marketing</h3>
+                <p class="text-xs text-slate-500 mb-3">
+                    Nominal ini menjadi potongan harga customer saat kode referral marketing dipakai di checkout.
+                    Potongan otomatis memotong fee marketing dan akan dibatasi agar fee tidak pernah minus.
+                </p>
+
+                <div class="max-w-md">
+                    <label class="text-xs font-semibold uppercase text-slate-600">Nominal Diskon Referral</label>
+                    <div class="relative mt-1">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Rp</span>
+                        <input type="text" id="referralDiscountAmountText"
+                            value="{{ number_format((float) ($settings['referral_discount_amount'] ?? 0), 0, ',', '.') }}"
+                            placeholder="0"
+                            class="w-full pl-12 pr-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:ring-indigo-500/30">
+                        <input type="hidden" name="referral_discount_amount" id="referralDiscountAmount"
+                            value="{{ (int) ($settings['referral_discount_amount'] ?? 0) }}">
+                    </div>
+                </div>
+            </div>
+
             <!-- ================= BITESHIP ================= -->
             <div>
                 <h3 class="text-sm font-semibold text-slate-700 mb-1">Integrasi Pengiriman (Biteship)</h3>
@@ -304,6 +325,8 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         let biteshipSearchTimeout = null;
+        const referralDiscountAmountText = document.getElementById('referralDiscountAmountText');
+        const referralDiscountAmount = document.getElementById('referralDiscountAmount');
         const biteshipAreaSearch = document.getElementById('biteshipAreaSearch');
         const biteshipAreaResults = document.getElementById('biteshipAreaResults');
         const biteshipOriginLatitude = document.getElementById('biteshipOriginLatitude');
@@ -479,6 +502,14 @@
             if (biteshipOriginLatitude.value && biteshipOriginLongitude.value) {
                 setBiteshipMapPoint(biteshipOriginLatitude.value, biteshipOriginLongitude.value, { syncAddress: false });
             }
+        }
+
+        if (referralDiscountAmountText && referralDiscountAmount) {
+            referralDiscountAmountText.addEventListener('input', function () {
+                const raw = this.value.replace(/\D/g, '');
+                referralDiscountAmount.value = raw || 0;
+                this.value = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
+            });
         }
 
         initBiteshipMap();

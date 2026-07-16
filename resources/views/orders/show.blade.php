@@ -74,7 +74,7 @@
                     </div>
                 </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Metode Pesanan</p>
@@ -87,6 +87,38 @@
                 @endif
             </div>
         </div>
+
+        @if ($order->referral_code)
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Referral Marketing</p>
+                        <p class="mt-1 text-lg font-bold text-emerald-900">{{ $order->marketing_name ?? $order->salesPerson?->name ?? '-' }}</p>
+                        <p class="mt-1 text-sm text-emerald-700">
+                            Kode: <span class="font-mono font-semibold">{{ $order->referral_code }}</span>
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 lg:min-w-[460px]">
+                        <div class="rounded-2xl bg-white/80 p-4">
+                            <p class="text-[11px] uppercase tracking-wider text-emerald-500">Diskon Customer</p>
+                            <p class="mt-1 font-black text-emerald-800">Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-white/80 p-4">
+                            <p class="text-[11px] uppercase tracking-wider text-emerald-500">Fee Awal</p>
+                            <p class="mt-1 font-black text-slate-800">Rp {{ number_format($order->marketing_fee_before_discount, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-white/80 p-4">
+                            <p class="text-[11px] uppercase tracking-wider text-emerald-500">Potongan Fee</p>
+                            <p class="mt-1 font-black text-rose-600">Rp {{ number_format($order->marketing_fee_discount, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-white/80 p-4">
+                            <p class="text-[11px] uppercase tracking-wider text-emerald-500">Fee Bersih</p>
+                            <p class="mt-1 font-black text-indigo-700">Rp {{ number_format($order->marketing_fee_after_discount, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         @if (session('success') || session('error'))
             <div class="rounded-2xl border p-4 text-sm font-semibold {{ session('success') ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700' }}">
@@ -159,6 +191,12 @@
                                     <td class="px-5 py-3 text-right text-slate-500" colspan="4">Ongkos Kirim</td>
                                     <td class="px-5 py-3 text-right font-semibold">Rp {{ number_format($order->shipping_cost ?? 0, 0, ',', '.') }}</td>
                                 </tr>
+                                @if ($order->referral_discount > 0)
+                                    <tr>
+                                        <td class="px-5 py-3 text-right text-emerald-600" colspan="4">Diskon Referral</td>
+                                        <td class="px-5 py-3 text-right font-semibold text-emerald-700">- Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endif
                                 <tr>
                                     <td class="px-5 py-4 text-right font-bold text-slate-800" colspan="4">Grand Total</td>
                                     <td class="px-5 py-4 text-right text-lg font-black text-indigo-600">Rp {{ number_format($order->grand_total, 0, ',', '.') }}</td>

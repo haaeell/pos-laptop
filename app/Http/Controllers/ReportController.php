@@ -51,11 +51,13 @@ class ReportController extends Controller
     private function getMetrics(Carbon $from, Carbon $to, $sales, $onlineOrders = null): array
     {
         $onlineOrders ??= collect();
-        $feeSales   = $this->calcFeeSales($from, $to, $sales);
+        $offlineFeeSales = $this->calcFeeSales($from, $to, $sales);
+        $onlineMarketingFee = $this->onlineMarketingFee($onlineOrders);
+        $feeSales   = $offlineFeeSales + $onlineMarketingFee;
         $totalOnlineSales = $onlineOrders->sum('grand_total');
         $totalOnlineProfit = $this->onlineProfit($onlineOrders);
         $totalOnlineShipping = $onlineOrders->sum('shipping_cost');
-        $totalSales = ($sales->sum('grand_total') - $feeSales) + $totalOnlineSales;
+        $totalSales = ($sales->sum('grand_total') - $offlineFeeSales) + ($totalOnlineSales - $onlineMarketingFee);
 
         $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales;
         $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
@@ -79,6 +81,7 @@ class ReportController extends Controller
             'totalOnlineSales'     => $totalOnlineSales,
             'totalOnlineProfit'    => $totalOnlineProfit,
             'totalOnlineShipping'  => $totalOnlineShipping,
+            'totalOnlineMarketingFee' => $onlineMarketingFee,
             'totalFeeSales'        => $feeSales,
             'totalProfit'          => $sales->sum('benefit') + $totalOnlineProfit,
             'bonusLoss'            => SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit'),
@@ -112,6 +115,11 @@ class ReportController extends Controller
         return $onlineOrders->sum(fn ($order) => $order->items->sum(function ($item) {
             return ((float) $item->price - (float) $item->purchase_price) * (int) $item->qty;
         }));
+    }
+
+    private function onlineMarketingFee($onlineOrders): float|int
+    {
+        return $onlineOrders->sum(fn ($order) => (float) ($order->marketing_fee_before_discount ?? 0));
     }
 
     private function transactionRows($sales, $onlineOrders)

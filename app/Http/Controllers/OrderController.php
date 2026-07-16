@@ -21,7 +21,7 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $query = Order::with('customer')->latest();
+        $query = Order::with(['customer', 'salesPerson'])->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -57,7 +57,7 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['items', 'statusHistories', 'trackingHistories', 'customer'])->findOrFail($id);
+        $order = Order::with(['items', 'statusHistories', 'trackingHistories', 'customer', 'salesPerson'])->findOrFail($id);
 
         return view('orders.show', ['order' => $order]);
     }

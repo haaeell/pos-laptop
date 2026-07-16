@@ -340,11 +340,32 @@
                                 <strong>Pickup Sendiri</strong>
                             </div>
                         @endif
+                        @if ($order->referral_discount > 0)
+                            <div class="order-item-row" style="color:#067647;">
+                                <span>Diskon Referral{{ $order->referral_code ? ' (' . $order->referral_code . ')' : '' }}</span>
+                                <strong>- Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</strong>
+                            </div>
+                        @endif
                         <div class="order-item-row" style="font-weight:800;color:var(--primary);">
                             <span>Total</span>
                             <strong>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</strong>
                         </div>
                     </div>
+
+                    @if ($order->referral_code)
+                        <div class="order-card">
+                            <h3><i class="fa-solid fa-ticket"></i> Referral Marketing</h3>
+                            <p style="font-size:13px;margin-bottom:6px;">
+                                <strong>{{ $order->marketing_name ?? $order->salesPerson?->name ?? '-' }}</strong>
+                            </p>
+                            <p style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">
+                                Kode referral: <strong>{{ $order->referral_code }}</strong>
+                            </p>
+                            <p style="font-size:12.5px;color:#067647;margin-bottom:0;">
+                                Potongan harga yang Anda dapatkan: <strong>Rp {{ number_format($order->referral_discount, 0, ',', '.') }}</strong>
+                            </p>
+                        </div>
+                    @endif
 
                     <div class="order-card address-box">
                         <h3><i class="fa-solid fa-location-dot"></i> {{ $order->delivery_method === 'pickup' ? 'Info Pickup' : 'Alamat Pengiriman' }}</h3>

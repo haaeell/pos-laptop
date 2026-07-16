@@ -35,9 +35,11 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
         $transactions = $this->transactionRows($sales, $onlineOrders)->sortBy('date')->values();
         $totalOnlineSales = $onlineOrders->sum('grand_total');
         $totalOnlineProfit = $onlineOrders->sum(fn ($order) => $order->items->sum(fn ($item) => ((float) $item->price - (float) $item->purchase_price) * (int) $item->qty));
+        $onlineMarketingFee = $onlineOrders->sum(fn ($order) => (float) ($order->marketing_fee_before_discount ?? 0));
 
-        $feeSales      = $this->calcFeeSales($sales);
-        $totalSales    = ($sales->sum('grand_total') - $feeSales) + $totalOnlineSales;
+        $offlineFeeSales = $this->calcFeeSales($sales);
+        $feeSales      = $offlineFeeSales + $onlineMarketingFee;
+        $totalSales    = ($sales->sum('grand_total') - $offlineFeeSales) + ($totalOnlineSales - $onlineMarketingFee);
         $totalProfit   = $sales->sum('benefit') + $totalOnlineProfit;
         $bonusLoss     = SaleBonus::whereBetween('created_at', [$this->from, $this->to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$this->from, $this->to])->sum('amount');
