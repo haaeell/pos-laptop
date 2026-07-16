@@ -73,6 +73,7 @@ class ProductController extends Controller
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
             'description' => 'nullable',
             'status' => 'required|in:available,sold,bonus',
+            'condition' => 'required|in:new,used',
             'stock' => 'nullable|integer|min:0',
             'weight' => 'nullable|integer|min:1',
             'is_active' => 'nullable|boolean',
@@ -96,6 +97,8 @@ class ProductController extends Controller
             'images.*.mimes' => 'Format foto tambahan harus .jpg, .jpeg, atau .png',
             'images.*.max' => 'Ukuran setiap foto tambahan maksimal 2MB',
             'status.in' => 'Status tidak valid',
+            'condition.required' => 'Kondisi produk harus diisi',
+            'condition.in' => 'Kondisi tidak valid',
             'stock.integer' => 'Stok harus berupa angka',
             'stock.min' => 'Stok minimal 0'
         ]);
@@ -149,6 +152,7 @@ class ProductController extends Controller
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
             'description' => 'nullable',
             'status' => 'required|in:available,sold,bonus',
+            'condition' => 'required|in:new,used',
             'stock' => 'nullable|integer|min:0',
             'weight' => 'nullable|integer|min:1',
             'is_active' => 'nullable|boolean',
@@ -170,6 +174,8 @@ class ProductController extends Controller
             'images.*.mimes' => 'Format foto tambahan harus .jpg, .jpeg, atau .png',
             'images.*.max' => 'Ukuran setiap foto tambahan maksimal 2MB',
             'status.in' => 'Status tidak valid',
+            'condition.required' => 'Kondisi produk harus diisi',
+            'condition.in' => 'Kondisi tidak valid',
             'stock.integer' => 'Stok harus berupa angka',
             'stock.min' => 'Stok minimal 0'
         ]);

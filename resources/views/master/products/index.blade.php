@@ -238,6 +238,7 @@
                         <th>Brand</th>
                         <th>Harga Jual</th>
                         <th>Status</th>
+                        <th>Kondisi</th>
                         <th>Katalog</th>
                         <th width="15%" class="text-center">Aksi</th>
                     </tr>
@@ -275,6 +276,12 @@
                                     class="px-2 py-1 text-xs rounded-full
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         {{ $product->status === 'sold' ? 'bg-red-100 text-red-700' : ($product->status === 'bonus' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700') }}">
                                     {{ $product->status === 'sold' ? 'Terjual' : ($product->status === 'bonus' ? 'Bonus' : 'Tersedia') }}
+                                </span>
+                            </td>
+                            <td class="text-nowrap">
+                                <span
+                                    class="px-2 py-1 text-xs rounded-full {{ $product->condition === 'used' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700' }}">
+                                    {{ $product->condition === 'used' ? 'Bekas' : 'Baru' }}
                                 </span>
                             </td>
                             <td class="text-nowrap">
@@ -481,7 +488,7 @@
                     </div>
 
                     <!-- STATUS -->
-                    <div class="col-span-1 sm:col-span-2">
+                    <div>
                         <label class="text-xs font-semibold text-slate-600 mb-1 block">Status Produk</label>
                         <div class="relative">
                             <i
@@ -492,6 +499,20 @@
                                 <option value="available">Tersedia</option>
                                 <option value="sold">Terjual</option>
                                 <option value="bonus">Bonus</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- KONDISI -->
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 mb-1 block">Kondisi Produk</label>
+                        <div class="relative">
+                            <i
+                                class="fa-solid fa-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <select name="condition" id="productCondition"
+                                class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+                                <option value="new">Baru</option>
+                                <option value="used">Bekas</option>
                             </select>
                         </div>
                     </div>
@@ -822,6 +843,7 @@
                     document.getElementById('deletedImages').value = '';
                     document.getElementById('productForm').reset();
                     document.getElementById('status').value = 'available';
+                    document.getElementById('productCondition').value = 'new';
                     document.getElementById('productIsActive').checked = true;
                     $('#productDescription').summernote('code', '');
                     toggleStockInput();
@@ -859,6 +881,7 @@
                     $('#strikePrice').val(data.strike_price ?? '')
                     $('#productWeight').val(data.weight || 1000)
                     $('#status').val(data.status)
+                    $('#productCondition').val(data.condition || 'new')
                     $('#productIsActive').prop('checked', !!data.is_active)
                     if (data.image) {
                         $('#imagePreview').attr('src', `/storage/${data.image}`).removeClass('hidden');
