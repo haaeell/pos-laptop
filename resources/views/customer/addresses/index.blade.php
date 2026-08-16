@@ -384,6 +384,10 @@
         const addressDetailInput = document.getElementById('f_address_detail');
         let addressMap = null;
         let addressMarker = null;
+        // Guards the cascading province->city->district fetch/reset logic below
+        // from re-firing when editAddress() bulk-populates the three selects
+        // programmatically (it does its own fetch+fill sequence already).
+        let suppressCascade = false;
 
         function normalizeRegionName(value) {
             return (value || '')
@@ -502,6 +506,7 @@
         function fillSelect(select, items, placeholder) {
             select.innerHTML = `<option value="">${placeholder}</option>` +
                 items.map(i => `<option value="${i.name}" data-id="${i.id}">${i.name}</option>`).join('');
+            $(select).trigger('change');
         }
 
         function setSelectDisplayValue(select, value) {
@@ -531,7 +536,17 @@
         }
         loadProvinces();
 
-        provinceSelect.addEventListener('change', function () {
+        $('#f_province_select, #f_city_select, #f_district_select').select2({
+            width: '100%',
+            dropdownParent: $('#addressModalOverlay .addr-modal'),
+        });
+
+        // Registered via jQuery .on(), not addEventListener: Select2 selections
+        // dispatch a jQuery-level 'change' (it does NOT fire a native DOM event),
+        // so a plain addEventListener('change', ...) here would never see them.
+        $(provinceSelect).on('change', function () {
+            if (suppressCascade) return;
+
             provinceInput.value = this.value;
             citySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
             districtSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
@@ -539,6 +554,7 @@
             districtSelect.disabled = true;
             cityInput.value = '';
             districtInput.value = '';
+            $(citySelect).add(districtSelect).trigger('change');
 
             const id = this.selectedOptions[0]?.dataset.id;
             if (!id) return;
@@ -546,11 +562,14 @@
                 .then(data => { fillSelect(citySelect, data, '-- Pilih Kota --'); citySelect.disabled = false; });
         });
 
-        citySelect.addEventListener('change', function () {
+        $(citySelect).on('change', function () {
+            if (suppressCascade) return;
+
             cityInput.value = this.value;
             districtSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
             districtSelect.disabled = true;
             districtInput.value = '';
+            $(districtSelect).trigger('change');
 
             const id = this.selectedOptions[0]?.dataset.id;
             if (!id) return;
@@ -558,7 +577,7 @@
                 .then(data => { fillSelect(districtSelect, data, '-- Pilih Kecamatan --'); districtSelect.disabled = false; });
         });
 
-        districtSelect.addEventListener('change', function () {
+        $(districtSelect).on('change', function () {
             districtInput.value = this.value;
         });
 
@@ -685,6 +704,8 @@
                 addressMarker = null;
             }
             addressMap?.setView(DEFAULT_MAP_CENTER, 12);
+
+            $(provinceSelect).add(citySelect).add(districtSelect).trigger('change');
         }
 
         function openAddressModal() {
@@ -699,48 +720,56 @@
         }
 
         async function editAddress(address) {
-            resetAddressForm();
-            document.getElementById('addressModalTitle').innerText = 'Ubah Alamat';
-            document.getElementById('addressForm').action = `/akun/alamat/${address.id}`;
-            document.getElementById('addressMethodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
+            suppressCascade = true;
 
-            document.getElementById('f_label').value = address.label;
-            document.getElementById('f_recipient_name').value = address.recipient_name;
-            document.getElementById('f_recipient_phone').value = address.recipient_phone;
-            document.getElementById('f_postal_code').value = address.postal_code || '';
-            document.getElementById('f_address_detail').value = address.address_detail;
-            document.getElementById('f_is_default').checked = !!address.is_default;
-            latitudeInput.value = address.latitude || '';
-            longitudeInput.value = address.longitude || '';
+            try {
+                resetAddressForm();
+                document.getElementById('addressModalTitle').innerText = 'Ubah Alamat';
+                document.getElementById('addressForm').action = `/akun/alamat/${address.id}`;
+                document.getElementById('addressMethodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
 
-            provinceInput.value = address.province;
-            cityInput.value = address.city;
-            districtInput.value = address.district;
+                document.getElementById('f_label').value = address.label;
+                document.getElementById('f_recipient_name').value = address.recipient_name;
+                document.getElementById('f_recipient_phone').value = address.recipient_phone;
+                document.getElementById('f_postal_code').value = address.postal_code || '';
+                document.getElementById('f_address_detail').value = address.address_detail;
+                document.getElementById('f_is_default').checked = !!address.is_default;
+                latitudeInput.value = address.latitude || '';
+                longitudeInput.value = address.longitude || '';
 
-            // populate cascading selects with matching selected values
-            const provinces = await fetchJson(`${WILAYAH_BASE}/provinces.json`);
-            fillSelect(provinceSelect, provinces, '-- Pilih Provinsi --');
-            const province = provinces.find(p => p.name === address.province);
-            if (province) {
-                provinceSelect.value = province.name;
-                const cities = await fetchJson(`${WILAYAH_BASE}/regencies/${province.id}.json`);
-                fillSelect(citySelect, cities, '-- Pilih Kota --');
-                citySelect.disabled = false;
-                const city = cities.find(c => c.name === address.city);
-                if (city) {
-                    citySelect.value = city.name;
-                    const districts = await fetchJson(`${WILAYAH_BASE}/districts/${city.id}.json`);
-                    fillSelect(districtSelect, districts, '-- Pilih Kecamatan --');
-                    districtSelect.disabled = false;
-                    districtSelect.value = address.district;
+                provinceInput.value = address.province;
+                cityInput.value = address.city;
+                districtInput.value = address.district;
+
+                // populate cascading selects with matching selected values
+                const provinces = await fetchJson(`${WILAYAH_BASE}/provinces.json`);
+                fillSelect(provinceSelect, provinces, '-- Pilih Provinsi --');
+                const province = provinces.find(p => p.name === address.province);
+                if (province) {
+                    provinceSelect.value = province.name;
+                    const cities = await fetchJson(`${WILAYAH_BASE}/regencies/${province.id}.json`);
+                    fillSelect(citySelect, cities, '-- Pilih Kota --');
+                    citySelect.disabled = false;
+                    const city = cities.find(c => c.name === address.city);
+                    if (city) {
+                        citySelect.value = city.name;
+                        const districts = await fetchJson(`${WILAYAH_BASE}/districts/${city.id}.json`);
+                        fillSelect(districtSelect, districts, '-- Pilih Kecamatan --');
+                        districtSelect.disabled = false;
+                        districtSelect.value = address.district;
+                    } else {
+                        setSelectDisplayValue(citySelect, address.city);
+                        setSelectDisplayValue(districtSelect, address.district);
+                    }
                 } else {
+                    setSelectDisplayValue(provinceSelect, address.province);
                     setSelectDisplayValue(citySelect, address.city);
                     setSelectDisplayValue(districtSelect, address.district);
                 }
-            } else {
-                setSelectDisplayValue(provinceSelect, address.province);
-                setSelectDisplayValue(citySelect, address.city);
-                setSelectDisplayValue(districtSelect, address.district);
+
+                $(provinceSelect).add(citySelect).add(districtSelect).trigger('change');
+            } finally {
+                suppressCascade = false;
             }
 
             document.getElementById('addressModalOverlay').classList.add('open');

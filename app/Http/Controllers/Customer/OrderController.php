@@ -27,6 +27,8 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        $this->orderExpiry->expireAllDue();
+
         $activeTab = $request->query('status');
 
         $orders = Order::where('customer_id', Auth::guard('customers')->id())

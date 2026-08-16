@@ -6,6 +6,7 @@ use App\Models\Courier;
 use App\Models\Order;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class BiteshipService
 {
@@ -117,7 +118,13 @@ class BiteshipService
         $response = $this->client()->post('/v1/orders', $payload);
 
         if (!$response->successful()) {
-            throw new \RuntimeException('Biteship API error: ' . $response->body());
+            Log::warning('Biteship createOrder failed', [
+                'order_id' => $order->id,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            throw new \RuntimeException($response->json('error') ?? $response->json('message') ?? 'Gagal menghubungi Biteship.');
         }
 
         $data = $response->json();

@@ -926,6 +926,18 @@
             border-radius: 999px;
         }
 
+        .addr-pick-edit-btn {
+            display: inline-block;
+            margin-top: 8px;
+            border: 0;
+            background: none;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 11.5px;
+            cursor: pointer;
+            padding: 0;
+        }
+
         .addr-add-toggle {
             width: 100%;
             border: 1.5px dashed var(--line);
@@ -1394,6 +1406,11 @@
         let selectedReferralData = null;
         let naMap = null;
         let naMarker = null;
+        let editingAddressId = null;
+        // Guards the cascading province->city->district fetch/reset logic below
+        // from re-firing when editPickedAddress() bulk-populates the three
+        // selects programmatically (it does its own fetch+fill sequence already).
+        let suppressCascade = false;
 
         function formatRupiah(v) {
             return 'Rp ' + new Intl.NumberFormat('id-ID').format(v || 0);
@@ -1457,37 +1474,6 @@
             referralFeedback.innerHTML = html;
         }
 
-        function normalizeRegionName(value) {
-            return (value || '')
-                .toString()
-                .toLowerCase()
-                .replace(/kabupaten|kab\.|kota administrasi|kota|provinsi|kecamatan|kec\.|kelurahan|desa/gi, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-        }
-
-        function setSelectDisplayValue(select, value, placeholder) {
-            if (!value) {
-                return;
-            }
-
-            const options = Array.from(select.options);
-            const matched = options.find((option) => normalizeRegionName(option.value) === normalizeRegionName(value));
-
-            if (matched) {
-                select.value = matched.value;
-                return;
-            }
-
-            const customOption = document.createElement('option');
-            customOption.value = value;
-            customOption.textContent = value;
-            customOption.dataset.custom = '1';
-            customOption.selected = true;
-            select.appendChild(customOption);
-            select.disabled = false;
-        }
-
         async function fetchJson(url) {
             const response = await fetch(url);
             if (!response.ok) {
@@ -1499,6 +1485,7 @@
         function fillSelect(select, items, placeholder) {
             select.innerHTML = `<option value="">${placeholder}</option>` +
                 items.map(i => `<option value="${i.name}" data-id="${i.id}">${i.name}</option>`).join('');
+            $(select).trigger('change');
         }
 
         function updateSummary(shippingCost) {
@@ -1675,6 +1662,9 @@
                     ${a.is_default ? '<span class="addr-pick-badge">Utama</span>' : ''}
                     <strong>${a.label} — ${a.recipient_name} (${a.recipient_phone})</strong>
                     <p>${a.address_detail}, ${a.district}, ${a.city}, ${a.province}</p>
+                    <button type="button" class="addr-pick-edit-btn" data-edit-id="${a.id}">
+                        <i class="fa-solid fa-pen"></i> Ubah Alamat
+                    </button>
                 </div>
             `).join('');
 
@@ -1684,6 +1674,67 @@
                     closeAddressModal();
                 });
             });
+
+            listEl.querySelectorAll('.addr-pick-edit-btn').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    editPickedAddress(this.dataset.editId);
+                });
+            });
+        }
+
+        async function editPickedAddress(addressId) {
+            const address = addresses.find(a => String(a.id) === String(addressId));
+            if (!address) return;
+
+            editingAddressId = addressId;
+            toggleAddAddressForm(true);
+            document.getElementById('saveNewAddressBtn').innerText = 'Simpan Perubahan';
+
+            document.getElementById('na_label').value = address.label;
+            document.getElementById('na_recipient_name').value = address.recipient_name;
+            document.getElementById('na_recipient_phone').value = address.recipient_phone;
+            document.getElementById('na_postal_code').value = address.postal_code || '';
+            document.getElementById('na_address_detail').value = address.address_detail;
+            document.getElementById('na_is_default').checked = !!address.is_default;
+            naLatitudeInput.value = address.latitude || '';
+            naLongitudeInput.value = address.longitude || '';
+            naProvinceInput.value = address.province;
+            naCityInput.value = address.city;
+            naDistrictInput.value = address.district;
+
+            suppressCascade = true;
+
+            try {
+                const provinces = await fetchJson(`${WILAYAH_BASE}/provinces.json`);
+                fillSelect(naProvinceSelect, provinces, '-- Pilih Provinsi --');
+                const province = provinces.find(p => p.name === address.province);
+                if (province) {
+                    naProvinceSelect.value = province.name;
+                    const cities = await fetchJson(`${WILAYAH_BASE}/regencies/${province.id}.json`);
+                    fillSelect(naCitySelect, cities, '-- Pilih Kota --');
+                    naCitySelect.disabled = false;
+                    const city = cities.find(c => c.name === address.city);
+                    if (city) {
+                        naCitySelect.value = city.name;
+                        const districts = await fetchJson(`${WILAYAH_BASE}/districts/${city.id}.json`);
+                        fillSelect(naDistrictSelect, districts, '-- Pilih Kecamatan --');
+                        naDistrictSelect.disabled = false;
+                        naDistrictSelect.value = address.district;
+                    }
+                }
+
+                $(naProvinceSelect).add(naCitySelect).add(naDistrictSelect).trigger('change');
+            } finally {
+                suppressCascade = false;
+            }
+
+            if (address.latitude && address.longitude) {
+                setTimeout(() => {
+                    naMap.invalidateSize();
+                    setCheckoutMapPoint(address.latitude, address.longitude, { syncAddress: false });
+                }, 200);
+            }
         }
 
         function selectAddress(addressId) {
@@ -1817,7 +1868,17 @@
             .then(data => fillSelect(naProvinceSelect, data, '-- Pilih Provinsi --'))
             .catch(() => {});
 
-        naProvinceSelect.addEventListener('change', function () {
+        $('#na_province_select, #na_city_select, #na_district_select').select2({
+            width: '100%',
+            dropdownParent: $('#addressModalOverlay .modal-sheet-body'),
+        });
+
+        // Registered via jQuery .on(), not addEventListener: Select2 selections
+        // dispatch a jQuery-level 'change' (it does NOT fire a native DOM event),
+        // so a plain addEventListener('change', ...) here would never see them.
+        $(naProvinceSelect).on('change', function () {
+            if (suppressCascade) return;
+
             naProvinceInput.value = this.value;
             naCitySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
             naDistrictSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
@@ -1825,6 +1886,7 @@
             naDistrictSelect.disabled = true;
             naCityInput.value = '';
             naDistrictInput.value = '';
+            $(naCitySelect).add(naDistrictSelect).trigger('change');
 
             const id = this.selectedOptions[0]?.dataset.id;
             if (!id) return;
@@ -1832,11 +1894,14 @@
                 .then(data => { fillSelect(naCitySelect, data, '-- Pilih Kota --'); naCitySelect.disabled = false; });
         });
 
-        naCitySelect.addEventListener('change', function () {
+        $(naCitySelect).on('change', function () {
+            if (suppressCascade) return;
+
             naCityInput.value = this.value;
             naDistrictSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
             naDistrictSelect.disabled = true;
             naDistrictInput.value = '';
+            $(naDistrictSelect).trigger('change');
 
             const id = this.selectedOptions[0]?.dataset.id;
             if (!id) return;
@@ -1844,7 +1909,7 @@
                 .then(data => { fillSelect(naDistrictSelect, data, '-- Pilih Kecamatan --'); naDistrictSelect.disabled = false; });
         });
 
-        naDistrictSelect.addEventListener('change', function () {
+        $(naDistrictSelect).on('change', function () {
             naDistrictInput.value = this.value;
         });
 
@@ -1985,6 +2050,11 @@
                     naMarker = null;
                 }
                 naMap?.setView(DEFAULT_MAP_CENTER, 12);
+
+                $(naProvinceSelect).add(naCitySelect).add(naDistrictSelect).trigger('change');
+
+                editingAddressId = null;
+                document.getElementById('saveNewAddressBtn').innerText = 'Simpan & Gunakan';
             }
         }
 
@@ -2014,9 +2084,12 @@
                 is_default: document.getElementById('na_is_default').checked ? 1 : 0,
             };
 
+            const isEdit = !!editingAddressId;
+            const url = isEdit ? `/akun/alamat/${editingAddressId}` : '{{ route('customer.addresses.store', [], false) }}';
+
             try {
-                const res = await fetch('{{ route('customer.addresses.store', [], false) }}', {
-                    method: 'POST',
+                const res = await fetch(url, {
+                    method: isEdit ? 'PUT' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken,
@@ -2036,18 +2109,23 @@
                 if (payload.is_default) {
                     addresses = addresses.map(a => ({ ...a, is_default: false }));
                 }
-                addresses.push(data.address);
+
+                if (isEdit) {
+                    addresses = addresses.map(a => String(a.id) === String(editingAddressId) ? data.address : a);
+                } else {
+                    addresses.push(data.address);
+                }
                 addresses.sort((a, b) => Number(b.is_default) - Number(a.is_default));
 
                 toggleAddAddressForm(false);
                 selectAddress(data.address.id);
                 closeAddressModal();
-                Swal.fire({ icon: 'success', title: 'Alamat Tersimpan', timer: 1400, showConfirmButton: false });
+                Swal.fire({ icon: 'success', title: isEdit ? 'Alamat Diperbarui' : 'Alamat Tersimpan', timer: 1400, showConfirmButton: false });
             } catch (err) {
                 Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan, silakan coba lagi.' });
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerText = 'Simpan & Gunakan';
+                saveBtn.innerText = isEdit ? 'Simpan Perubahan' : 'Simpan & Gunakan';
             }
         });
 

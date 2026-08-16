@@ -5,11 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\ShipmentTrackingHistory;
+use App\Services\StockReservationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BiteshipWebhookController extends Controller
 {
+    public function __construct(protected StockReservationService $stock)
+    {
+    }
+
     public function handle(Request $request)
     {
         $payload = $request->all();
@@ -57,6 +63,33 @@ class BiteshipWebhookController extends Controller
                 'status' => 'completed',
                 'note' => 'Paket telah diterima (otomatis dari webhook Biteship).',
             ]);
+        }
+
+        if ($status === 'cancelled' && !in_array($order->status, ['cancelled', 'expired', 'failed', 'completed'])) {
+            // A Biteship shipment only ever exists for an order that was
+            // already paid (we never book a courier before payment), so a
+            // cancel webhook always maps to "dibatalkan" — never "kedaluwarsa",
+            // which is reserved for unpaid orders that time out on their own.
+            DB::transaction(function () use ($order) {
+                $locked = Order::whereKey($order->id)->lockForUpdate()->first();
+
+                if (!$locked || in_array($locked->status, ['cancelled', 'expired', 'failed', 'completed'])) {
+                    return;
+                }
+
+                $this->stock->release($locked);
+
+                $locked->update([
+                    'status' => 'cancelled',
+                    'cancelled_at' => now(),
+                ]);
+
+                OrderStatusHistory::create([
+                    'order_id' => $locked->id,
+                    'status' => 'cancelled',
+                    'note' => 'Pesanan dibatalkan otomatis karena pengiriman dibatalkan oleh Jasa pengiriman.',
+                ]);
+            });
         }
 
         return response()->json(['message' => 'OK']);

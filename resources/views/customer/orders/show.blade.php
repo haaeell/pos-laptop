@@ -57,6 +57,27 @@
             color: #B42318;
         }
 
+        .pay-countdown {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            width: 100%;
+        }
+
+        .pay-countdown.pending {
+            background: #FFF6E5;
+            border: 1px solid #FFE1A8;
+            color: #B54708;
+        }
+
+        .pay-countdown.expired {
+            background: #FEF3F2;
+            border: 1px solid #FECDCA;
+            color: #B42318;
+        }
+
         .order-layout {
             display: grid;
             grid-template-columns: 1fr 320px;
@@ -473,6 +494,11 @@
 
                     @if ($order->status === 'pending_payment')
                         <div class="order-card" style="display:flex;gap:10px;flex-wrap:wrap;">
+                            @if ($order->expires_at)
+                                <div class="pay-countdown pending" id="payCountdown" data-expires-at="{{ $order->expires_at->toIso8601String() }}">
+                                    Selesaikan pembayaran dalam <span id="payCountdownTime">30:00</span>, atau pesanan otomatis dibatalkan.
+                                </div>
+                            @endif
                             @if ($order->snap_token)
                                 <a href="{{ route('checkout.pay', $order->order_number) }}" class="btn btn-primary" style="flex:1;min-width:160px;">
                                     Lanjutkan Pembayaran
@@ -523,6 +549,42 @@
 @endsection
 
 @push('scripts')
+    @if ($order->status === 'pending_payment' && $order->expires_at)
+        <script>
+            (function () {
+                const countdownEl = document.getElementById('payCountdown');
+                const timeEl = document.getElementById('payCountdownTime');
+                const expiresAt = new Date(countdownEl.dataset.expiresAt).getTime();
+                let alerted = false;
+
+                const timer = setInterval(function () {
+                    const diff = expiresAt - Date.now();
+
+                    if (diff <= 0) {
+                        clearInterval(timer);
+                        countdownEl.classList.remove('pending');
+                        countdownEl.classList.add('expired');
+                        countdownEl.innerText = 'Waktu pembayaran habis, pesanan otomatis dibatalkan.';
+                        if (!alerted) {
+                            alerted = true;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Waktu Pembayaran Habis',
+                                text: 'Pesanan ini otomatis dibatalkan karena melebihi batas waktu pembayaran.',
+                                confirmButtonColor: '#2563eb',
+                            }).then(() => window.location.reload());
+                        }
+                        return;
+                    }
+
+                    const minutes = Math.floor(diff / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    timeEl.innerText = `${minutes}:${String(seconds).padStart(2, '0')}`;
+                }, 1000);
+            })();
+        </script>
+    @endif
+
     <script>
         async function copyTextValue(text) {
             try {

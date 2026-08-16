@@ -14,9 +14,9 @@ class OrderExpiryService
 
     /**
      * If the given order is pending_payment and past its expires_at, flips
-     * it to expired and releases its reserved stock. Safe to call on every
-     * read of a pending order (checkout, pay page, order detail) so
-     * correctness never depends on the scheduled command having run yet.
+     * it to expired and releases its reserved stock. Called on every read
+     * of a pending order (checkout, pay page, order list/detail — admin and
+     * customer) so statuses are always correct, with no cron dependency.
      */
     public function expireIfDue(Order $order): Order
     {
@@ -46,5 +46,24 @@ class OrderExpiryService
 
             return $locked;
         });
+    }
+
+    /**
+     * Expires every pending_payment order currently past its expires_at.
+     * Called from order-list pages (admin/customer) so statuses are already
+     * correct the moment someone opens the list.
+     */
+    public function expireAllDue(): int
+    {
+        $orders = Order::where('status', 'pending_payment')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now())
+            ->get();
+
+        foreach ($orders as $order) {
+            $this->expireIfDue($order);
+        }
+
+        return $orders->count();
     }
 }

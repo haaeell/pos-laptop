@@ -9,6 +9,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Setting;
 use App\Models\ShipmentTrackingHistory;
 use App\Services\BiteshipService;
+use App\Services\OrderExpiryService;
 use App\Services\StockReservationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -16,12 +17,16 @@ use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
-    public function __construct(protected StockReservationService $stock)
-    {
+    public function __construct(
+        protected StockReservationService $stock,
+        protected OrderExpiryService $orderExpiry,
+    ) {
     }
 
     public function index(Request $request)
     {
+        $this->orderExpiry->expireAllDue();
+
         $query = Order::with(['customer', 'salesPerson'])->latest();
 
         if ($request->filled('status')) {
@@ -59,6 +64,7 @@ class OrderController extends Controller
     public function show($id)
     {
         $order = Order::with(['items', 'statusHistories', 'trackingHistories', 'customer', 'salesPerson'])->findOrFail($id);
+        $order = $this->orderExpiry->expireIfDue($order);
 
         return view('orders.show', ['order' => $order]);
     }
