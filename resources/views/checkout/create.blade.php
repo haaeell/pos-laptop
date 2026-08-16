@@ -1870,13 +1870,15 @@
             }
         }
 
+        // The pin only records coordinates for map display / delivery reference.
+        // Province/Kota/Kecamatan are NEVER derived from the pin — OSM's district-level
+        // naming doesn't reliably match Biteship's area index, which caused area_id to
+        // resolve inconsistently ("Area alamat ini belum bisa dikenali"). Those fields
+        // must always come from the official Provinsi/Kota/Kecamatan dropdowns.
         async function reverseGeocodeCheckoutPoint(lat, lng) {
             try {
                 const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=id`);
                 const address = data.address || {};
-                const province = address.state || address.region || '';
-                const city = address.city || address.county || address.municipality || address.town || '';
-                const district = address.city_district || address.suburb || address.state_district || address.village || address.town || '';
                 const detailParts = [
                     address.road,
                     address.house_number,
@@ -1885,29 +1887,22 @@
                     address.residential,
                 ].filter(Boolean);
 
-                if (province) {
-                    naProvinceInput.value = province;
-                    setSelectDisplayValue(naProvinceSelect, province, '-- Pilih Provinsi --');
-                }
-
-                if (city) {
-                    naCityInput.value = city;
-                    setSelectDisplayValue(naCitySelect, city, '-- Pilih Kota --');
-                }
-
-                if (district) {
-                    naDistrictInput.value = district;
-                    setSelectDisplayValue(naDistrictSelect, district, '-- Pilih Kecamatan --');
-                }
-
                 if (address.postcode && !naPostalCodeInput.value) {
                     naPostalCodeInput.value = address.postcode;
                 }
 
-                if (detailParts.length) {
+                if (detailParts.length && !naAddressDetailInput.value) {
                     naAddressDetailInput.value = detailParts.join(', ');
-                } else if (!naAddressDetailInput.value && data.display_name) {
-                    naAddressDetailInput.value = data.display_name;
+                }
+
+                if (!naProvinceSelect.value || !naCitySelect.value || !naDistrictSelect.value) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Lengkapi Wilayah Secara Manual',
+                        text: 'Titik lokasi sudah tersimpan. Mohon pilih Provinsi, Kota, dan Kecamatan secara manual dari dropdown supaya kurir bisa mengenali area pengiriman dengan tepat.',
+                        timer: 3500,
+                        showConfirmButton: false,
+                    });
                 }
             } catch (error) {
                 console.warn('Reverse geocoding gagal', error);
