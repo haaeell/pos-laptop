@@ -585,21 +585,15 @@
             }
         }
 
+        // The pin only records coordinates for map display / delivery reference.
+        // Province/Kota/Kecamatan are NEVER derived from the pin — OSM's district-level
+        // naming doesn't reliably match Biteship's area index, which caused area_id to
+        // resolve inconsistently. Those fields must always come from the official
+        // Provinsi/Kota/Kecamatan dropdowns below.
         async function reverseGeocodeAddressPoint(lat, lng) {
             try {
                 const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=id`);
                 const address = data.address || {};
-                const provinceGuess = address.state || address.region || '';
-                const cityGuess = address.city || address.county || address.municipality || address.town || '';
-                // OSM has no reliable "kecamatan" tag, so try every candidate field against the
-                // official wilayah district list instead of trusting a single raw OSM value.
-                const districtCandidates = [
-                    address.city_district,
-                    address.suburb,
-                    address.state_district,
-                    address.village,
-                    address.town,
-                ].filter(Boolean);
                 const detailParts = [
                     address.road,
                     address.house_number,
@@ -608,66 +602,21 @@
                     address.residential,
                 ].filter(Boolean);
 
-                citySelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
-                districtSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-                citySelect.disabled = true;
-                districtSelect.disabled = true;
-                provinceInput.value = '';
-                cityInput.value = '';
-                districtInput.value = '';
-
-                let matchedProvince = null;
-                let matchedCity = null;
-                let matchedDistrict = null;
-
-                if (provinceGuess) {
-                    const provinces = await fetchJson(`${WILAYAH_BASE}/provinces.json`);
-                    fillSelect(provinceSelect, provinces, '-- Pilih Provinsi --');
-                    matchedProvince = provinces.find(p => normalizeRegionName(p.name) === normalizeRegionName(provinceGuess));
-                }
-
-                if (matchedProvince) {
-                    provinceSelect.value = matchedProvince.name;
-                    provinceInput.value = matchedProvince.name;
-
-                    const cities = await fetchJson(`${WILAYAH_BASE}/regencies/${matchedProvince.id}.json`);
-                    fillSelect(citySelect, cities, '-- Pilih Kota --');
-                    citySelect.disabled = false;
-                    matchedCity = cities.find(c => normalizeRegionName(c.name) === normalizeRegionName(cityGuess));
-                }
-
-                if (matchedCity) {
-                    citySelect.value = matchedCity.name;
-                    cityInput.value = matchedCity.name;
-
-                    const districts = await fetchJson(`${WILAYAH_BASE}/districts/${matchedCity.id}.json`);
-                    fillSelect(districtSelect, districts, '-- Pilih Kecamatan --');
-                    districtSelect.disabled = false;
-                    matchedDistrict = districts.find(d => districtCandidates.some(
-                        candidate => normalizeRegionName(d.name) === normalizeRegionName(candidate)
-                    ));
-                }
-
-                if (matchedDistrict) {
-                    districtSelect.value = matchedDistrict.name;
-                    districtInput.value = matchedDistrict.name;
-                }
-
                 if (address.postcode && !postalCodeInput.value) {
                     postalCodeInput.value = address.postcode;
                 }
 
-                if (detailParts.length) {
+                if (detailParts.length && !addressDetailInput.value) {
                     addressDetailInput.value = detailParts.join(', ');
-                } else if (!addressDetailInput.value && data.display_name) {
-                    addressDetailInput.value = data.display_name;
                 }
 
-                if (!matchedProvince || !matchedCity || !matchedDistrict) {
+                if (!provinceSelect.value || !citySelect.value || !districtSelect.value) {
                     Swal.fire({
                         icon: 'info',
                         title: 'Lengkapi Wilayah Secara Manual',
-                        text: 'Titik lokasi berhasil diambil, tapi provinsi/kota/kecamatan resmi belum sepenuhnya cocok otomatis. Mohon lengkapi dari dropdown Provinsi/Kota/Kecamatan supaya kurir bisa mengenali area pengiriman.',
+                        text: 'Titik lokasi sudah tersimpan. Mohon pilih Provinsi, Kota, dan Kecamatan secara manual dari dropdown supaya kurir bisa mengenali area pengiriman dengan tepat.',
+                        timer: 3500,
+                        showConfirmButton: false,
                     });
                 }
             } catch (error) {
