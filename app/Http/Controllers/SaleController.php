@@ -3,20 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
-use App\Models\Sale;
 use App\Models\Product;
+use App\Models\Sale;
 use App\Models\SaleBonus;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
 use App\Models\SalesPerson;
 use App\Models\Setting;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SaleController extends Controller
 {
@@ -42,19 +42,19 @@ class SaleController extends Controller
         ]);
     }
 
-
     public function create()
     {
         return view('sales.create', [
             'products' => Product::where('status', 'available')->get(),
             'productBonus' => Product::where('status', 'bonus')->where('stock', '>', 0)->get(),
-            'salesPeople' => SalesPerson::all()
+            'salesPeople' => SalesPerson::all(),
         ]);
     }
 
     public function detail($id)
     {
         $sale = Sale::with(['items', 'bonuses', 'salesPerson', 'payments.user'])->findOrFail($id);
+
         return response()->json([
             'invoice' => $sale->invoice_number,
             'date' => Carbon::parse($sale->created_at)
@@ -108,7 +108,6 @@ class SaleController extends Controller
         return number_format($value, 0, ',', '.');
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
@@ -136,99 +135,143 @@ class SaleController extends Controller
             'due_date.required_if' => 'Tanggal jatuh tempo wajib diisi untuk transaksi bayar sebagian/hutang.',
         ]);
 
-        $sale = DB::transaction(function () use ($request) {
-
-            $grandTotal = (float) $request->grand_total;
-
-            if ($request->payment_status === 'partial') {
-                $paidAmount = min(max((float) $request->paid_amount, 0), $grandTotal);
-            } elseif ($request->payment_status === 'unpaid') {
-                $paidAmount = 0;
-            } else {
-                $paidAmount = $grandTotal;
-            }
-
-            $paymentStatus = $paidAmount >= $grandTotal ? 'paid' : ($paidAmount > 0 ? 'partial' : 'unpaid');
-            $dueDate = $paymentStatus !== 'paid' ? $request->due_date : null;
-
-            $collateralPath = $request->hasFile('collateral')
-                ? $request->file('collateral')->store('collateral', 'public')
-                : null;
-
-            $sale = Sale::create([
-                'invoice_number' => 'INV-' . date('Ymd') . '-' . str_pad(Sale::count() + 1, 4, '0', STR_PAD_LEFT),
-                'user_id' => Auth::id(),
-                'customer_name' => $request->customer_name,
-                'customer_phone' => $request->customer_phone,
-                'sales_person_id' => $request->sales_person_id,
-                'fee_sales' => $request->fee_sales ?? 0,
-                'grand_total' => $grandTotal,
-                'benefit' => $request->benefit,
-                'payment_method' => $request->payment_method,
-                'payment_status' => $paymentStatus,
-                'paid_amount' => $paidAmount,
-                'collateral_path' => $collateralPath,
-                'due_date' => $dueDate,
-            ]);
-
-            if ($paidAmount > 0) {
-                SalePayment::create([
-                    'sale_id' => $sale->id,
-                    'user_id' => Auth::id(),
-                    'amount' => $paidAmount,
-                    'paid_at' => now()->toDateString(),
-                    'note' => $paymentStatus === 'paid' ? 'Pembayaran lunas' : 'Pembayaran awal (DP)',
-                ]);
-            }
-
-            // ================= SOLD ITEMS =================
-            foreach ($request->items as $item) {
-                $qty = max(1, (int) ($item['qty'] ?? 1));
-
-                SaleItem::create([
-                    'sale_id'        => $sale->id,
-                    'product_id'     => $item['product_id'],
-                    'purchase_price' => $item['purchase_price'],
-                    'selling_price'  => $item['selling_price'],
-                    'final_price'    => $item['final_price'],
-                    'qty'            => $qty,
-                    'benefit'        => ($item['final_price'] - $item['purchase_price']) * $qty,
-                ]);
-
-                $product = Product::findOrFail($item['product_id']);
-
-                if ($product->stock > $qty) {
-                    $product->decrement('stock', $qty);
-                } else {
-                    $product->update([
-                        'status' => 'sold',
-                        'stock'  => 0,
-                    ]);
-                }
-            }
-            // ================= BONUS ITEMS =================
-            if ($request->filled('bonus_products')) {
-                foreach ($request->bonus_products as $productId) {
-
-                    $product = Product::findOrFail($productId);
-
-                    SaleBonus::create([
-                        'sale_id' => $sale->id,
-                        'product_id' => $product->id,
-                        'purchase_price' => $product->purchase_price,
-                        'benefit' => -$product->purchase_price,
-                    ]);
-
-                    $product->decrement('stock', 1);
-                }
-            }
-
-            return $sale;
-        });
+        $sale = $this->storeWithRetry($request);
 
         return redirect()
             ->route('sales.create')
             ->with('success_sale_id', $sale->id);
+    }
+
+    protected function storeWithRetry(Request $request): Sale
+    {
+        $lastException = null;
+
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                return DB::transaction(function () use ($request) {
+
+                    $grandTotal = (float) $request->grand_total;
+
+                    if ($request->payment_status === 'partial') {
+                        $paidAmount = min(max((float) $request->paid_amount, 0), $grandTotal);
+                    } elseif ($request->payment_status === 'unpaid') {
+                        $paidAmount = 0;
+                    } else {
+                        $paidAmount = $grandTotal;
+                    }
+
+                    $paymentStatus = $paidAmount >= $grandTotal ? 'paid' : ($paidAmount > 0 ? 'partial' : 'unpaid');
+                    $dueDate = $paymentStatus !== 'paid' ? $request->due_date : null;
+
+                    $invoiceNumber = $this->generateInvoiceNumber();
+
+                    $sale = Sale::create([
+                        'invoice_number' => $invoiceNumber,
+                        'user_id' => Auth::id(),
+                        'customer_name' => $request->customer_name,
+                        'customer_phone' => $request->customer_phone,
+                        'sales_person_id' => $request->sales_person_id,
+                        'fee_sales' => $request->fee_sales ?? 0,
+                        'grand_total' => $grandTotal,
+                        'benefit' => $request->benefit,
+                        'payment_method' => $request->payment_method,
+                        'payment_status' => $paymentStatus,
+                        'paid_amount' => $paidAmount,
+                        'collateral_path' => null,
+                        'due_date' => $dueDate,
+                    ]);
+
+                    if ($request->hasFile('collateral')) {
+                        $sale->update([
+                            'collateral_path' => $request->file('collateral')->store('collateral', 'public'),
+                        ]);
+                    }
+
+                    if ($paidAmount > 0) {
+                        SalePayment::create([
+                            'sale_id' => $sale->id,
+                            'user_id' => Auth::id(),
+                            'amount' => $paidAmount,
+                            'paid_at' => now()->toDateString(),
+                            'note' => $paymentStatus === 'paid' ? 'Pembayaran lunas' : 'Pembayaran awal (DP)',
+                        ]);
+                    }
+
+                    // ================= SOLD ITEMS =================
+                    foreach ($request->items as $item) {
+                        $qty = max(1, (int) ($item['qty'] ?? 1));
+
+                        SaleItem::create([
+                            'sale_id' => $sale->id,
+                            'product_id' => $item['product_id'],
+                            'purchase_price' => $item['purchase_price'],
+                            'selling_price' => $item['selling_price'],
+                            'final_price' => $item['final_price'],
+                            'qty' => $qty,
+                            'benefit' => ($item['final_price'] - $item['purchase_price']) * $qty,
+                        ]);
+
+                        $product = Product::findOrFail($item['product_id']);
+
+                        if ($product->stock > $qty) {
+                            $product->decrement('stock', $qty);
+                        } else {
+                            $product->update([
+                                'status' => 'sold',
+                                'stock' => 0,
+                            ]);
+                        }
+                    }
+                    // ================= BONUS ITEMS =================
+                    if ($request->filled('bonus_products')) {
+                        foreach ($request->bonus_products as $productId) {
+
+                            $product = Product::findOrFail($productId);
+
+                            SaleBonus::create([
+                                'sale_id' => $sale->id,
+                                'product_id' => $product->id,
+                                'purchase_price' => $product->purchase_price,
+                                'benefit' => -$product->purchase_price,
+                            ]);
+
+                            $product->decrement('stock', 1);
+                        }
+                    }
+
+                    return $sale;
+                });
+            } catch (QueryException $exception) {
+                if (! $this->isDuplicateInvoiceException($exception)) {
+                    throw $exception;
+                }
+
+                $lastException = $exception;
+            }
+        }
+
+        throw $lastException;
+    }
+
+    protected function generateInvoiceNumber(): string
+    {
+        $prefix = 'INV-'.now()->format('Ymd').'-';
+
+        $lastInvoice = Sale::query()
+            ->where('invoice_number', 'like', $prefix.'%')
+            ->lockForUpdate()
+            ->orderByDesc('invoice_number')
+            ->value('invoice_number');
+
+        $lastSequence = $lastInvoice ? (int) Str::afterLast($lastInvoice, '-') : 0;
+
+        return $prefix.str_pad($lastSequence + 1, 4, '0', STR_PAD_LEFT);
+    }
+
+    protected function isDuplicateInvoiceException(QueryException $exception): bool
+    {
+        return $exception->getCode() === '23000'
+            && Str::contains($exception->getMessage(), 'invoice_number');
     }
 
     public function pay(Request $request, $id)
@@ -240,10 +283,10 @@ class SaleController extends Controller
         }
 
         $request->validate([
-            'amount' => ['required', 'numeric', 'min:1', 'max:' . $sale->remaining_amount],
+            'amount' => ['required', 'numeric', 'min:1', 'max:'.$sale->remaining_amount],
             'paid_at' => 'nullable|date',
         ], [
-            'amount.max' => 'Jumlah bayar tidak boleh melebihi sisa tagihan (Rp ' . $this->rupiah($sale->remaining_amount) . ').',
+            'amount.max' => 'Jumlah bayar tidak boleh melebihi sisa tagihan (Rp '.$this->rupiah($sale->remaining_amount).').',
         ]);
 
         DB::transaction(function () use ($request, $sale) {
@@ -276,7 +319,9 @@ class SaleController extends Controller
 
             foreach ($sale->items as $item) {
                 $product = Product::find($item->product_id);
-                if (!$product) continue;
+                if (! $product) {
+                    continue;
+                }
 
                 $qty = $item->qty ?? 1;
 
@@ -285,7 +330,7 @@ class SaleController extends Controller
                 } else {
                     $product->update([
                         'status' => 'available',
-                        'stock'  => $qty,
+                        'stock' => $qty,
                     ]);
                 }
             }
