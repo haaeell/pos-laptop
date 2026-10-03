@@ -6,6 +6,7 @@ use App\Models\Sale;
 use App\Models\Expense;
 use App\Models\Order;
 use App\Models\SaleBonus;
+use App\Models\Rental;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -31,22 +32,25 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
             ->whereIn('status', ['paid', 'processing', 'shipped', 'completed'])
             ->orderBy('paid_at')
             ->get();
+        $rentals = Rental::whereBetween('created_at', [$this->from, $this->to])->get();
 
-        $transactions = $this->transactionRows($sales, $onlineOrders)->sortBy('date')->values();
+        $transactions = $this->transactionRows($sales, $onlineOrders, $rentals)->sortBy('date')->values();
         $totalOnlineSales = $onlineOrders->sum('grand_total');
         $totalOnlineProfit = $onlineOrders->sum(fn ($order) => $order->items->sum(fn ($item) => ((float) $item->price - (float) $item->purchase_price) * (int) $item->qty));
         $onlineMarketingFee = $onlineOrders->sum(fn ($order) => (float) ($order->marketing_fee_before_discount ?? 0));
 
         $offlineFeeSales = $this->calcFeeSales($sales);
         $feeSales      = $offlineFeeSales + $onlineMarketingFee;
-        $totalSales    = ($sales->sum('grand_total') - $offlineFeeSales) + ($totalOnlineSales - $onlineMarketingFee);
+        $totalRentalSales = $rentals->sum('rental_total');
+        $totalSales    = ($sales->sum('grand_total') - $offlineFeeSales) + ($totalOnlineSales - $onlineMarketingFee) + $totalRentalSales;
         $totalProfit   = $sales->sum('benefit') + $totalOnlineProfit;
         $bonusLoss     = SaleBonus::whereBetween('created_at', [$this->from, $this->to])->sum('benefit');
         $totalExpenses = Expense::whereBetween('entry_date', [$this->from, $this->to])->sum('amount');
         $totalFeeSales = $feeSales;
 
-        $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales;
+        $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales + $totalRentalSales;
         $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
+        $totalSaldo = $totalSales - $totalExpenses;
 
         return view('reports.excel', compact(
             'sales',
@@ -55,12 +59,14 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
             'totalSales',
             'totalProfit',
             'totalOnlineSales',
+            'totalRentalSales',
             'totalOnlineProfit',
             'totalFeeSales',
             'bonusLoss',
             'totalExpenses',
             'totalDiterima',
             'totalPiutang',
+            'totalSaldo',
             'from',
             'to'
         ));
@@ -79,7 +85,7 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
         return $sales->sum('fee_sales');
     }
 
-    private function transactionRows($sales, $onlineOrders)
+    private function transactionRows($sales, $onlineOrders, $rentals = null)
     {
         $offlineRows = $sales->map(fn ($sale) => (object) [
             'invoice_number' => $sale->invoice_number,
@@ -103,7 +109,8 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
             'remaining_amount' => 0,
         ]);
 
-        return $offlineRows->concat($onlineRows);
+        $rentalRows = ($rentals ?? collect())->map(fn ($rental) => (object) ['invoice_number' => $rental->rental_number, 'source' => 'Sewa', 'date' => $rental->created_at, 'grand_total' => (float) $rental->rental_total, 'benefit' => 0, 'payment_method' => 'sewa', 'payment_status' => 'paid', 'remaining_amount' => 0]);
+        return $offlineRows->concat($onlineRows)->concat($rentalRows);
     }
 
     public function columnWidths(): array

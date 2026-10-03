@@ -176,6 +176,20 @@
 
             <!-- Pengeluaran -->
             <div
+                class="relative overflow-hidden p-5 bg-white rounded-2xl border border-violet-200 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sewa Laptop</p>
+                        <h3 class="text-xl font-bold text-violet-600 mt-2">Rp{{ number_format($totalRentalSales, 0, ',', '.') }}</h3>
+                        <p class="text-[11px] text-slate-400 mt-1">{{ $jumlahRental }} transaksi sewa</p>
+                    </div>
+                    <div class="p-2 bg-violet-50 rounded-lg text-violet-600"><i class="fa-solid fa-laptop"></i></div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 w-full bg-violet-500"></div>
+            </div>
+
+            <!-- Pengeluaran -->
+            <div
                 class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start">
                     <div>
@@ -346,7 +360,7 @@
                     <div class="relative h-[260px]">
                         <canvas id="sourceChart"></canvas>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 mt-4 text-xs">
+                    <div class="grid grid-cols-3 gap-3 mt-4 text-xs">
                         <div class="rounded-xl bg-slate-50 p-3">
                             <p class="text-slate-400">Kasir</p>
                             <p class="font-bold text-slate-700 mt-1">Rp{{ number_format($chartData['sources']['values'][0] ?? 0, 0, ',', '.') }}</p>
@@ -354,6 +368,10 @@
                         <div class="rounded-xl bg-blue-50 p-3">
                             <p class="text-blue-400">Online</p>
                             <p class="font-bold text-blue-700 mt-1">Rp{{ number_format($chartData['sources']['values'][1] ?? 0, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="rounded-xl bg-violet-50 p-3">
+                            <p class="text-violet-400">Sewa</p>
+                            <p class="font-bold text-violet-700 mt-1">Rp{{ number_format($chartData['sources']['values'][2] ?? 0, 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -388,7 +406,8 @@
 
                 @php
                     $rows = [
-                        ['label' => 'Total Penjualan', 'value' => $totalSales, 'plus' => true],
+                        ['label' => 'Total Penjualan', 'value' => $totalSales - $totalRentalSales, 'plus' => true],
+                        ['label' => 'Sewa Laptop', 'value' => $totalRentalSales, 'plus' => true],
                         ['label' => 'Penambahan Modal', 'value' => $totalPenambahanModal, 'plus' => true],
                         ['label' => 'Total Services', 'value' => $totalServices, 'plus' => true],
                         ['label' => 'Total Pengeluaran', 'value' => $totalExpenses, 'plus' => false],
@@ -416,7 +435,7 @@
                 <span class="text-sm font-medium text-indigo-200">Jumlah Saldo</span>
                 <span class="text-2xl font-bold text-white">
                     Rp
-                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan - $totalPiutang, 0, ',', '.') }}
+                    {{ number_format($totalSaldo, 0, ',', '.') }}
                 </span>
             </div>
 
@@ -606,6 +625,15 @@
                         pointRadius: 3,
                     },
                     {
+                        label: 'Sewa',
+                        data: reportChartData.daily.sewa,
+                        borderColor: '#7c3aed',
+                        backgroundColor: 'rgba(124, 58, 237, .08)',
+                        tension: .35,
+                        fill: true,
+                        pointRadius: 3,
+                    },
+                    {
                         label: 'Profit',
                         data: reportChartData.daily.profit,
                         borderColor: '#059669',
@@ -625,7 +653,7 @@
                 labels: reportChartData.sources.labels,
                 datasets: [{
                     data: reportChartData.sources.values,
-                    backgroundColor: ['#4f46e5', '#2563eb'],
+                    backgroundColor: ['#4f46e5', '#2563eb', '#7c3aed'],
                     borderColor: '#ffffff',
                     borderWidth: 4,
                     hoverOffset: 6,

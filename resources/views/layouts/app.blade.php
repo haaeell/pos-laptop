@@ -121,6 +121,12 @@
                     Service
                 </a>
 
+                <a href="{{ route('rentals.index') }}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('rentals*') }}">
+                    <i class="fa-solid fa-laptop w-5"></i>
+                    Sewa Laptop
+                </a>
+
                 <a href="/orders"
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('orders*') }}">
                     <i class="fa-solid fa-bag-shopping w-5"></i>

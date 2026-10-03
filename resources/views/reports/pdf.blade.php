@@ -194,12 +194,16 @@
     <div class="summary">
         <table>
             <tr>
-                <td class="label">Total Penjualan</td>
-                <td class="value">Rp {{ number_format($totalSales, 0, ',', '.') }}</td>
+                <td class="label">Penjualan Non-Sewa</td>
+                <td class="value">Rp {{ number_format($totalSales - $totalRentalSales, 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <td class="label">Penjualan Online</td>
                 <td class="value">Rp {{ number_format($totalOnlineSales, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td class="label">Sewa Laptop</td>
+                <td class="value">Rp {{ number_format($totalRentalSales ?? 0, 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <td class="label minus">Piutang / Belum Tertagih</td>
@@ -241,7 +245,7 @@
                 <td class="label">Jumlah Saldo</td>
                 <td class="value">
                     Rp
-                    {{ number_format($totalSales - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan - $totalPiutang, 0, ',', '.') }}
+                    {{ number_format($totalSaldo, 0, ',', '.') }}
                 </td>
             </tr>
             <tr>

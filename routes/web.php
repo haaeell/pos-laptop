@@ -19,6 +19,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\RentalController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CourierController;
@@ -169,6 +170,17 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
         Route::get('/{id}/print-receive', 'printReceive')->name('services.print-receive');
         Route::get('/{id}/print-pickup', 'printPickup')->name('services.print-pickup');
         Route::delete('/{id}', 'destroy')->name('services.destroy');
+    });
+
+    Route::prefix('rentals')->controller(RentalController::class)->group(function () {
+        Route::get('/', 'index')->name('rentals.index');
+        Route::get('/create', 'create')->name('rentals.create');
+        Route::post('/', 'store')->name('rentals.store');
+        Route::post('/rates', 'saveRates')->name('rentals.rates');
+        Route::get('/{rental}/return', 'returnForm')->name('rentals.return.form');
+        Route::post('/{rental}/return', 'markReturned')->name('rentals.return');
+        Route::get('/{rental}/invoice', 'invoice')->name('rentals.invoice');
+        Route::delete('/{rental}', 'destroy')->name('rentals.destroy');
     });
 
     // Produk
