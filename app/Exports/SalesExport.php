@@ -7,6 +7,10 @@ use App\Models\Expense;
 use App\Models\Order;
 use App\Models\SaleBonus;
 use App\Models\Rental;
+use App\Models\Modal;
+use App\Models\ModalCicilan;
+use App\Models\Payroll;
+use App\Models\Service;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -49,8 +53,16 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
         $totalFeeSales = $feeSales;
 
         $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales + $totalRentalSales;
-        $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
-        $totalSaldo = $totalSales - $totalExpenses;
+        $totalTradeInPurchases = $sales->sum('trade_in_value');
+        $totalTradeInPayouts = abs($sales->where('paid_amount', '<', 0)->sum('paid_amount'));
+        $totalPiutang = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
+        $totalPenambahanModal = Modal::whereBetween('tanggal_pencairan', [$from, $to])->sum('nominal_pencairan');
+        $totalServices = Service::whereNotNull('done_at')->whereBetween('done_at', [$from, $to])->sum('total_cost');
+        $totalCicilan = ModalCicilan::whereHas('modal', fn ($query) => $query->whereNull('deleted_at'))
+            ->whereBetween('tanggal_bayar', [$from, $to])->sum('total_bayar');
+        $totalGajiKaryawan = Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_amount');
+        $totalSaldo = $totalSales - $totalTradeInPurchases - $totalPiutang
+            - $totalExpenses + $totalPenambahanModal + $totalServices - $totalCicilan - $totalGajiKaryawan;
 
         return view('reports.excel', compact(
             'sales',
@@ -64,6 +76,12 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
             'totalFeeSales',
             'bonusLoss',
             'totalExpenses',
+            'totalTradeInPurchases',
+            'totalTradeInPayouts',
+            'totalPenambahanModal',
+            'totalServices',
+            'totalCicilan',
+            'totalGajiKaryawan',
             'totalDiterima',
             'totalPiutang',
             'totalSaldo',
@@ -87,16 +105,24 @@ class SalesExport implements FromView, WithColumnWidths, WithStyles
 
     private function transactionRows($sales, $onlineOrders, $rentals = null)
     {
-        $offlineRows = $sales->map(fn ($sale) => (object) [
-            'invoice_number' => $sale->invoice_number,
-            'source' => 'Kasir',
-            'date' => $sale->created_at,
-            'grand_total' => (float) $sale->grand_total,
-            'benefit' => (float) $sale->benefit,
-            'payment_method' => $sale->payment_method,
-            'payment_status' => $sale->payment_status,
-            'remaining_amount' => $sale->remaining_amount,
-        ]);
+        $sales->load(['payments' => fn ($query) => $query->whereDate('paid_at', '<=', $this->to->toDateString())]);
+        $sales->loadCount('payments');
+        $offlineRows = $sales->map(function ($sale) {
+            $paid = $sale->payments_count ? (float) $sale->payments->sum('amount')
+                : max((float) $sale->paid_amount, $sale->payment_status === 'paid'
+                    ? (float) $sale->grand_total - (float) $sale->trade_in_value : 0);
+            $remaining = max(0, (float) $sale->grand_total - (float) $sale->trade_in_value - $paid);
+            return (object) [
+                'invoice_number' => $sale->invoice_number,
+                'source' => $sale->trade_in_product_id ? 'Tukar Tambah' : 'Kasir',
+                'date' => $sale->created_at,
+                'grand_total' => (float) $sale->grand_total,
+                'benefit' => (float) $sale->benefit,
+                'payment_method' => $sale->payment_method,
+                'payment_status' => $remaining <= 0 ? 'paid' : ($paid > 0 ? 'partial' : 'unpaid'),
+                'remaining_amount' => $remaining,
+            ];
+        });
 
         $onlineRows = $onlineOrders->map(fn ($order) => (object) [
             'invoice_number' => $order->order_number,

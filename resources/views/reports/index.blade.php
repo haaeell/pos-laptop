@@ -208,6 +208,14 @@
                 <div class="absolute bottom-0 left-0 h-1 w-full bg-rose-500"></div>
             </div>
 
+            <div class="p-5 bg-white rounded-2xl border border-amber-200 shadow-sm">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pembelian Barang Tukar Tambah</p>
+                <h3 class="text-xl font-bold text-amber-700 mt-2">Rp{{ number_format($totalTradeInPurchases, 0, ',', '.') }}</h3>
+                @if ($totalTradeInPayouts > 0)
+                    <p class="text-[11px] font-semibold text-rose-600 mt-1">Kas dibayar ke customer: -Rp{{ number_format($totalTradeInPayouts, 0, ',', '.') }}</p>
+                @endif
+            </div>
+
             <!-- Profit -->
             <div
                 class="relative overflow-hidden p-5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:shadow-md transition-all duration-300">
@@ -411,6 +419,7 @@
                         ['label' => 'Penambahan Modal', 'value' => $totalPenambahanModal, 'plus' => true],
                         ['label' => 'Total Services', 'value' => $totalServices, 'plus' => true],
                         ['label' => 'Total Pengeluaran', 'value' => $totalExpenses, 'plus' => false],
+                        ['label' => 'Pembelian barang tukar tambah', 'value' => $totalTradeInPurchases, 'plus' => false, 'detail' => $totalTradeInPayouts],
                         ['label' => 'Cicilan Modal', 'value' => $totalCicilan, 'plus' => false],
                         ['label' => 'Gaji Karyawan', 'value' => $totalGajiKaryawan, 'plus' => false],
                         ['label' => 'Piutang', 'value' => $totalPiutang, 'plus' => false],
@@ -421,7 +430,7 @@
                     <div class="flex items-center justify-between px-5 py-3 {{ $loop->even ? 'bg-slate-50' : '' }}">
                         <div class="flex items-center gap-3">
                             <div class="w-1.5 h-1.5 rounded-full {{ $row['plus'] ? 'bg-emerald-600' : 'bg-red-600' }}"></div>
-                            <span class="text-sm text-slate-700">{{ $row['label'] }}</span>
+                        <span class="text-sm text-slate-700">{{ $row['label'] }}@if (($row['detail'] ?? 0) > 0)<small class="block text-[10px] text-rose-500">Kas dibayar ke customer: - Rp {{ number_format($row['detail'], 0, ',', '.') }}</small>@endif</span>
                         </div>
                         <span class="text-sm font-medium {{ $row['plus'] ? 'text-emerald-700' : 'text-red-600' }}">
                             {{ $row['plus'] ? '+' : '−' }} Rp {{ number_format($row['value'], 0, ',', '.') }}

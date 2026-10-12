@@ -43,7 +43,7 @@ class ReportController extends Controller
 
         $onlineOrders = $this->onlineOrders($from, $to);
         $rentals = Rental::whereBetween('created_at', [$from, $to])->get();
-        $transactions = $this->transactionRows($sales, $onlineOrders, $rentals)->sortByDesc('date')->values();
+        $transactions = $this->transactionRows($sales, $onlineOrders, $rentals, $to)->sortByDesc('date')->values();
         $metrics = $this->getMetrics($from, $to, $sales, $onlineOrders, $rentals);
         $chartData = $this->chartData($from, $to, $transactions, $metrics, $trend);
 
@@ -67,11 +67,12 @@ class ReportController extends Controller
         $totalSales = $totalOfflineSales + ($totalOnlineSales - $onlineMarketingFee) + $totalRental;
 
         $totalDiterima = $sales->sum('paid_amount') + $totalOnlineSales + $totalRental;
-        $totalPiutang  = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
-
-        $jumlahLunas    = $sales->where('payment_status', 'paid')->count() + $onlineOrders->count();
+        $totalPiutang = $sales->where('payment_status', '!=', 'paid')->sum('remaining_amount');
+        $totalTradeInPurchases = $sales->sum('trade_in_value');
+        $totalTradeInPayouts = abs($sales->where('paid_amount', '<', 0)->sum('paid_amount'));
+        $jumlahLunas = $sales->where('payment_status', 'paid')->count() + $onlineOrders->count();
         $jumlahSebagian = $sales->where('payment_status', 'partial')->count();
-        $jumlahHutang   = $sales->where('payment_status', 'unpaid')->count();
+        $jumlahHutang = $sales->where('payment_status', 'unpaid')->count();
 
         $sparePartHpp  = $this->serviceSum($from, $to, 'spare_part_hpp');
         $sparePartCost = $this->serviceSum($from, $to, 'spare_part_cost');
@@ -81,6 +82,8 @@ class ReportController extends Controller
             'totalSales'           => $totalSales,
             'totalDiterima'        => $totalDiterima,
             'totalPiutang'         => $totalPiutang,
+            'totalTradeInPurchases' => $totalTradeInPurchases,
+            'totalTradeInPayouts'   => $totalTradeInPayouts,
             'jumlahLunas'          => $jumlahLunas,
             'jumlahSebagian'       => $jumlahSebagian,
             'jumlahHutang'         => $jumlahHutang,
@@ -98,7 +101,7 @@ class ReportController extends Controller
             'totalProfit'          => $totalOfflineProfit + $totalOnlineProfit,
             'bonusLoss'            => SaleBonus::whereBetween('created_at', [$from, $to])->sum('benefit'),
             'totalExpenses'        => Expense::whereBetween('entry_date', [$from, $to])->sum('amount'),
-            'totalAsset'           => Product::where('status', 'available')->selectRaw('SUM(purchase_price * GREATEST(stock, 1)) as total')->value('total') ?? 0,
+            'totalAsset'           => Product::where('status', 'available')->selectRaw('SUM(purchase_price * CASE WHEN stock > 1 THEN stock ELSE 1 END) as total')->value('total') ?? 0,
             'totalPenambahanModal' => Modal::whereBetween('tanggal_pencairan', [$from, $to])->sum('nominal_pencairan'),
             'totalCicilan'         => ModalCicilan::whereHas('modal', fn($q) => $q->whereNull('deleted_at'))->whereBetween('tanggal_bayar', [$from, $to])->sum('total_bayar'),
             'totalGajiKaryawan'    => Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_amount'),
@@ -109,7 +112,7 @@ class ReportController extends Controller
                 ->value('total') ?? 0,
             'totalServices'        => $this->serviceSum($from, $to, 'total_cost'),
             'profitService'        => $sparePartCost - $sparePartHpp + $storeFee,
-            'totalSaldo'           => $totalSales - Expense::whereBetween('entry_date', [$from, $to])->sum('amount') + Modal::whereBetween('tanggal_pencairan', [$from, $to])->sum('nominal_pencairan') + $this->serviceSum($from, $to, 'total_cost') - ModalCicilan::whereHas('modal', fn($q) => $q->whereNull('deleted_at'))->whereBetween('tanggal_bayar', [$from, $to])->sum('total_bayar') - Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_amount') - $totalPiutang,
+            'totalSaldo'           => $totalSales - $totalTradeInPurchases - $totalPiutang - Expense::whereBetween('entry_date', [$from, $to])->sum('amount') + Modal::whereBetween('tanggal_pencairan', [$from, $to])->sum('nominal_pencairan') + $this->serviceSum($from, $to, 'total_cost') - ModalCicilan::whereHas('modal', fn($q) => $q->whereNull('deleted_at'))->whereBetween('tanggal_bayar', [$from, $to])->sum('total_bayar') - Payroll::whereNotNull('release_date')->whereBetween('release_date', [$from, $to])->sum('total_amount'),
         ];
     }
 
@@ -135,18 +138,28 @@ class ReportController extends Controller
         return $onlineOrders->sum(fn ($order) => (float) ($order->marketing_fee_before_discount ?? 0));
     }
 
-    private function transactionRows($sales, $onlineOrders, $rentals = null)
+    private function transactionRows($sales, $onlineOrders, $rentals = null, ?Carbon $to = null)
     {
-        $offlineRows = $sales->map(fn ($sale) => (object) [
-            'invoice_number' => $sale->invoice_number,
-            'source' => 'Kasir',
-            'date' => $sale->created_at,
-            'grand_total' => (float) $sale->grand_total,
-            'benefit' => (float) $sale->benefit,
-            'payment_method' => $sale->payment_method,
-            'payment_status' => $sale->payment_status,
-            'remaining_amount' => $sale->remaining_amount,
-        ]);
+        if ($to) {
+            $sales->load(['payments' => fn ($query) => $query->whereDate('paid_at', '<=', $to->toDateString())]);
+            $sales->loadCount('payments');
+        }
+        $offlineRows = $sales->map(function ($sale) {
+            $paid = $sale->payments_count ? (float) $sale->payments->sum('amount')
+                : max((float) $sale->paid_amount, $sale->payment_status === 'paid'
+                    ? (float) $sale->grand_total - (float) $sale->trade_in_value : 0);
+            $remaining = max(0, (float) $sale->grand_total - (float) $sale->trade_in_value - $paid);
+            return (object) [
+                'invoice_number' => $sale->invoice_number,
+                'source' => $sale->trade_in_product_id ? 'Tukar Tambah' : 'Kasir',
+                'date' => $sale->created_at,
+                'grand_total' => (float) $sale->grand_total,
+                'benefit' => (float) $sale->benefit,
+                'payment_method' => $sale->payment_method,
+                'payment_status' => $remaining <= 0 ? 'paid' : ($paid > 0 ? 'partial' : 'unpaid'),
+                'remaining_amount' => $remaining,
+            ];
+        });
 
         $onlineRows = $onlineOrders->map(fn ($order) => (object) [
             'invoice_number' => $order->order_number,
@@ -172,7 +185,7 @@ class ReportController extends Controller
 
             return [
                 'label' => $bucket['label'],
-                'kasir' => (float) $rows->where('source', 'Kasir')->sum('grand_total'),
+                'kasir' => (float) $rows->whereIn('source', ['Kasir', 'Tukar Tambah'])->sum('grand_total'),
                 'online' => (float) $rows->where('source', 'Online')->sum('grand_total'),
                 'sewa' => (float) $rows->where('source', 'Sewa')->sum('grand_total'),
                 'profit' => (float) $rows->sum('benefit'),
@@ -195,7 +208,7 @@ class ReportController extends Controller
             'sources' => [
                 'labels' => ['Kasir', 'Online', 'Sewa'],
                 'values' => [
-                    (float) $transactions->where('source', 'Kasir')->sum('grand_total'),
+                    (float) $transactions->whereIn('source', ['Kasir', 'Tukar Tambah'])->sum('grand_total'),
                     (float) $transactions->where('source', 'Online')->sum('grand_total'),
                     (float) $transactions->where('source', 'Sewa')->sum('grand_total'),
                 ],
@@ -272,7 +285,7 @@ class ReportController extends Controller
 
         $onlineOrders = $this->onlineOrders($from, $to);
         $rentals = Rental::whereBetween('created_at', [$from, $to])->get();
-        $transactions = $this->transactionRows($sales, $onlineOrders, $rentals)->sortBy('date')->values();
+        $transactions = $this->transactionRows($sales, $onlineOrders, $rentals, $to)->sortBy('date')->values();
         $metrics = $this->getMetrics($from, $to, $sales, $onlineOrders, $rentals);
 
         $pdf = Pdf::loadView('reports.pdf', array_merge(compact('sales', 'onlineOrders', 'transactions', 'from', 'to'), $metrics))->setPaper('a4', 'portrait');

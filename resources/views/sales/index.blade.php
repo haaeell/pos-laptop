@@ -26,6 +26,13 @@
             </a>
         </div>
 
+        @if (session('error'))
+            <div class="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{{ session('error') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{{ $errors->first() }}</div>
+        @endif
+
         <form class="flex flex-wrap items-end gap-3 mb-3">
             <div class="space-y-1.5">
                 <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Dari Tanggal</label>
@@ -99,6 +106,9 @@
 
                                 <td class="px-4 py-4 font-bold text-indigo-600 whitespace-nowrap">
                                     <span class="bg-indigo-50 px-2 py-1 rounded text-xs">#{{ $sale->invoice_number }}</span>
+                                    @if ($sale->trade_in_product_id)
+                                        <span class="block mt-1 text-[10px] font-semibold text-amber-700 normal-case">Tukar tambah</span>
+                                    @endif
                                 </td>
 
                                 <td class="px-4 py-4 text-slate-600 whitespace-nowrap">
@@ -297,6 +307,13 @@
                     @endif
                 </div>
 
+                <div id="modalTradeInInfo" class="hidden mt-4 p-4 rounded-2xl bg-indigo-50 border border-indigo-100 text-sm">
+                    <p class="font-semibold text-indigo-700 mb-2">Barang tukar tambah diterima</p>
+                    <p id="modalTradeInProduct" class="text-slate-700"></p>
+                    <div class="mt-2 flex justify-between"><span>Nilai pembelian barang</span><strong id="modalTradeInValue"></strong></div>
+                    <div class="mt-1 flex justify-between"><span>Uang dibayar pelanggan</span><strong id="modalTradeInCash"></strong></div>
+                </div>
+
                 <div id="modalInstallmentInfo" class="hidden mt-4 p-4 rounded-2xl bg-amber-50 border border-amber-100">
                     <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2">Info Pembayaran Sebagian / Hutang</p>
                     <div class="grid grid-cols-3 gap-3 text-sm">
@@ -390,6 +407,14 @@
                     document.getElementById('modalCustomer').innerText = data.customer_name ?? 'Pelanggan Umum'
                     document.getElementById('modalCustomerPhone').innerText = data.customer_phone ?? ''
                     document.getElementById('modalFeeSales').innerText = 'Rp ' + data.fee_sales
+
+                    const tradeInInfo = document.getElementById('modalTradeInInfo')
+                    tradeInInfo.classList.toggle('hidden', !data.trade_in_product)
+                    if (data.trade_in_product) {
+                        document.getElementById('modalTradeInProduct').textContent = data.trade_in_product
+                        document.getElementById('modalTradeInValue').textContent = 'Rp ' + data.trade_in_value
+                        document.getElementById('modalTradeInCash').textContent = 'Rp ' + data.paid_amount
+                    }
 
                     if (isSuperAdmin) {
                         document.getElementById('modalProfit').innerText = 'Rp ' + data.benefit

@@ -198,7 +198,7 @@
                                     class="w-full px-3 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-amber-200">
                                 <input type="hidden" name="paid_amount" id="paidAmount" value="0">
                                 <p class="text-[11px] text-slate-500">
-                                    Sisa tagihan: <span class="font-semibold text-amber-700">Rp <span id="remainingText">0</span></span>
+                                    Sisa tagihan: <span class="font-semibold text-amber-700" id="remainingText">Rp 0</span>
                                 </p>
                             </div>
 
@@ -228,7 +228,7 @@
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-[10px] uppercase tracking-wider text-indigo-200">Grand Total</p>
-                                        <p class="text-2xl font-bold mt-0.5">Rp <span id="grandText">0</span></p>
+                                        <p class="text-2xl font-bold mt-0.5" id="grandText">Rp 0</p>
                                     </div>
                                     <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
                                         <i class="fa-solid fa-wallet"></i>
@@ -328,7 +328,7 @@
                 <div class="rounded-xl bg-slate-50 p-3 text-sm">
                     <div class="flex justify-between">
                         <span>Total</span>
-                        <span class="font-semibold">Rp <span id="modalGrand">0</span></span>
+                        <span class="font-semibold" id="modalGrand">Rp 0</span>
                     </div>
                     <div class="flex justify-between text-xs text-slate-500 mt-1">
                         <span>Metode</span>
@@ -427,11 +427,11 @@
             const addedProductIds = new Set();
 
             function formatRupiah(angka) {
-                return new Intl.NumberFormat('id-ID').format(angka || 0)
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka || 0)
             }
 
             function cleanNumber(val) {
-                return Number(String(val).replace(/\./g, '')) || 0
+                return Number(String(val).replace(/[^\d]/g, '')) || 0
             }
 
             $('#barcodeInput').on('keypress', function (e) {
@@ -753,7 +753,7 @@
                     $bonusInfo.append(`
                                 <div class="flex justify-between">
                                     <span>🎁 ${name}</span>
-                                    <span class="text-red-600">-Rp ${formatRupiah(purchase)}</span>
+                                    <span class="text-red-600">-${formatRupiah(purchase)}</span>
                                 </div>
                             `)
                 })
@@ -778,7 +778,7 @@
 
                 if (isSuperAdmin) {
                     $('#benefitText')
-                        .text('Rp ' + formatRupiah(profit))
+                        .text(formatRupiah(profit))
                         .removeClass('text-red-600 text-green-600')
                         .addClass(profit < 0 ? 'text-red-600' : 'text-green-600')
                 }

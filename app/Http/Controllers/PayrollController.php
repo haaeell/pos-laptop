@@ -152,7 +152,10 @@ class PayrollController extends Controller
         }
 
         $sales = Sale::where('payment_status', 'paid')
-            ->whereBetween('created_at', [$from, $to])
+            ->whereRaw(
+                'COALESCE((SELECT MAX(sp.paid_at) FROM sale_payments sp WHERE sp.sale_id = sales.id), DATE(sales.created_at)) BETWEEN ? AND ?',
+                [$dateFrom, $dateTo]
+            )
             ->get(['sales_person_id', 'fee_sales', 'benefit']);
         $rentals = Rental::whereBetween('created_at', [$from, $to])->get(['rental_total']);
 

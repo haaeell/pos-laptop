@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleBonus;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class SaleController extends Controller
 {
@@ -53,7 +55,7 @@ class SaleController extends Controller
 
     public function detail($id)
     {
-        $sale = Sale::with(['items', 'bonuses', 'salesPerson', 'payments.user'])->findOrFail($id);
+        $sale = Sale::with(['items', 'bonuses', 'salesPerson', 'payments.user', 'tradeInProduct'])->findOrFail($id);
 
         return response()->json([
             'invoice' => $sale->invoice_number,
@@ -67,6 +69,8 @@ class SaleController extends Controller
             'payment_method' => $sale->payment_method,
             'payment_status' => $sale->payment_status,
             'paid_amount' => $this->rupiah($sale->paid_amount),
+            'trade_in_value' => $this->rupiah($sale->trade_in_value),
+            'trade_in_product' => $sale->tradeInProduct?->name,
             'remaining_amount' => $this->rupiah($sale->remaining_amount),
             'due_date' => $sale->due_date?->translatedFormat('d M Y'),
             'collateral_url' => $sale->collateral_url,
@@ -290,6 +294,11 @@ class SaleController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $sale) {
+            $sale = Sale::whereKey($sale->id)->lockForUpdate()->firstOrFail();
+            if ($sale->remaining_amount < (float) $request->amount || $sale->payment_status === 'paid') {
+                throw ValidationException::withMessages(['amount' => 'Jumlah bayar melebihi sisa tagihan.']);
+            }
+
             SalePayment::create([
                 'sale_id' => $sale->id,
                 'user_id' => Auth::id(),
@@ -298,24 +307,36 @@ class SaleController extends Controller
                 'note' => $request->note,
             ]);
 
-            $newPaidAmount = $sale->paid_amount + $request->amount;
+            $newPaidAmount = (float) $sale->paid_amount + (float) $request->amount;
+            $cashDue = (float) $sale->grand_total - (float) $sale->trade_in_value;
 
             $sale->update([
                 'paid_amount' => $newPaidAmount,
-                'payment_status' => $newPaidAmount >= $sale->grand_total ? 'paid' : 'partial',
-                'due_date' => $newPaidAmount >= $sale->grand_total ? null : $sale->due_date,
+                'payment_status' => $newPaidAmount >= $cashDue ? 'paid' : 'partial',
+                'due_date' => $newPaidAmount >= $cashDue ? null : $sale->due_date,
             ]);
         });
 
         return redirect()
-            ->route('sales.index')
+            ->back()
             ->with('success', 'Pembayaran cicilan berhasil dicatat.');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         DB::transaction(function () use ($id) {
-            $sale = Sale::with(['items', 'bonuses'])->findOrFail($id);
+            $sale = Sale::with(['items', 'bonuses', 'tradeInProduct'])->findOrFail($id);
+
+            if ($sale->trade_in_product_id) {
+                $received = $sale->tradeInProduct;
+                if (! $received || $received->status !== 'available' || (int) $received->stock !== 1
+                    || $received->saleItem()->exists() || $received->saleBonus()->exists()
+                    || OrderItem::where('product_id', $received->id)->exists()) {
+                    throw ValidationException::withMessages(['sale' => 'Tukar tambah tidak dapat dihapus karena produk yang diterima sudah dipakai atau terjual.']);
+                }
+                $sale->update(['trade_in_product_id' => null]);
+                $received->delete();
+            }
 
             foreach ($sale->items as $item) {
                 $product = Product::find($item->product_id);
@@ -351,13 +372,13 @@ class SaleController extends Controller
         });
 
         return redirect()
-            ->route('sales.index')
+            ->route($request->boolean('from_trade_in') ? 'trade-ins.index' : 'sales.index')
             ->with('success', 'Transaksi berhasil dihapus dan stok produk telah dikembalikan.');
     }
 
     public function invoicePdf($id)
     {
-        $sale = Sale::with(['items.product', 'bonuses.product', 'user'])
+        $sale = Sale::with(['items.product', 'bonuses.product', 'user', 'tradeInProduct'])
             ->findOrFail($id);
 
         $contacts = Contact::where('is_active', 1)->get();

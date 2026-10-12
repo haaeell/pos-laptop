@@ -25,6 +25,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TradeInController;
 use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\CartController;
@@ -132,6 +133,12 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
         Route::post('/{id}/pay', 'pay')->name('sales.pay');
         Route::get('/{id}/invoice-pdf', 'invoicePdf')->name('sales.invoice.pdf');
         Route::delete('/{id}', 'destroy')->name('sales.destroy');
+    });
+
+    Route::prefix('trade-ins')->controller(TradeInController::class)->group(function () {
+        Route::get('/', 'index')->name('trade-ins.index');
+        Route::get('/create', 'create')->name('trade-ins.create');
+        Route::post('/', 'store')->name('trade-ins.store');
     });
 
     // Pesanan Online

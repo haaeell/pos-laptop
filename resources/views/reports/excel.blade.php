@@ -96,6 +96,11 @@
         <td colspan="4"></td>
     </tr>
     <tr>
+        <td colspan="4" style="padding:4px 10px; text-align:right;">Pembelian Barang Tukar Tambah</td>
+        <td style="padding:4px 10px; text-align:right; font-weight:bold;">- Rp {{ number_format($totalTradeInPurchases, 0, ',', '.') }}@if ($totalTradeInPayouts > 0)<br><small>Kas dibayar ke customer: - Rp {{ number_format($totalTradeInPayouts, 0, ',', '.') }}</small>@endif</td>
+        <td colspan="4"></td>
+    </tr>
+    <tr>
         <td colspan="4" style="padding:4px 10px; text-align:right; color:#6b7280;">Total Penjualan</td>
         <td style="padding:4px 10px; text-align:right; font-weight:bold;">Rp
             {{ number_format($totalSales, 0, ',', '.') }}</td>
@@ -107,6 +112,18 @@
             {{ number_format($totalExpenses, 0, ',', '.') }}</td>
         <td colspan="4"></td>
     </tr>
+    @foreach ([
+        ['Penambahan Modal', $totalPenambahanModal, true],
+        ['Pendapatan Service', $totalServices, true],
+        ['Cicilan Modal', $totalCicilan, false],
+        ['Gaji Karyawan', $totalGajiKaryawan, false],
+    ] as [$label, $value, $isIncome])
+        <tr>
+            <td colspan="4" style="padding:4px 10px; text-align:right;">{{ $label }}</td>
+            <td style="padding:4px 10px; text-align:right; font-weight:bold;">{{ $isIncome ? '+' : '-' }} Rp {{ number_format($value, 0, ',', '.') }}</td>
+            <td colspan="4"></td>
+        </tr>
+    @endforeach
     <tr style="background:#eef2ff;">
         <td colspan="4" style="padding:6px 10px; text-align:right; font-weight:bold;">Jumlah Saldo</td>
         <td style="padding:6px 10px; text-align:right; font-weight:bold;">Rp

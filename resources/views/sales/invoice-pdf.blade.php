@@ -272,10 +272,24 @@
             margin-bottom: 4px;
             text-transform: uppercase;
         }
+
+        /* Tukar tambah selalu satu item; gunakan layout ringkas agar muat satu A4. */
+        .trade-in-invoice .container { padding: 24px 32px; }
+        .trade-in-invoice .header-table { margin-bottom: 20px; }
+        .trade-in-invoice .info-section { margin-bottom: 16px; padding-top: 12px; }
+        .trade-in-invoice .items-table { margin-top: 12px; }
+        .trade-in-invoice .items-table th, .trade-in-invoice .items-table td { padding: 8px; }
+        .trade-in-invoice .summary-wrapper { margin-top: 12px; }
+        .trade-in-invoice .summary-table td { padding: 4px 0; }
+        .trade-in-invoice .payment-box { margin-top: 10px; padding: 8px 10px; }
+        .trade-in-invoice .warranty-box { margin-top: 14px; padding: 8px 10px; }
+        .trade-in-invoice .signature-section { margin-top: 28px; }
+        .trade-in-invoice .signature-box { height: 38px; }
+        .trade-in-invoice .footer { bottom: 20px; left: 32px; right: 32px; padding-top: 10px; }
     </style>
 </head>
 
-<body>
+<body class="{{ $sale->trade_in_product_id ? 'trade-in-invoice' : '' }}">
     @php
         $logo = $settings['logo'] ?? 'logo.jpeg';
         $namaToko = $settings['nama_toko'] ?? 'Barokah Computer';
@@ -372,7 +386,8 @@
                         </td>
                         <td class="text-center">{{ $item->qty ?? 1 }}</td>
                         <td class="text-right">Rp {{ number_format($item->final_price) }}</td>
-                        <td class="text-right">Rp {{ number_format($item->final_price) }}</td>
+                        @php($itemTotal = $item->final_price * ($item->qty ?? 1))
+                        <td class="text-right">Rp {{ number_format($itemTotal) }}</td>
                     </tr>
                 @endforeach
 
@@ -401,6 +416,24 @@
                     <td class="text-left">GRAND TOTAL</td>
                     <td class="text-right">Rp {{ number_format($sale->grand_total) }}</td>
                 </tr>
+                @if ($sale->trade_in_product_id)
+                    <tr>
+                        <td class="text-left" style="color:#6b7280;">Tukar tambah: {{ $sale->tradeInProduct?->name }}</td>
+                        <td class="text-right">- Rp {{ number_format($sale->trade_in_value) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left" style="color:#6b7280;">{{ $sale->grand_total >= $sale->trade_in_value ? 'Customer membayar' : 'Toko membayar' }}</td>
+                        <td class="text-right">Rp {{ number_format(abs($sale->grand_total - $sale->trade_in_value)) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left" style="color:#6b7280;">{{ $sale->paid_amount < 0 ? 'Toko sudah membayar' : 'Uang sudah dibayar' }}</td>
+                        <td class="text-right">Rp {{ number_format(abs($sale->paid_amount)) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left" style="font-weight:700;">Sisa tagihan</td>
+                        <td class="text-right" style="font-weight:700;">Rp {{ number_format($sale->remaining_amount) }}</td>
+                    </tr>
+                @endif
             </table>
         </div>
 

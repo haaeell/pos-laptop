@@ -230,6 +230,10 @@
                 <td class="value minus">- Rp {{ number_format($totalExpenses, 0, ',', '.') }}</td>
             </tr>
             <tr>
+                <td class="label minus">Pembelian barang tukar tambah</td>
+                <td class="value minus">- Rp {{ number_format($totalTradeInPurchases, 0, ',', '.') }}@if ($totalTradeInPayouts > 0)<br><small>Kas dibayar ke customer: - Rp {{ number_format($totalTradeInPayouts, 0, ',', '.') }}</small>@endif</td>
+            </tr>
+            <tr>
                 <td class="label minus">Cicilan Modal</td>
                 <td class="value minus">- Rp {{ number_format($totalCicilan, 0, ',', '.') }}</td>
             </tr>

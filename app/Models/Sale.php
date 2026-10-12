@@ -23,7 +23,9 @@ class Sale extends Model
         'customer_name',
         'customer_phone',
         'sales_person_id',
-        'fee_sales'
+        'fee_sales',
+        'trade_in_product_id',
+        'trade_in_value',
     ];
 
     protected $casts = [
@@ -32,6 +34,7 @@ class Sale extends Model
         'benefit'      => 'decimal:2',
         'fee_sales'   => 'decimal:2',
         'paid_amount' => 'decimal:2',
+        'trade_in_value' => 'decimal:2',
         'due_date'    => 'date',
     ];
 
@@ -39,7 +42,7 @@ class Sale extends Model
 
     public function getRemainingAmountAttribute()
     {
-        return max(0, $this->grand_total - $this->paid_amount);
+        return max(0, $this->grand_total - $this->trade_in_value - $this->paid_amount);
     }
 
     public function getCollateralUrlAttribute()
@@ -73,5 +76,10 @@ class Sale extends Model
     public function payments()
     {
         return $this->hasMany(SalePayment::class);
+    }
+
+    public function tradeInProduct()
+    {
+        return $this->belongsTo(Product::class, 'trade_in_product_id');
     }
 }

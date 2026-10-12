@@ -69,11 +69,13 @@
         </div>
 
         @php
-            function isActive($pattern)
-            {
-                return request()->is($pattern)
-                    ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md'
-                    : 'text-slate-600 hover:bg-slate-100';
+            if (! function_exists('isActive')) {
+                function isActive($pattern)
+                {
+                    return request()->is($pattern)
+                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md'
+                        : 'text-slate-600 hover:bg-slate-100';
+                }
             }
         @endphp
 
@@ -113,6 +115,12 @@
                     class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('sales/create') }}">
                     <i class="fa-solid fa-receipt w-5"></i>
                     Transaksi Baru
+                </a>
+
+                <a href="{{ route('trade-ins.index') }}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('trade-ins*') }}">
+                    <i class="fa-solid fa-right-left w-5"></i>
+                    Tukar Tambah
                 </a>
 
                 <a href="/services"

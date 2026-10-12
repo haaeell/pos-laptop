@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\ProductImage;
+use App\Models\Sale;
 use App\Models\Contact;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -237,7 +238,8 @@ class ProductController extends Controller
     {
         $product = Product::withCount(['saleItem', 'saleBonus'])->findOrFail($id);
 
-        if ($product->sale_item_count > 0 || $product->sale_bonus_count > 0) {
+        if ($product->sale_item_count > 0 || $product->sale_bonus_count > 0
+            || Sale::where('trade_in_product_id', $product->id)->exists()) {
             return redirect()->back()->with(
                 'error',
                 'Produk tidak bisa dihapus karena masih digunakan di transaksi atau bonus'
