@@ -168,7 +168,7 @@
     <!-- MODAL DETAIL -->
     <div id="detailModal" class="fixed inset-0 hidden bg-black/40 backdrop-blur-sm z-50 overflow-y-auto">
         <div class="min-h-screen px-4 py-8 flex items-start justify-center">
-            <div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl">
+            <div class="bg-white w-full max-w-6xl rounded-2xl shadow-xl">
 
                 <!-- HEADER MODAL -->
                 <div class="flex items-center justify-between px-6 py-4 border-b">
@@ -190,7 +190,7 @@
                 <div class="p-6">
 
                     <!-- SUMMARY -->
-                    <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
                         <div class="bg-indigo-50 rounded-xl p-4">
                             <div class="text-xs text-indigo-500 font-bold uppercase">Total Penggajian</div>
                             <div id="detailTotal" class="text-xl font-bold text-indigo-700 mt-1"></div>
@@ -205,14 +205,29 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <div class="text-xs font-semibold text-slate-500">Bagi Hasil Penjualan</div>
+                            <div id="detailSalesMethod" class="mt-1 text-sm font-semibold text-slate-800"></div>
+                            <div id="detailSalesCount" class="mt-0.5 text-xs text-slate-500"></div>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <div class="text-xs font-semibold text-slate-500">Bagi Hasil Sewa</div>
+                            <div id="detailRentalMethod" class="mt-1 text-sm font-semibold text-slate-800"></div>
+                            <div id="detailRentalCount" class="mt-0.5 text-xs text-slate-500"></div>
+                        </div>
+                    </div>
+
                     <!-- TABLE DETAIL -->
                     <div class="overflow-x-auto rounded-xl border">
-                        <table class="w-full text-sm">
+                        <table class="w-full min-w-[950px] text-sm">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
                                     <th class="px-4 py-3">Karyawan</th>
                                     <th class="px-4 py-3 text-right">Gaji Pokok</th>
-                                    <th class="px-4 py-3 text-right">Bonus Sales</th>
+                                    <th class="px-4 py-3 text-right">Bonus Marketing</th>
+                                    <th class="px-4 py-3 text-right">Bagi Hasil Penjualan</th>
+                                    <th class="px-4 py-3 text-right">Bagi Hasil Sewa</th>
                                     <th class="px-4 py-3 text-right">Jasa Teknisi</th>
                                     <th class="px-4 py-3 text-right">Total</th>
                                     <th class="px-4 py-3 text-center">Slip</th>
@@ -260,6 +275,16 @@
                 }).format(angka);
             }
 
+            function shareMethodDescription(mode, value, basis) {
+                if (!mode) return 'Metode belum tercatat';
+                if (mode === 'fixed') {
+                    return `${formatRupiah(value)} per transaksi`;
+                }
+
+                const percentage = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
+                return `${percentage}% dari ${basis} per transaksi`;
+            }
+
             window.openDetailModal = function (id) {
                 const payroll = payrolls.find(p => p.id === id);
                 if (!payroll) return;
@@ -269,6 +294,10 @@
                 );
                 $('#detailTotal').text(formatRupiah(payroll.total_amount));
                 $('#detailCount').text(payroll.details.length + ' orang');
+                $('#detailSalesMethod').text(shareMethodDescription(payroll.sales_share_mode, payroll.sales_share_value, 'profit'));
+                $('#detailRentalMethod').text(shareMethodDescription(payroll.rental_share_mode, payroll.rental_share_value, 'nominal sewa'));
+                $('#detailSalesCount').text(`${payroll.details[0]?.sales_transaction_count ?? 0} transaksi lunas`);
+                $('#detailRentalCount').text(`${payroll.details[0]?.rental_transaction_count ?? 0} transaksi sewa`);
                 $('#detailStatus').html(
                     payroll.status === 'released'
                         ? '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold"><i class="fa-solid fa-check mr-1"></i>Dirilis</span>'
@@ -284,7 +313,9 @@
                                                                                 <div class="text-xs text-slate-400">${detail.employee.position}</div>
                                                                             </td>
                                                                             <td class="px-4 py-3 text-right">${formatRupiah(detail.basic_salary)}</td>
-                                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_bonus)}</td>
+                                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_bonus)}<div class="text-xs text-slate-500">${detail.total_transactions} transaksi</div></td>
+                                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_profit_share)}<div class="text-xs text-slate-500">${detail.sales_transaction_count} transaksi</div></td>
+                                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.rental_share)}<div class="text-xs text-slate-500">${detail.rental_transaction_count} transaksi</div></td>
                                                                             <td class="px-4 py-3 text-right text-blue-600">${formatRupiah(detail.technician_fee)}</td>
                                                                             <td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(detail.net_salary)}</td>
                                                                             <td class="px-4 py-3 text-center">

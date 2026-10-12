@@ -273,6 +273,7 @@
                         <a href="#section-brand"><i class="fa-solid fa-store"></i> Profil Toko</a>
                         <a href="#section-seo"><i class="fa-solid fa-globe"></i> SEO & Favicon</a>
                         <a href="#section-referral"><i class="fa-solid fa-ticket"></i> Referral</a>
+                        <a href="#section-payroll-share"><i class="fa-solid fa-users"></i> Bagi Hasil Gaji</a>
                         <a href="#section-midtrans"><i class="fa-solid fa-credit-card"></i> Midtrans</a>
                         <a href="#section-biteship"><i class="fa-solid fa-truck-fast"></i> Biteship</a>
                     </nav>
@@ -454,6 +455,60 @@
                                 Potongan ini berlaku saat customer memakai kode referral yang aktif, dan otomatis dibatasi sesuai fee marketing.
                             </p>
                         </div>
+                    </div>
+                </section>
+
+                <section id="section-payroll-share" class="settings-card">
+                    <div class="settings-card-head">
+                        <div>
+                            <h3>Bagi Hasil Penggajian</h3>
+                            <p>Atur pembagian per transaksi untuk setiap karyawan aktif.</p>
+                        </div>
+                    </div>
+                    <div class="settings-card-body settings-grid-2">
+                        @foreach ([
+                            'sales' => ['label' => 'Penjualan', 'basis' => 'Profit transaksi lunas', 'icon' => 'fa-chart-line'],
+                            'rental' => ['label' => 'Sewa', 'basis' => 'Nominal sewa saat dibuat, tanpa denda', 'icon' => 'fa-laptop'],
+                        ] as $type => $share)
+                            @php
+                                $modeKey = "payroll_{$type}_share_mode";
+                                $valueKey = "payroll_{$type}_share_value";
+                                $mode = old($modeKey, $settings[$modeKey] ?? 'percentage');
+                            @endphp
+                            <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-indigo-600 border border-slate-200">
+                                        <i class="fa-solid {{ $share['icon'] }}"></i>
+                                    </span>
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-slate-800">Bagi Hasil {{ $share['label'] }}</h4>
+                                        <p class="text-xs text-slate-500 mt-0.5">Dasar persentase: {{ $share['basis'] }}</p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                                    <div>
+                                        <label class="text-xs font-semibold text-slate-600" for="{{ $modeKey }}">Metode</label>
+                                        <select id="{{ $modeKey }}" name="{{ $modeKey }}" class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm">
+                                            <option value="percentage" @selected($mode === 'percentage')>Persen (%)</option>
+                                            <option value="fixed" @selected($mode === 'fixed')>Nominal (Rp)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-semibold text-slate-600" for="{{ $valueKey }}">Nilai per transaksi</label>
+                                        <input id="{{ $valueKey }}" name="{{ $valueKey }}" type="number" min="0" step="0.01"
+                                            value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}"
+                                            class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm">
+                                    </div>
+                                </div>
+                                <p class="mt-3 text-xs text-slate-500">Nominal tetap dikalikan jumlah transaksi. Isi 0 untuk menonaktifkan.</p>
+                                @error($modeKey)
+                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
+                                @error($valueKey)
+                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endforeach
                     </div>
                 </section>
 

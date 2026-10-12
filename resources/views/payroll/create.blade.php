@@ -20,7 +20,7 @@
         </div>
 
         <!-- FORM PERIODE -->
-        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-6">
             <h2 class="text-lg font-bold text-slate-800 mb-4">Periode Penggajian</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -28,7 +28,7 @@
                 <div>
                     <label class="text-xs font-bold text-slate-600 uppercase">Dari Tanggal</label>
                     <input type="date" id="dateFrom" value="{{ date('Y-m-01') }}"
-                        class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm mt-1" onchange="syncPeriod()">
+                        class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm mt-1">
                 </div>
 
                 <!-- Sampai Tanggal -->
@@ -75,18 +75,34 @@
                 </div>
             </div>
 
+            <div id="shareMethodSummary" class="hidden mb-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div class="text-xs font-semibold text-slate-500">Bagi Hasil Penjualan</div>
+                        <div id="salesMethodText" class="mt-1 text-sm font-semibold text-slate-800"></div>
+                        <div id="salesMethodCount" class="mt-0.5 text-xs text-slate-500"></div>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div class="text-xs font-semibold text-slate-500">Bagi Hasil Sewa</div>
+                        <div id="rentalMethodText" class="mt-1 text-sm font-semibold text-slate-800"></div>
+                        <div id="rentalMethodCount" class="mt-0.5 text-xs text-slate-500"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- TABLE -->
             <div class="bg-white rounded-xl shadow border overflow-x-auto mb-6">
-                <table class="w-full text-sm">
+                <table class="w-full min-w-[1050px] text-sm">
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
                             <th class="px-4 py-3">No Pegawai</th>
                             <th class="px-4 py-3">Nama</th>
                             <th class="px-4 py-3">Jabatan</th>
                             <th class="px-4 py-3 text-right">Gaji Pokok</th>
-                            <th class="px-4 py-3 text-right">Bonus Sales</th>
+                            <th class="px-4 py-3 text-right">Bonus Marketing</th>
+                            <th class="px-4 py-3 text-right">Bagi Hasil Penjualan</th>
+                            <th class="px-4 py-3 text-right">Bagi Hasil Sewa</th>
                             <th class="px-4 py-3 text-right">Jasa Teknisi</th>
-                            <th class="px-4 py-3 text-center">Transaksi</th>
                             <th class="px-4 py-3 text-right">Total</th>
                         </tr>
                     </thead>
@@ -117,10 +133,6 @@
     @push('scripts')
         <script>
             let payrollData = [];
-            let periodYear = null;
-            let periodMonth = null;
-            let periodLabel = '';
-
             // Tampilkan info periode saat halaman load
             syncPeriod();
 
@@ -153,8 +165,21 @@
                 }).format(angka);
             }
 
+            function shareMethodDescription(mode, value, basis) {
+                if (mode === 'fixed') {
+                    return `${formatRupiah(value)} per transaksi`;
+                }
+
+                const percentage = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
+                return `${percentage}% dari ${basis} per transaksi`;
+            }
+
             // Update info saat tanggal diubah
-            $('#dateFrom, #dateTo').on('change', syncPeriod);
+            $('#dateFrom, #dateTo').on('change', function () {
+                syncPeriod();
+                payrollData = [];
+                $('#calculationResult').addClass('hidden');
+            });
 
             async function calculatePayroll() {
                 const dateFrom = $('#dateFrom').val();
@@ -172,9 +197,10 @@
 
                 // Reset state sebelum hit ulang
                 payrollData = [];
+                $('#shareMethodSummary').addClass('hidden');
                 $('#payrollTableBody').html(`
                 <tr>
-                    <td colspan="8" class="px-4 py-6 text-center text-slate-400">
+                    <td colspan="9" class="px-4 py-6 text-center text-slate-400">
                         <i class="fa-solid fa-spinner fa-spin mr-2"></i> Menghitung...
                     </td>
                 </tr>
@@ -195,16 +221,12 @@
 
                     if (response.success) {
                         payrollData = response.data;
-                        periodYear = response.period_year;
-                        periodMonth = response.period_month;
-                        periodLabel = response.period_label;
-
                         displayPayrollData(response.data, response.total_payroll, response.period_label);
                     }
                 } catch (error) {
                     $('#payrollTableBody').html(`
                     <tr>
-                        <td colspan="8" class="px-4 py-6 text-center text-red-400">
+                        <td colspan="9" class="px-4 py-6 text-center text-red-400">
                             <i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal menghitung gaji. Coba lagi.
                         </td>
                     </tr>
@@ -216,6 +238,15 @@
             function displayPayrollData(data, total, label) {
                 let html = '';
 
+                if (data.length) {
+                    const method = data[0];
+                    $('#salesMethodText').text(shareMethodDescription(method.sales_share_mode, method.sales_share_value, 'profit'));
+                    $('#salesMethodCount').text(`${method.sales_transaction_count} transaksi lunas`);
+                    $('#rentalMethodText').text(shareMethodDescription(method.rental_share_mode, method.rental_share_value, 'nominal sewa'));
+                    $('#rentalMethodCount').text(`${method.rental_transaction_count} transaksi sewa`);
+                    $('#shareMethodSummary').removeClass('hidden');
+                }
+
                 data.forEach(emp => {
                     html += `
                                             <tr class="hover:bg-slate-50">
@@ -223,13 +254,10 @@
                                                 <td class="px-4 py-3 font-medium">${emp.full_name}</td>
                                                 <td class="px-4 py-3">${emp.position}</td>
                                                 <td class="px-4 py-3 text-right">${formatRupiah(emp.basic_salary)}</td>
-                                                <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.sales_bonus)}</td>
+                                                <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.sales_bonus)}<div class="text-xs text-slate-500">${emp.total_transactions} transaksi</div></td>
+                                                <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.sales_profit_share)}<div class="text-xs text-slate-500">${emp.sales_transaction_count} transaksi</div></td>
+                                                <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.rental_share)}<div class="text-xs text-slate-500">${emp.rental_transaction_count} transaksi</div></td>
                                                 <td class="px-4 py-3 text-right text-blue-600">${formatRupiah(emp.technician_fee)}</td>
-                                                <td class="px-4 py-3 text-center">
-                                                    <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">
-                                                        ${emp.total_transactions}
-                                                    </span>
-                                                </td>
                                                 <td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(emp.net_salary)}</td>
                                             </tr>
                                         `;
@@ -259,13 +287,10 @@
                         method: 'POST',
                         data: {
                             _token: $('meta[name="csrf-token"]').attr('content'),
-                            period_year: periodYear,
-                            period_month: periodMonth,
                             date_from: dateFrom,
                             date_to: dateTo,
                             release_date: releaseDate,
                             notes: notes,
-                            employees: payrollData,
                         }
                     });
 

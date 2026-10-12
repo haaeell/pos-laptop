@@ -22,6 +22,10 @@ class SettingController extends Controller
     {
         $request->validate([
             'referral_discount_amount' => 'nullable|numeric|min:0',
+            'payroll_sales_share_mode' => 'sometimes|required|in:percentage,fixed',
+            'payroll_sales_share_value' => 'required_with:payroll_sales_share_mode|numeric|min:0|max:' . ($request->input('payroll_sales_share_mode') === 'percentage' ? '100' : '9999999999999'),
+            'payroll_rental_share_mode' => 'sometimes|required|in:percentage,fixed',
+            'payroll_rental_share_value' => 'required_with:payroll_rental_share_mode|numeric|min:0|max:' . ($request->input('payroll_rental_share_mode') === 'percentage' ? '100' : '9999999999999'),
         ]);
 
         $data = $request->except('_token');

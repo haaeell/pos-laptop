@@ -121,6 +121,20 @@
             vertical-align: middle;
         }
 
+        .component-meta {
+            margin-top: 3px;
+            color: #6b7280;
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .component-method {
+            margin-top: 2px;
+            color: #475569;
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
         .deduction-row td {
             color: #DC2626;
             background-color: #fff5f5;
@@ -298,10 +312,15 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $componentNumber = 1;
+                    $salesRuleValue = rtrim(rtrim(number_format((float) $payroll->sales_share_value, 2, ',', '.'), '0'), ',');
+                    $rentalRuleValue = rtrim(rtrim(number_format((float) $payroll->rental_share_value, 2, ',', '.'), '0'), ',');
+                @endphp
 
                 <!-- Gaji Pokok -->
                 <tr>
-                    <td class="text-center">1</td>
+                    <td class="text-center">{{ $componentNumber }}</td>
                     <td class="text-left">
                         <strong>Gaji Pokok</strong>
                     </td>
@@ -312,12 +331,10 @@
 
                 @if ($detail->sales_bonus > 0)
                     <tr>
-                        <td class="text-center">2</td>
+                        <td class="text-center">{{ ++$componentNumber }}</td>
                         <td class="text-left">
-                            <strong>Bonus Penjualan</strong><br>
-                            <small style="color:#6b7280;">
-                                {{ $detail->total_transactions }} transaksi terbayar
-                            </small>
+                            <strong>Bonus Marketing</strong><br>
+                            <div class="component-meta">{{ $detail->total_transactions }} transaksi terbayar</div>
                         </td>
                         <td class="text-right" style="color:#059669; font-weight:700;">
                             Rp {{ number_format($detail->sales_bonus, 0, ',', '.') }}
@@ -325,9 +342,53 @@
                     </tr>
                 @endif
 
+                @if ($detail->sales_transaction_count > 0)
+                    <tr>
+                        <td class="text-center">{{ ++$componentNumber }}</td>
+                        <td class="text-left">
+                            <strong>Bagi Hasil Penjualan</strong>
+                            <div class="component-meta">{{ $detail->sales_transaction_count }} transaksi lunas</div>
+                            <div class="component-method">
+                                @if ($payroll->sales_share_mode === 'percentage')
+                                    Metode: {{ $salesRuleValue }}% dari profit per transaksi
+                                @elseif ($payroll->sales_share_mode === 'fixed')
+                                    Metode: Rp {{ $salesRuleValue }} per transaksi
+                                @else
+                                    Metode belum tercatat pada penggajian ini
+                                @endif
+                            </div>
+                        </td>
+                        <td class="text-right" style="color:#059669; font-weight:700;">
+                            Rp {{ number_format($detail->sales_profit_share, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @endif
+
+                @if ($detail->rental_transaction_count > 0)
+                    <tr>
+                        <td class="text-center">{{ ++$componentNumber }}</td>
+                        <td class="text-left">
+                            <strong>Bagi Hasil Sewa</strong>
+                            <div class="component-meta">{{ $detail->rental_transaction_count }} transaksi sewa</div>
+                            <div class="component-method">
+                                @if ($payroll->rental_share_mode === 'percentage')
+                                    Metode: {{ $rentalRuleValue }}% dari nominal sewa per transaksi
+                                @elseif ($payroll->rental_share_mode === 'fixed')
+                                    Metode: Rp {{ $rentalRuleValue }} per transaksi
+                                @else
+                                    Metode belum tercatat pada penggajian ini
+                                @endif
+                            </div>
+                        </td>
+                        <td class="text-right" style="color:#059669; font-weight:700;">
+                            Rp {{ number_format($detail->rental_share, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @endif
+
                 @if ($detail->technician_fee > 0)
                     <tr>
-                        <td class="text-center">{{ $detail->sales_bonus > 0 ? 3 : 2 }}</td>
+                        <td class="text-center">{{ ++$componentNumber }}</td>
                         <td class="text-left">
                             <strong>Jasa Teknisi</strong>
                         </td>
@@ -373,7 +434,7 @@
                     </td>
                     <td class="text-right">
                         Rp
-                        {{ number_format($detail->basic_salary + $detail->sales_bonus + $detail->technician_fee + $detail->other_allowance, 0, ',', '.') }}
+                        {{ number_format($detail->basic_salary + $detail->sales_bonus + $detail->sales_profit_share + $detail->rental_share + $detail->technician_fee + $detail->other_allowance, 0, ',', '.') }}
                     </td>
                 </tr>
                 @if ($detail->deduction > 0)
