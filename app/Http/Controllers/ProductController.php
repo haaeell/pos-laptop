@@ -13,6 +13,7 @@ use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
@@ -61,7 +62,6 @@ class ProductController extends Controller
         $isSuperAdmin = $request->user()->isSuperAdmin();
 
         $data = $request->validate([
-            'product_code' => 'required|unique:products,product_code',
             'name' => 'required',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
@@ -78,8 +78,6 @@ class ProductController extends Controller
             'weight' => 'nullable|integer|min:1',
             'is_active' => 'nullable|boolean',
         ], [
-            'product_code.required' => 'Kode produk harus diisi',
-            'product_code.unique' => 'Kode produk sudah digunakan',
             'name.required' => 'Nama produk harus diisi',
             'category_id.required' => 'Kategori harus diisi',
             'category_id.exists' => 'Kategori tidak ditemukan',
@@ -106,6 +104,7 @@ class ProductController extends Controller
         $data['stock'] = in_array($data['status'], ['available', 'bonus'])
             ? (int) ($data['stock'] ?? 0)
             : 0;
+        $data['product_code'] = $this->nextProductCode($data['category_id']);
         $data['weight'] = $data['weight'] ?? 1000;
         $data['is_active'] = $request->boolean('is_active', true);
 
@@ -180,7 +179,7 @@ class ProductController extends Controller
             'stock.min' => 'Stok minimal 0'
         ]);
 
-        $data = $request->except(['image', 'images']);
+        $data = $request->except(['image', 'images', 'product_code']);
         $data['stock'] = in_array($data['status'], ['available', 'bonus'])
             ? (int) ($data['stock'] ?? 0)
             : 0;
@@ -218,6 +217,20 @@ class ProductController extends Controller
         $product->update($data);
 
         return redirect()->back()->with('success', 'Produk berhasil diperbarui');
+    }
+
+    private function nextProductCode(int $categoryId): string
+    {
+        $category = Category::findOrFail($categoryId);
+        $prefix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', Str::ascii($category->name)), 0, 2));
+        $prefix = str_pad($prefix, 2, 'X');
+
+        $lastNumber = Product::where('product_code', 'like', "{$prefix}-%")
+            ->pluck('product_code')
+            ->map(fn (string $code) => (int) substr($code, strlen($prefix) + 1))
+            ->max() ?? 0;
+
+        return sprintf('%s-%04d', $prefix, $lastNumber + 1);
     }
 
     public function destroy($id)

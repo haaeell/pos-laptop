@@ -347,9 +347,9 @@
                         <div class="relative">
                             <i
                                 class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                            <input type="text" name="product_code" id="productCode"
+                            <input type="text" name="product_code" id="productCode" readonly
                                 class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition"
-                                placeholder="PRD-001" required>
+                                placeholder="Otomatis setelah disimpan">
                         </div>
                     </div>
 
@@ -842,6 +842,7 @@
                     deletedImageIds = [];
                     document.getElementById('deletedImages').value = '';
                     document.getElementById('productForm').reset();
+                    document.getElementById('productCode').value = '';
                     document.getElementById('status').value = 'available';
                     document.getElementById('productCondition').value = 'new';
                     document.getElementById('productIsActive').checked = true;
