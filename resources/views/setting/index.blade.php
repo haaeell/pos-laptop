@@ -886,8 +886,14 @@
             const percentage = document.getElementById(`payroll_${type}_share_value_percentage`);
             const fixed = document.getElementById(`payroll_${type}_share_value_fixed`);
             const fixedWrapper = document.getElementById(`payroll_${type}_share_value_fixed_wrapper`);
+            const parseRupiah = input => {
+                const normalized = input.toLowerCase().replace(/\s/g, '');
+                const multiplier = /(?:rb|ribu)$/.test(normalized) ? 1000
+                    : /(?:jt|juta)$/.test(normalized) ? 1000000 : 1;
+                return (Number(normalized.replace(/[^\d]/g, '')) || 0) * multiplier;
+            };
 
-            const sync = () => {
+            const sync = (finalize = false) => {
                 const isFixed = mode.value === 'fixed';
                 percentage.classList.toggle('hidden', isFixed);
                 fixedWrapper.classList.toggle('hidden', !isFixed);
@@ -896,8 +902,10 @@
                 percentage.name = isFixed ? '' : value.id;
                 fixed.name = isFixed ? value.id : '';
                 if (isFixed) {
-                    const raw = fixed.value.replace(/\D/g, '');
-                    value.value = raw || 0;
+                    // Keep `50r` while typing so the next `b` becomes `50rb`.
+                    if (!finalize && /\d+r$/i.test(fixed.value.trim())) return;
+                    const raw = parseRupiah(fixed.value);
+                    value.value = raw;
                     fixed.value = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
                 } else {
                     value.value = percentage.value || 0;
@@ -907,6 +915,7 @@
             mode.addEventListener('change', sync);
             percentage.addEventListener('input', () => value.value = percentage.value || 0);
             fixed.addEventListener('input', sync);
+            fixed.addEventListener('blur', () => sync(true));
             sync();
         });
 
