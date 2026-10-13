@@ -504,7 +504,7 @@
                                                 value="{{ number_format((float) old($valueKey, $settings[$valueKey] ?? 0), 0, ',', '.') }}"
                                                 class="w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 py-2.5 text-sm">
                                         </div>
-                                        <input id="{{ $valueKey }}" type="hidden" value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}">
+                                        <input id="{{ $valueKey }}" name="{{ $valueKey }}" type="hidden" value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}">
                                     </div>
                                 </div>
                                 <p class="mt-3 text-xs text-slate-500">Nominal tetap dikalikan jumlah transaksi. Isi 0 untuk menonaktifkan.</p>
@@ -899,14 +899,12 @@
                 fixedWrapper.classList.toggle('hidden', !isFixed);
                 percentage.disabled = isFixed;
                 fixed.disabled = !isFixed;
-                percentage.name = isFixed ? '' : value.id;
-                fixed.name = isFixed ? value.id : '';
                 if (isFixed) {
                     // Keep `50r` while typing so the next `b` becomes `50rb`.
                     if (!finalize && /\d+r$/i.test(fixed.value.trim())) return;
                     const raw = parseRupiah(fixed.value);
                     value.value = raw;
-                    fixed.value = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
+                    fixed.value = fixed.value.trim() === '' ? '' : new Intl.NumberFormat('id-ID').format(raw);
                 } else {
                     value.value = percentage.value || 0;
                 }
