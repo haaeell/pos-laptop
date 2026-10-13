@@ -495,12 +495,12 @@
                                     </div>
                                      <div>
                                         <label class="text-xs font-semibold text-slate-600" for="{{ $valueKey }}">Nilai per transaksi</label>
-                                        <input id="{{ $valueKey }}_percentage" type="number" min="0" max="100" step="0.01"
+                                        <input id="{{ $valueKey }}_percentage" type="number" min="0" max="100" step="0.01" required
                                             value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}"
                                             class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm">
                                         <div id="{{ $valueKey }}_fixed_wrapper" class="relative mt-1 hidden">
                                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">Rp</span>
-                                            <input id="{{ $valueKey }}_fixed" type="text" inputmode="numeric"
+                                            <input id="{{ $valueKey }}_fixed" type="text" inputmode="numeric" required
                                                 value="{{ number_format((float) old($valueKey, $settings[$valueKey] ?? 0), 0, ',', '.') }}"
                                                 class="w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 py-2.5 text-sm">
                                         </div>
@@ -891,8 +891,10 @@
                 const isFixed = mode.value === 'fixed';
                 percentage.classList.toggle('hidden', isFixed);
                 fixedWrapper.classList.toggle('hidden', !isFixed);
+                percentage.disabled = isFixed;
+                fixed.disabled = !isFixed;
                 percentage.name = isFixed ? '' : value.id;
-                value.name = isFixed ? value.id : '';
+                fixed.name = isFixed ? value.id : '';
                 if (isFixed) {
                     const raw = fixed.value.replace(/\D/g, '');
                     value.value = raw || 0;
