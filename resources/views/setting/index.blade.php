@@ -493,11 +493,18 @@
                                             <option value="fixed" @selected($mode === 'fixed')>Nominal (Rp)</option>
                                         </select>
                                     </div>
-                                    <div>
+                                     <div>
                                         <label class="text-xs font-semibold text-slate-600" for="{{ $valueKey }}">Nilai per transaksi</label>
-                                        <input id="{{ $valueKey }}" name="{{ $valueKey }}" type="number" min="0" step="0.01"
+                                        <input id="{{ $valueKey }}_percentage" type="number" min="0" max="100" step="0.01"
                                             value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}"
                                             class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm">
+                                        <div id="{{ $valueKey }}_fixed_wrapper" class="relative mt-1 hidden">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">Rp</span>
+                                            <input id="{{ $valueKey }}_fixed" type="text" inputmode="numeric"
+                                                value="{{ number_format((float) old($valueKey, $settings[$valueKey] ?? 0), 0, ',', '.') }}"
+                                                class="w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 py-2.5 text-sm">
+                                        </div>
+                                        <input id="{{ $valueKey }}" type="hidden" value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}">
                                     </div>
                                 </div>
                                 <p class="mt-3 text-xs text-slate-500">Nominal tetap dikalikan jumlah transaksi. Isi 0 untuk menonaktifkan.</p>
@@ -872,6 +879,34 @@
                 this.value = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
             });
         }
+
+        ['sales', 'rental'].forEach(type => {
+            const mode = document.getElementById(`payroll_${type}_share_mode`);
+            const value = document.getElementById(`payroll_${type}_share_value`);
+            const percentage = document.getElementById(`payroll_${type}_share_value_percentage`);
+            const fixed = document.getElementById(`payroll_${type}_share_value_fixed`);
+            const fixedWrapper = document.getElementById(`payroll_${type}_share_value_fixed_wrapper`);
+
+            const sync = () => {
+                const isFixed = mode.value === 'fixed';
+                percentage.classList.toggle('hidden', isFixed);
+                fixedWrapper.classList.toggle('hidden', !isFixed);
+                percentage.name = isFixed ? '' : value.id;
+                value.name = isFixed ? value.id : '';
+                if (isFixed) {
+                    const raw = fixed.value.replace(/\D/g, '');
+                    value.value = raw || 0;
+                    fixed.value = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
+                } else {
+                    value.value = percentage.value || 0;
+                }
+            };
+
+            mode.addEventListener('change', sync);
+            percentage.addEventListener('input', () => value.value = percentage.value || 0);
+            fixed.addEventListener('input', sync);
+            sync();
+        });
 
         initBiteshipMap();
     </script>
