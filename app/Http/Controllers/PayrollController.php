@@ -157,7 +157,12 @@ class PayrollController extends Controller
                 [$dateFrom, $dateTo]
             )
             ->get(['sales_person_id', 'fee_sales', 'benefit']);
-        $rentals = Rental::whereBetween('created_at', [$from, $to])->get(['rental_total']);
+        // ponytail: rental_dates disimpan sebagai JSON; filter di PHP sampai volume sewa memerlukan indeks tanggal pertama.
+        $rentals = Rental::get(['rental_dates', 'rental_total'])->filter(
+            fn (Rental $rental) => $rental->rental_dates
+                && min($rental->rental_dates) >= $dateFrom
+                && min($rental->rental_dates) <= $dateTo
+        );
 
         $salesShare = $this->transactionShare(
             $sales, 'benefit', $salesMode, $salesValue
@@ -169,16 +174,19 @@ class PayrollController extends Controller
 
         $calculations = [];
         foreach (Employee::where('is_active', true)->get() as $employee) {
+            $isOwner = strtolower(trim($employee->position)) === 'pemilik';
             $marketingSales = $employee->sales_person_id
                 ? $salesByPerson->get($employee->sales_person_id, collect())
                 : collect();
             $salesBonus = $marketingSales->sum('fee_sales');
-            $technicianFee = ServiceTechnician::where('employee_id', $employee->id)
+            $technicianFee = $isOwner ? ServiceTechnician::where('employee_id', $employee->id)
                 ->whereHas('service', function ($query) use ($from, $to) {
                     $query->whereBetween('created_at', [$from, $to])
                         ->whereIn('status', ['done', 'taken']);
                 })
-                ->sum('fee_share');
+                ->sum('fee_share') : 0;
+            $employeeSalesShare = $isOwner ? $salesShare : 0;
+            $employeeRentalShare = $isOwner ? $rentalShare : 0;
 
             $calculations[] = [
                 'employee_id' => $employee->id,
@@ -187,16 +195,16 @@ class PayrollController extends Controller
                 'position' => $employee->position,
                 'basic_salary' => $employee->basic_salary,
                 'sales_bonus' => $salesBonus,
-                'sales_profit_share' => $salesShare,
-                'rental_share' => $rentalShare,
+                'sales_profit_share' => $employeeSalesShare,
+                'rental_share' => $employeeRentalShare,
                 'sales_share_mode' => $salesMode,
                 'sales_share_value' => $salesValue,
                 'rental_share_mode' => $rentalMode,
                 'rental_share_value' => $rentalValue,
-                'sales_transaction_count' => $sales->count(),
-                'rental_transaction_count' => $rentals->count(),
+                'sales_transaction_count' => $isOwner ? $sales->count() : 0,
+                'rental_transaction_count' => $isOwner ? $rentals->count() : 0,
                 'technician_fee' => $technicianFee,
-                'net_salary' => round((float) $employee->basic_salary + $salesBonus + $salesShare + $rentalShare + $technicianFee, 2),
+                'net_salary' => round((float) $employee->basic_salary + $salesBonus + $employeeSalesShare + $employeeRentalShare + $technicianFee, 2),
                 'total_transactions' => $marketingSales->count(),
             ];
         }

@@ -462,13 +462,13 @@
                     <div class="settings-card-head">
                         <div>
                             <h3>Bagi Hasil Penggajian</h3>
-                            <p>Atur pembagian per transaksi untuk setiap karyawan aktif.</p>
+                            <p>Atur bagi hasil per transaksi untuk karyawan aktif dengan jabatan Pemilik.</p>
                         </div>
                     </div>
                     <div class="settings-card-body settings-grid-2">
                         @foreach ([
                             'sales' => ['label' => 'Penjualan', 'basis' => 'Profit transaksi lunas', 'icon' => 'fa-chart-line'],
-                            'rental' => ['label' => 'Sewa', 'basis' => 'Nominal sewa saat dibuat, tanpa denda', 'icon' => 'fa-laptop'],
+                            'rental' => ['label' => 'Sewa', 'basis' => 'Nominal sewa pada tanggal sewa pertama, tanpa denda', 'icon' => 'fa-laptop'],
                         ] as $type => $share)
                             @php
                                 $modeKey = "payroll_{$type}_share_mode";
