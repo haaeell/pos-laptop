@@ -235,6 +235,11 @@
                         <i class="fa-solid fa-chart-line w-5"></i>
                         Laporan Penjualan
                     </a>
+                    <a href="{{ route('books.index') }}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition {{ isActive('books*') }}">
+                        <i class="fa-solid fa-book w-5"></i>
+                        Tutup / Buka Buku
+                    </a>
 
                     {{-- ===================== PENGATURAN — ADMIN ONLY ===================== --}}
                     <div class="mt-6 pt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">

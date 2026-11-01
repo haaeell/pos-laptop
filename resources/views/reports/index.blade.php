@@ -27,12 +27,49 @@
             }
         </style>
 
-        <h1 class="text-2xl font-semibold text-slate-800">Laporan Keuangan</h1>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <h1 class="flex items-center gap-2 text-2xl font-semibold text-slate-800">
+                    <i class="fa-solid fa-chart-line text-indigo-600" aria-hidden="true"></i> Laporan Keuangan
+                </h1>
+                <p class="mt-1 text-sm text-slate-500">Ringkasan transaksi dan saldo sesuai rentang tanggal yang dipilih.</p>
+            </div>
+            <a href="{{ route('books.index') }}"
+                class="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <i class="fa-solid fa-book-open" aria-hidden="true"></i> Tutup / Buka Buku &amp; Arsip
+            </a>
+        </div>
+
+        @if ($book)
+            <div class="flex flex-col gap-4 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                <div class="flex items-start gap-3">
+                    <span class="rounded-xl bg-white p-2.5 text-indigo-600"><i class="fa-solid fa-book-open" aria-hidden="true"></i></span>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-indigo-700">Periode buku</p>
+                            <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">{{ $book->ends_at ? 'Ditutup' : 'Aktif' }}</span>
+                        </div>
+                        <p class="mt-1 text-sm font-semibold text-slate-800">{{ $book->starts_at->format('d/m/Y') }} – {{ $book->ends_at?->format('d/m/Y') ?? 'Sekarang' }}</p>
+                    </div>
+                </div>
+                @if ((float) $book->opening_balance > 0)
+                    <div class="sm:max-w-xs sm:text-right">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Saldo awal tercatat</p>
+                        <p class="mt-1 text-lg font-bold text-slate-800">Rp {{ number_format($book->opening_balance, 0, ',', '.') }}</p>
+                        <p class="mt-1 text-xs leading-relaxed text-slate-500">
+                            Nilai tersimpan pada buku ini, bukan hasil penjualan.
+                            {{ $from->isSameDay($book->starts_at) ? 'Masuk perhitungan saldo pada rentang ini.' : 'Tidak masuk perhitungan saldo pada rentang ini.' }}
+                        </p>
+                    </div>
+                @endif
+            </div>
+        @endif
 
         {{-- FILTER PANEL --}}
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-8">
             <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                 <form class="flex flex-wrap items-end gap-3">
+                    @if ($book) <input type="hidden" name="book" value="{{ $book->id }}"> @endif
                     <div class="space-y-1.5">
                         <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Dari
                             Tanggal</label>
@@ -83,11 +120,11 @@
                 </form>
 
                 <div class="flex items-center gap-2">
-                    <a href="/reports/pdf?from={{ $from->format('Y-m-d') }}&to={{ $to->format('Y-m-d') }}" target="_blank"
+                    <a href="/reports/pdf?from={{ $from->format('Y-m-d') }}&to={{ $to->format('Y-m-d') }}&book={{ $book?->id }}" target="_blank"
                         class="flex-1 lg:flex-none h-[40px] px-4 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
                         <i class="fa-solid fa-file-pdf"></i> PDF
                     </a>
-                    <a href="/reports/excel?from={{ $from->format('Y-m-d') }}&to={{ $to->format('Y-m-d') }}"
+                    <a href="/reports/excel?from={{ $from->format('Y-m-d') }}&to={{ $to->format('Y-m-d') }}&book={{ $book?->id }}"
                         class="flex-1 lg:flex-none h-[40px] px-4 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-100 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
                         <i class="fa-solid fa-file-excel"></i> Excel
                     </a>
@@ -415,6 +452,8 @@
                 @php
                     $rows = [
                         ['label' => 'Total Penjualan', 'value' => $totalSales - $totalRentalSales, 'plus' => true],
+                        ...(($openingBalance ?? 0) > 0 ? [['label' => 'Saldo Awal Buku', 'value' => $openingBalance, 'plus' => true]] : []),
+                        ['label' => 'Pembayaran Piutang Buku Lama', 'value' => $priorReceipts ?? 0, 'plus' => true],
                         ['label' => 'Sewa Laptop', 'value' => $totalRentalSales, 'plus' => true],
                         ['label' => 'Penambahan Modal', 'value' => $totalPenambahanModal, 'plus' => true],
                         ['label' => 'Total Services', 'value' => $totalServices, 'plus' => true],

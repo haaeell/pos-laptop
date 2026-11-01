@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Exports\SalesExport;
 use App\Models\Expense;
+use App\Models\BookPeriod;
 use App\Models\Modal;
 use App\Models\ModalCicilan;
 use App\Models\Order;
 use App\Models\Payroll;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SalePayment;
 use App\Models\SaleBonus;
 use App\Models\Rental;
 use App\Models\Service;
@@ -30,8 +32,19 @@ class ReportController extends Controller
 
     public function index(Request $request)
     {
-        $from = $request->from ? Carbon::parse($request->from)->startOfDay() : Carbon::now()->startOfMonth();
+        $book = $request->filled('book') ? BookPeriod::findOrFail($request->integer('book')) : BookPeriod::active();
+        if ($book?->snapshot) return redirect()->route('books.archive', $book);
+        if (!$book && BookPeriod::exists()) return redirect()->route('books.index');
+        $from = $request->from ? Carbon::parse($request->from)->startOfDay() : ($book ? $book->starts_at->copy()->startOfDay() : Carbon::now()->startOfMonth());
         $to   = $request->to ? Carbon::parse($request->to)->endOfDay() : Carbon::now();
+        if ($book) {
+            $from = $from->max($book->starts_at->copy()->startOfDay());
+            if (!$request->filled('to')) $to = $to->max($book->starts_at->copy()->endOfDay());
+            if ($book->ends_at) {
+                $to = $to->min($book->ends_at->copy()->endOfDay());
+            }
+        }
+        abort_if($from->gt($to), 422, 'Rentang tanggal di luar periode buku.');
         $trend = in_array($request->input('trend'), ['daily', 'monthly', 'yearly'], true)
             ? $request->input('trend')
             : 'daily';
@@ -47,7 +60,12 @@ class ReportController extends Controller
         $metrics = $this->getMetrics($from, $to, $sales, $onlineOrders, $rentals);
         $chartData = $this->chartData($from, $to, $transactions, $metrics, $trend);
 
-        return view('reports.index', array_merge(compact('sales', 'onlineOrders', 'transactions', 'chartData', 'from', 'to', 'trend'), $metrics));
+        $metrics['openingBalance'] = $book && $from->isSameDay($book->starts_at) ? (float) $book->opening_balance : 0;
+        $metrics['priorReceipts'] = $book ? SalePayment::whereBetween('paid_at', [$from->toDateString(), $to->toDateString()])
+            ->whereHas('sale', fn ($query) => $query->where('created_at', '<', $book->starts_at))->sum('amount') : 0;
+        $metrics['totalSaldo'] += $metrics['priorReceipts'];
+        $metrics['totalSaldo'] += $metrics['openingBalance'];
+        return view('reports.index', array_merge(compact('sales', 'onlineOrders', 'transactions', 'chartData', 'from', 'to', 'trend', 'book'), $metrics));
     }
 
     private function getMetrics(Carbon $from, Carbon $to, $sales, $onlineOrders = null, $rentals = null): array
@@ -276,8 +294,16 @@ class ReportController extends Controller
 
     public function pdf(Request $request)
     {
+        $selected = $request->filled('book') ? BookPeriod::findOrFail($request->integer('book')) : BookPeriod::active();
+        abort_if($selected?->snapshot || (!$selected && BookPeriod::exists()), 422, 'Gunakan arsip untuk buku tertutup.');
         $from = Carbon::parse($request->from)->startOfDay();
         $to   = Carbon::parse($request->to)->endOfDay();
+        $book = $request->filled('book') ? BookPeriod::findOrFail($request->integer('book')) : BookPeriod::active();
+        if ($book) {
+            $from = $from->max($book->starts_at->copy()->startOfDay());
+            if ($book->ends_at) $to = $to->min($book->ends_at->copy()->endOfDay());
+        }
+        abort_if($from->gt($to), 422);
 
         $sales = Sale::whereBetween('created_at', [$from, $to])
             ->orderBy('created_at')
@@ -287,6 +313,11 @@ class ReportController extends Controller
         $rentals = Rental::whereBetween('created_at', [$from, $to])->get();
         $transactions = $this->transactionRows($sales, $onlineOrders, $rentals, $to)->sortBy('date')->values();
         $metrics = $this->getMetrics($from, $to, $sales, $onlineOrders, $rentals);
+        $metrics['openingBalance'] = $book && $from->isSameDay($book->starts_at) ? (float) $book->opening_balance : 0;
+        $metrics['priorReceipts'] = $book ? SalePayment::whereBetween('paid_at', [$from->toDateString(), $to->toDateString()])
+            ->whereHas('sale', fn ($query) => $query->where('created_at', '<', $book->starts_at))->sum('amount') : 0;
+        $metrics['totalSaldo'] += $metrics['priorReceipts'];
+        $metrics['totalSaldo'] += $metrics['openingBalance'];
 
         $pdf = Pdf::loadView('reports.pdf', array_merge(compact('sales', 'onlineOrders', 'transactions', 'from', 'to'), $metrics))->setPaper('a4', 'portrait');
 
@@ -295,8 +326,16 @@ class ReportController extends Controller
 
     public function excel(Request $request)
     {
+        $selected = $request->filled('book') ? BookPeriod::findOrFail($request->integer('book')) : BookPeriod::active();
+        abort_if($selected?->snapshot || (!$selected && BookPeriod::exists()), 422, 'Gunakan arsip untuk buku tertutup.');
         $from     = Carbon::parse($request->from)->startOfDay();
         $to       = Carbon::parse($request->to)->endOfDay();
+        $book = $request->filled('book') ? BookPeriod::findOrFail($request->integer('book')) : BookPeriod::active();
+        if ($book) {
+            $from = $from->max($book->starts_at->copy()->startOfDay());
+            if ($book->ends_at) $to = $to->min($book->ends_at->copy()->endOfDay());
+        }
+        abort_if($from->gt($to), 422);
         $filename = 'laporan-penjualan_' . $from->format('d-m-Y') . '_sd_' . $to->format('d-m-Y') . '.xlsx';
 
         return Excel::download(new SalesExport($from, $to), $filename);

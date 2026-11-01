@@ -202,6 +202,12 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::get('/books', [\App\Http\Controllers\BookController::class, 'index'])->name('books.index');
+    Route::post('/books/close', [\App\Http\Controllers\BookController::class, 'close'])->name('books.close');
+    Route::post('/books/open', [\App\Http\Controllers\BookController::class, 'open'])->name('books.open');
+    Route::post('/books/{book}/cancel', [\App\Http\Controllers\BookController::class, 'cancel'])->name('books.cancel');
+    Route::get('/books/{book}/archive', [\App\Http\Controllers\BookController::class, 'archive'])->name('books.archive');
+    Route::get('/books/{book}/archive/pdf', [\App\Http\Controllers\BookController::class, 'archivePdf'])->name('books.archive.pdf');
 
     // Kategori
     Route::prefix('categories')->controller(CategoryController::class)->group(function () {

@@ -213,6 +213,10 @@
                 <td class="label">Total Penjualan</td>
                 <td class="value">Rp {{ number_format($totalSales, 0, ',', '.') }}</td>
             </tr>
+            @if (($openingBalance ?? 0) > 0)
+                <tr><td class="label">Saldo Awal Buku</td><td class="value">Rp {{ number_format($openingBalance, 0, ',', '.') }}</td></tr>
+            @endif
+            <tr><td class="label">Pembayaran Piutang Buku Lama</td><td class="value">Rp {{ number_format($priorReceipts ?? 0, 0, ',', '.') }}</td></tr>
             <tr>
                 <td class="label">Bonus / (Loss)</td>
                 <td class="value">Rp {{ number_format($bonusLoss, 0, ',', '.') }}</td>
