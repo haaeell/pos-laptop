@@ -25,6 +25,42 @@ class PayrollController extends Controller
             ->orderBy('period_month', 'desc')
             ->get();
 
+        $payrolls->each(function (Payroll $payroll) {
+            $employeeIds = $payroll->details->pluck('employee_id');
+            $techniciansByEmployee = collect();
+
+            if ($payroll->date_from && $payroll->date_to && $employeeIds->isNotEmpty()) {
+                $from = $payroll->date_from.' 00:00:00';
+                $to = $payroll->date_to.' 23:59:59';
+                $techniciansByEmployee = ServiceTechnician::with([
+                    'service:id,service_number,done_at,customer_name,device_brand,device_type,status',
+                ])
+                    ->whereIn('employee_id', $employeeIds)
+                    ->whereHas('service', function ($query) use ($from, $to) {
+                        $query->whereBetween('done_at', [$from, $to])
+                            ->whereIn('status', ['done', 'taken']);
+                    })
+                    ->get()
+                    ->groupBy('employee_id');
+            }
+
+            foreach ($payroll->details as $detail) {
+                $detail->setAttribute(
+                    'technician_fee_details',
+                    $techniciansByEmployee->get($detail->employee_id, collect())
+                        ->map(fn (ServiceTechnician $technician) => [
+                            'service_number' => $technician->service->service_number,
+                            'done_at' => $technician->service->done_at->toDateString(),
+                            'customer_name' => $technician->service->customer_name,
+                            'device' => trim($technician->service->device_brand.' '.$technician->service->device_type),
+                            'fee_share' => (float) $technician->fee_share,
+                        ])
+                        ->values()
+                        ->all()
+                );
+            }
+        });
+
         return view('payroll.index', compact('payrolls'));
     }
 
@@ -171,6 +207,15 @@ class PayrollController extends Controller
             $rentals, 'rental_total', $rentalMode, $rentalValue
         );
         $salesByPerson = $sales->groupBy('sales_person_id');
+        $technicianFeesByEmployee = ServiceTechnician::with([
+            'service:id,service_number,done_at,customer_name,device_brand,device_type,status',
+        ])
+            ->whereHas('service', function ($query) use ($from, $to) {
+                $query->whereBetween('done_at', [$from, $to])
+                    ->whereIn('status', ['done', 'taken']);
+            })
+            ->get()
+            ->groupBy('employee_id');
 
         $calculations = [];
         foreach (Employee::where('is_active', true)->get() as $employee) {
@@ -179,12 +224,18 @@ class PayrollController extends Controller
                 ? $salesByPerson->get($employee->sales_person_id, collect())
                 : collect();
             $salesBonus = $marketingSales->sum('fee_sales');
-            $technicianFee = $isOwner ? ServiceTechnician::where('employee_id', $employee->id)
-                ->whereHas('service', function ($query) use ($from, $to) {
-                    $query->whereBetween('created_at', [$from, $to])
-                        ->whereIn('status', ['done', 'taken']);
-                })
-                ->sum('fee_share') : 0;
+            $technicianFeeDetails = $technicianFeesByEmployee
+                ->get($employee->id, collect())
+                ->map(fn (ServiceTechnician $technician) => [
+                    'service_number' => $technician->service->service_number,
+                    'done_at' => $technician->service->done_at->toDateString(),
+                    'customer_name' => $technician->service->customer_name,
+                    'device' => trim($technician->service->device_brand.' '.$technician->service->device_type),
+                    'fee_share' => (float) $technician->fee_share,
+                ])
+                ->values()
+                ->all();
+            $technicianFee = round((float) collect($technicianFeeDetails)->sum('fee_share'), 2);
             $employeeSalesShare = $isOwner ? $salesShare : 0;
             $employeeRentalShare = $isOwner ? $rentalShare : 0;
 
@@ -204,6 +255,7 @@ class PayrollController extends Controller
                 'sales_transaction_count' => $isOwner ? $sales->count() : 0,
                 'rental_transaction_count' => $isOwner ? $rentals->count() : 0,
                 'technician_fee' => $technicianFee,
+                'technician_fee_details' => $technicianFeeDetails,
                 'net_salary' => round((float) $employee->basic_salary + $salesBonus + $employeeSalesShare + $employeeRentalShare + $technicianFee, 2),
                 'total_transactions' => $marketingSales->count(),
             ];

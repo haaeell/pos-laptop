@@ -241,6 +241,37 @@
         </div>
     </div>
 
+    <div id="serviceDetailModal" class="fixed inset-0 z-[60] hidden overflow-y-auto bg-black/40 p-4 backdrop-blur-sm">
+        <div class="flex min-h-full items-center justify-center">
+            <div class="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
+                <div class="flex items-center justify-between border-b px-6 py-4">
+                    <div>
+                        <h2 id="serviceDetailTitle" class="font-bold text-slate-800">Rincian Jasa Teknisi</h2>
+                        <p class="text-xs text-slate-500">Informasi service yang dihitung pada periode penggajian</p>
+                    </div>
+                    <button type="button" onclick="closeServiceDetailModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="max-h-[65vh] overflow-y-auto p-6">
+                    <div class="overflow-x-auto rounded-xl border">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-100 text-slate-700">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">No. Service</th>
+                                    <th class="px-4 py-3 text-left">Selesai</th>
+                                    <th class="px-4 py-3 text-left">Pelanggan / Perangkat</th>
+                                    <th class="px-4 py-3 text-right">Jasa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="serviceDetailBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
         <script>
             $(document).ready(function () {
@@ -273,6 +304,35 @@
                     currency: 'IDR',
                     minimumFractionDigits: 0
                 }).format(angka);
+            }
+
+            window.openServiceDetailModal = function (payrollId, employeeId) {
+                const payroll = payrolls.find(item => item.id === payrollId);
+                const detail = payroll?.details.find(item => item.employee_id === employeeId);
+                if (!detail) return;
+
+                $('#serviceDetailTitle').text(`Rincian Jasa Service - ${detail.employee.full_name}`);
+                const body = $('#serviceDetailBody').empty();
+                const details = detail.technician_fee_details || [];
+
+                if (!details.length) {
+                    body.append('<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Rincian service tidak tersedia.</td></tr>');
+                } else {
+                    details.forEach(service => {
+                        const row = $('<tr class="border-t"></tr>');
+                        row.append($('<td class="px-4 py-3 font-medium"></td>').text(service.service_number));
+                        row.append($('<td class="px-4 py-3"></td>').text(service.done_at));
+                        row.append($('<td class="px-4 py-3"></td>').text([service.customer_name, service.device].filter(Boolean).join(' · ') || '-'));
+                        row.append($('<td class="px-4 py-3 text-right whitespace-nowrap"></td>').text(formatRupiah(service.fee_share)));
+                        body.append(row);
+                    });
+                }
+
+                $('#serviceDetailModal').removeClass('hidden');
+            }
+
+            window.closeServiceDetailModal = function () {
+                $('#serviceDetailModal').addClass('hidden');
             }
 
             function shareMethodDescription(mode, value, basis) {
@@ -316,7 +376,10 @@
                                                                             <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_bonus)}<div class="text-xs text-slate-500">${detail.total_transactions} transaksi</div></td>
                                                                             <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_profit_share)}<div class="text-xs text-slate-500">${detail.sales_transaction_count} transaksi</div></td>
                                                                             <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.rental_share)}<div class="text-xs text-slate-500">${detail.rental_transaction_count} transaksi</div></td>
-                                                                            <td class="px-4 py-3 text-right text-blue-600">${formatRupiah(detail.technician_fee)}</td>
+                                                                            <td class="px-4 py-3 text-right text-blue-600">
+                                                                                ${formatRupiah(detail.technician_fee)}
+                                                                                ${detail.technician_fee_details?.length ? `<div><button type="button" onclick="openServiceDetailModal(${payroll.id}, ${detail.employee_id})" class="mt-1 text-xs text-indigo-600 hover:text-indigo-800">${detail.technician_fee_details.length} service · lihat rincian</button></div>` : ''}
+                                                                            </td>
                                                                             <td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(detail.net_salary)}</td>
                                                                             <td class="px-4 py-3 text-center">
                                                                                 <a href="/payrolls/${payroll.id}/slip/${detail.employee_id}"
