@@ -24,6 +24,19 @@ class PayrollController extends Controller
             ->orderBy('period_year', 'desc')
             ->orderBy('period_month', 'desc')
             ->get();
+        $rentals = Rental::get(['rental_dates', 'total_qty']);
+
+        foreach ($payrolls as $payroll) {
+            $payroll->setAttribute(
+                'rental_unit_count',
+                $payroll->date_from && $payroll->date_to
+                    ? $rentals->filter(fn (Rental $rental) => $rental->rental_dates
+                        && min($rental->rental_dates) >= $payroll->date_from
+                        && min($rental->rental_dates) <= $payroll->date_to)
+                        ->sum('total_qty')
+                    : null
+            );
+        }
 
         $payrolls->each(function (Payroll $payroll) {
             $employeeIds = $payroll->details->pluck('employee_id');
@@ -194,18 +207,17 @@ class PayrollController extends Controller
             )
             ->get(['sales_person_id', 'fee_sales', 'benefit']);
         // ponytail: rental_dates disimpan sebagai JSON; filter di PHP sampai volume sewa memerlukan indeks tanggal pertama.
-        $rentals = Rental::get(['rental_dates', 'rental_total'])->filter(
+        $rentals = Rental::get(['rental_dates', 'rental_total', 'total_qty'])->filter(
             fn (Rental $rental) => $rental->rental_dates
                 && min($rental->rental_dates) >= $dateFrom
                 && min($rental->rental_dates) <= $dateTo
         );
+        $rentalUnitCount = (int) $rentals->sum('total_qty');
 
         $salesShare = $this->transactionShare(
             $sales, 'benefit', $salesMode, $salesValue
         );
-        $rentalShare = $this->transactionShare(
-            $rentals, 'rental_total', $rentalMode, $rentalValue
-        );
+        $rentalShare = $this->rentalShare($rentals, $rentalMode, $rentalValue);
         $salesByPerson = $sales->groupBy('sales_person_id');
         $technicianFeesByEmployee = ServiceTechnician::with([
             'service:id,service_number,done_at,customer_name,device_brand,device_type,status',
@@ -253,7 +265,7 @@ class PayrollController extends Controller
                 'rental_share_mode' => $rentalMode,
                 'rental_share_value' => $rentalValue,
                 'sales_transaction_count' => $isOwner ? $sales->count() : 0,
-                'rental_transaction_count' => $isOwner ? $rentals->count() : 0,
+                'rental_transaction_count' => $isOwner ? $rentalUnitCount : 0,
                 'technician_fee' => $technicianFee,
                 'technician_fee_details' => $technicianFeeDetails,
                 'net_salary' => round((float) $employee->basic_salary + $salesBonus + $employeeSalesShare + $employeeRentalShare + $technicianFee, 2),
@@ -276,6 +288,27 @@ class PayrollController extends Controller
         return round($transactions->sum(
             fn ($transaction) => round(max(0, (float) $transaction->{$amountField}) * $percentage / 100, 2)
         ), 2);
+    }
+
+    private function rentalShare(Collection $rentals, string $mode, float $value): float
+    {
+        $value = max(0, $value);
+        $percentage = min($value, 100);
+
+        return round($rentals->sum(function (Rental $rental) use ($mode, $value, $percentage) {
+            $quantity = max(0, (int) $rental->total_qty);
+            if ($quantity === 0) {
+                return 0;
+            }
+
+            if ($mode === 'fixed') {
+                return $quantity * $value;
+            }
+
+            $perUnitRental = max(0, (float) $rental->rental_total) / $quantity;
+
+            return round($perUnitRental * $percentage / 100, 2) * $quantity;
+        }), 2);
     }
 
     public function release($id)

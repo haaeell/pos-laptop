@@ -224,13 +224,13 @@
                 $('#serviceDetailModal').addClass('hidden');
             }
 
-            function shareMethodDescription(mode, value, basis) {
+            function shareMethodDescription(mode, value, basis, isPerUnit = false) {
                 if (mode === 'fixed') {
-                    return `${formatRupiah(value)} per transaksi`;
+                    return `${formatRupiah(value)} per ${isPerUnit ? 'unit' : 'transaksi'}`;
                 }
 
                 const percentage = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
-                return `${percentage}% dari ${basis} per transaksi`;
+                return `${percentage}% dari ${basis} per ${isPerUnit ? 'unit' : 'transaksi'}`;
             }
 
             // Update info saat tanggal diubah
@@ -301,8 +301,8 @@
                     const method = data[0];
                     $('#salesMethodText').text(shareMethodDescription(method.sales_share_mode, method.sales_share_value, 'profit'));
                     $('#salesMethodCount').text(`${method.sales_transaction_count} transaksi lunas`);
-                    $('#rentalMethodText').text(shareMethodDescription(method.rental_share_mode, method.rental_share_value, 'nominal sewa'));
-                    $('#rentalMethodCount').text(`${method.rental_transaction_count} transaksi sewa`);
+                    $('#rentalMethodText').text(shareMethodDescription(method.rental_share_mode, method.rental_share_value, 'nominal sewa', true));
+                    $('#rentalMethodCount').text(`${method.rental_transaction_count} unit sewa`);
                     $('#shareMethodSummary').removeClass('hidden');
                 }
 
@@ -315,7 +315,7 @@
                                                 <td class="px-4 py-3 text-right">${formatRupiah(emp.basic_salary)}</td>
                                                 <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.sales_bonus)}<div class="text-xs text-slate-500">${emp.total_transactions} transaksi</div></td>
                                                 <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.sales_profit_share)}<div class="text-xs text-slate-500">${emp.sales_transaction_count} transaksi</div></td>
-                                                <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.rental_share)}<div class="text-xs text-slate-500">${emp.rental_transaction_count} transaksi</div></td>
+                                                <td class="px-4 py-3 text-right text-green-600">${formatRupiah(emp.rental_share)}<div class="text-xs text-slate-500">${emp.rental_transaction_count} unit</div></td>
                                                 <td class="px-4 py-3 text-right text-blue-600">
                                                     ${formatRupiah(emp.technician_fee)}
                                                     ${emp.technician_fee_details?.length ? `<div><button type="button" onclick="openServiceDetailModal(${index})" class="mt-1 text-xs text-indigo-600 hover:text-indigo-800">${emp.technician_fee_details.length} service · lihat rincian</button></div>` : ''}

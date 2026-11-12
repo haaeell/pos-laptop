@@ -462,13 +462,13 @@
                     <div class="settings-card-head">
                         <div>
                             <h3>Bagi Hasil Penggajian</h3>
-                            <p>Atur bagi hasil per transaksi untuk karyawan aktif dengan jabatan Pemilik.</p>
+                            <p>Bagi hasil penjualan dihitung per transaksi dan bagi hasil sewa dihitung per unit untuk karyawan aktif dengan jabatan Pemilik.</p>
                         </div>
                     </div>
                     <div class="settings-card-body settings-grid-2">
                         @foreach ([
                             'sales' => ['label' => 'Penjualan', 'basis' => 'Profit transaksi lunas', 'icon' => 'fa-chart-line'],
-                            'rental' => ['label' => 'Sewa', 'basis' => 'Nominal sewa pada tanggal sewa pertama, tanpa denda', 'icon' => 'fa-laptop'],
+                            'rental' => ['label' => 'Sewa', 'basis' => 'Nominal sewa per unit pada tanggal sewa pertama, tanpa denda', 'icon' => 'fa-laptop'],
                         ] as $type => $share)
                             @php
                                 $modeKey = "payroll_{$type}_share_mode";
@@ -494,7 +494,7 @@
                                         </select>
                                     </div>
                                      <div>
-                                        <label class="text-xs font-semibold text-slate-600" for="{{ $valueKey }}">Nilai per transaksi</label>
+                                        <label class="text-xs font-semibold text-slate-600" for="{{ $valueKey }}">{{ $type === 'rental' ? 'Nilai per unit' : 'Nilai per transaksi' }}</label>
                                         <input id="{{ $valueKey }}_percentage" type="number" min="0" max="100" step="0.01" required
                                             value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}"
                                             class="w-full mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm">
@@ -507,7 +507,7 @@
                                         <input id="{{ $valueKey }}" name="{{ $valueKey }}" type="hidden" value="{{ old($valueKey, $settings[$valueKey] ?? 0) }}">
                                     </div>
                                 </div>
-                                <p class="mt-3 text-xs text-slate-500">Nominal tetap dikalikan jumlah transaksi. Isi 0 untuk menonaktifkan.</p>
+                                <p class="mt-3 text-xs text-slate-500">Nominal tetap dikalikan {{ $type === 'rental' ? 'jumlah unit yang disewa' : 'jumlah transaksi' }}. Isi 0 untuk menonaktifkan.</p>
                                 @error($modeKey)
                                     <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                                 @enderror

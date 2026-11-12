@@ -335,14 +335,14 @@
                 $('#serviceDetailModal').addClass('hidden');
             }
 
-            function shareMethodDescription(mode, value, basis) {
+            function shareMethodDescription(mode, value, basis, isPerUnit = false) {
                 if (!mode) return 'Metode belum tercatat';
                 if (mode === 'fixed') {
-                    return `${formatRupiah(value)} per transaksi`;
+                    return `${formatRupiah(value)} per ${isPerUnit ? 'unit' : 'transaksi'}`;
                 }
 
                 const percentage = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value);
-                return `${percentage}% dari ${basis} per transaksi`;
+                return `${percentage}% dari ${basis} per ${isPerUnit ? 'unit' : 'transaksi'}`;
             }
 
             window.openDetailModal = function (id) {
@@ -355,9 +355,9 @@
                 $('#detailTotal').text(formatRupiah(payroll.total_amount));
                 $('#detailCount').text(payroll.details.length + ' orang');
                 $('#detailSalesMethod').text(shareMethodDescription(payroll.sales_share_mode, payroll.sales_share_value, 'profit'));
-                $('#detailRentalMethod').text(shareMethodDescription(payroll.rental_share_mode, payroll.rental_share_value, 'nominal sewa'));
+                $('#detailRentalMethod').text(shareMethodDescription(payroll.rental_share_mode, payroll.rental_share_value, 'nominal sewa', true));
                 $('#detailSalesCount').text(`${payroll.details[0]?.sales_transaction_count ?? 0} transaksi lunas`);
-                $('#detailRentalCount').text(`${payroll.details[0]?.rental_transaction_count ?? 0} transaksi sewa`);
+                $('#detailRentalCount').text(`${payroll.rental_unit_count ?? 0} unit sewa`);
                 $('#detailStatus').html(
                     payroll.status === 'released'
                         ? '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold"><i class="fa-solid fa-check mr-1"></i>Dirilis</span>'
@@ -375,7 +375,7 @@
                                                                             <td class="px-4 py-3 text-right">${formatRupiah(detail.basic_salary)}</td>
                                                                             <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_bonus)}<div class="text-xs text-slate-500">${detail.total_transactions} transaksi</div></td>
                                                                             <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.sales_profit_share)}<div class="text-xs text-slate-500">${detail.sales_transaction_count} transaksi</div></td>
-                                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.rental_share)}<div class="text-xs text-slate-500">${detail.rental_transaction_count} transaksi</div></td>
+                                                                            <td class="px-4 py-3 text-right text-green-600">${formatRupiah(detail.rental_share)}<div class="text-xs text-slate-500">${payroll.rental_unit_count ?? 0} unit</div></td>
                                                                             <td class="px-4 py-3 text-right text-blue-600">
                                                                                 ${formatRupiah(detail.technician_fee)}
                                                                                 ${detail.technician_fee_details?.length ? `<div><button type="button" onclick="openServiceDetailModal(${payroll.id}, ${detail.employee_id})" class="mt-1 text-xs text-indigo-600 hover:text-indigo-800">${detail.technician_fee_details.length} service · lihat rincian</button></div>` : ''}

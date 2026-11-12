@@ -372,9 +372,9 @@
                             <div class="component-meta">{{ $detail->rental_transaction_count }} transaksi sewa</div>
                             <div class="component-method">
                                 @if ($payroll->rental_share_mode === 'percentage')
-                                    Metode: {{ $rentalRuleValue }}% dari nominal sewa per transaksi
+                                    Metode: {{ $rentalRuleValue }}% dari nominal sewa per unit
                                 @elseif ($payroll->rental_share_mode === 'fixed')
-                                    Metode: Rp {{ $rentalRuleValue }} per transaksi
+                                    Metode: Rp {{ $rentalRuleValue }} per unit
                                 @else
                                     Metode belum tercatat pada penggajian ini
                                 @endif
